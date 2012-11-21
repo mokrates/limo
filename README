@@ -1,0 +1,28 @@
+specials:
+
+_up		: the lexical upper environment. only valid in functions or macros
+
+(try TRY CATCH)	: the TRY form is tried. if an error occurs, the CATCH form will be executed
+     	 	  In the CATCH form, there is a var _EXCEPTION which contains the
+		  argument to throw().
+
+_exception	: see try
+
+_callerenv	: the environment of the caller. not neccessarily equal to _up
+		  only valid in macros. (used by quasiquote())
+
+(eval EXP [ENV]): evaluate EXP under environment ENV. EXP and ENV are evaluated once under the
+      	  	  normal environment, as befits a function. THEN EXP is evaluated again.
+
+_env		: no real variable. has no entry in the environment.
+		  the internal lookup-function returns the local environment to this name.
+
+dcons/#<eagain>	: #<eagain> are instances of a type which cannot be instatiated by a program.
+	  	  what CAN be instantiated are dcons'es.
+		  #<eagain> is a type used to implement tailcall-optimization. if an EXP is the
+		  last in an eval-chain, it is not evaluated, but packed into an #<eagain>
+		  (evaluate again) and returned. this is purely internal.
+		  it can be used with dcons(). dcons is a builtin, which evaluates it's first
+		  argument, packs the second into an #<eagain> and cons'es those two.
+		  this way the cdr of the cons only gets evaluated, when cdr() is called on the
+		  cons. this is limo's way of implementing iterators.

@@ -1,0 +1,4 @@
+.PHONY: all
+
+all: example
+	make -C example

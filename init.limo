@@ -1,0 +1,11 @@
+(load "std.limo")
+;(write "std loaded")
+;(write (list 'argv argv))
+
+(when argv
+      (progn (load (car argv))
+	     (setf argv (car argv))
+	     (exit)))
+
+(load "tests.limo")
+(write "*** end of limo.init ****")

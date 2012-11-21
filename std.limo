@@ -1,0 +1,225 @@
+;; limo.init
+;; do it in limo!
+
+(write "+std.limo")
+
+;(setq _trace :t)
+
+(setq defmacro 
+      (macro (name args . body)
+	(list 'setq name (list 'macro args (cons 'progn body)))))
+
+(setq defun
+      (macro (name args . body)
+	(list 'setq name (list 'lambda args (cons 'progn body)))))
+
+(defmacro assert (x)
+  `(try
+    ,`(if ,x :t 
+	  ,`(throw ,`(list 'ASSERT_FAIL ,`(quote ,x))))
+    ,`(throw ,`(list 'ASSERT_FAIL_WITH_EXCEPTION ,`(quote ,x) _exception))))
+
+(defmacro asserteq (x y)
+  `(assert ,`(deepeq ,x ,y)))
+
+(defun reverse (l) ;; used by quasiquote
+  (defun helper (l akku)
+    (if l (helper (cdr l) (cons (car l) akku)) akku))
+  (helper l ()))
+
+(defun undyn (x)   ;; recursive!
+  (cond ((and (consp x) x)  ;; cons and not empty
+	 (cons (undyn (car x)) (undyn (cdr x))))
+	(:t x)))
+
+(defun deepeq (x y)
+  (cond ((and (consp x) x)  ;; cons and not empty
+	 (and (consp y)
+	      y
+	      (deepeq (car x) (car y))
+	      (deepeq (cdr x) (cdr y))))
+	(:t (eq x y))))
+	 
+(defmacro quasiquote (l)
+  (defun helper (l akku)
+    (cond ((not l) akku)
+	  ((and (consp (car l)) 
+		(car l)  ;; not nil
+		(eq (caar l) 'comma))
+	   (helper (cdr l) 
+		   (cons (car (cdar l)) akku)))
+	  ((and (consp (car l))
+		(car l)
+		(eq (caar l) 'splice))
+	   (helper (cdr l) 
+		   (helper (eval (car (cdar l)) _callerenv) akku)))
+	  (:t (helper (cdr l) 
+		      (cons (list 'quote (car l)) akku)))))
+  (cons 'list (reverse (helper l ()))))
+
+(defun dmap (f a)
+  (defun helper (f a)
+    (when a
+	  (dcons (f (car a)) (helper f (cdr a)))))
+  (helper f a))
+
+(defun map (f a)
+  (defun helper (f a)
+    (when a
+	  (cons (f (car a)) (helper f (cdr a)))))
+  (helper f a))
+
+(defun identity (x)
+  x)
+
+(defun comp fs
+  (cond ((not fs) identity)
+	((not (consp fs)) (write "(comp {fun}*)"))
+	((not (cdr fs)) (car fs))
+	(:t (lambda (x) ((car fs) ((apply comp 
+					  (cdr fs)) 
+				   x))))))
+
+(defun dzipn x
+  (when (and (apply andf (dmap consp x))
+	     (apply andf x))
+	(dcons (dmap car x)
+	       (apply dzipn (dmap cdr x)))))
+
+(defun dzip2 (a b)
+  (when (and (consp a)
+	     (consp b)
+	     a b)
+	(dcons (cons (car a) 
+		     (car b))
+	       (dzip2 (cdr a) 
+		      (cdr b)))))
+
+(defun not (x) 
+  (if x () :t))
+
+(setq  nil? not)
+
+(defun caar (l) (car (car l)))
+(defun cdar (l) (cdr (car l)))
+(defun cadr (l) (car (cdr l)))
+(defun cddr (l) (cdr (cdr l)))
+
+(defmacro when (c . b)
+  `(if ,c ,(cons 'progn b) ()))
+
+(defmacro or l
+  (if l 
+      (list 'if (car l) 
+	    (car l) 
+	    (cons 'or (cdr l)))
+      ()))
+
+(defmacro and l
+  (if l
+      (list 'if (car l) 
+	    (cons 'and (cdr l))
+	    ())
+      :t))
+
+(defun andf l  ;; and as a function. not shorting
+  (cond ((not l) :t)
+	((not (consp l))
+	 (error "ERROR: (andf foo bar)"))
+	((car l)
+	 (apply andf (cdr l)))
+	(:t ())))
+
+(defmacro cond l   ;; used by quasiquote
+  (if l
+      (list 'if (caar l) (car (cdar l))
+	    (cons 'cond (cdr l)))
+      ()))
+
+(defmacro switch (s . items)
+  (when items
+	`(if ,`(eq ,s ,(caar items)) 
+	      ,`(progn ,@(cdar items))
+	      ,`(switch ,s ,@(cdr items)))))
+
+(defun * os
+  (defun helper (os akku)
+    (cond ((not os) akku)
+	  (:t (helper (cdr os) (mpq_mul (car os) akku)))))
+  (helper os 1))
+
+(defun + os
+  (defun helper (os akku)
+    (cond ((not os) akku)
+	  (:t (helper (cdr os) (mpq_add (car os) akku)))))
+  (helper os 0))
+
+(defun - (start . os)
+  (apply + (dcons start (dmap mpq_neg os))))
+
+(defun / (start . os)
+  (apply * (dcons start (dmap mpq_inv os))))
+
+(defun fak (n)
+  (defun helper (n akku)
+    (if (eq n 1) 
+	akku
+	(helper (mpq_sub n 1) (mpq_mul akku n))))
+  (helper n 1))
+
+(defun nth (n l)
+  (cond ((eq n 0) (car l))
+	(:else (nth (mpq_sub n 1) (cdr l)))))
+
+(defun range (start end step)  ;; recursive!
+  (if (eq start end)
+      ()
+      (cons start (range (mpq_add start step) end step))))
+
+(defun drange (start end step)
+  (if (eq start end)
+      ()
+      (dcons start (drange (mpq_add start step) end step))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; lustiger shit
+
+;; (defun inftylist (x y)
+;;   (dcons (cons x y) (inftylist x (cons x y))))
+
+;; ;; die tuerme von hanoi
+;; (defun hanoi (turm n1 n2 n3) 
+;;   (when turm
+;;     (hanoi (cdr turm) n1 n3 n2)
+;;     (write (list "bewege scheibe" (car turm) "von" n1 "nach" n3))
+;;     (hanoi (cdr turm) n2 n1 n3)))
+	    
+;; ;(hanoi '(vier drei zwei eins) 'turm_eins 'turm_zwei 'turm_drei)
+
+;; (defun grower (x)
+;;   (setq l ())
+;;   (defun helper ()
+;;     (setf l (cons x l))
+;;     l)
+;;   helper)
+
+;; (defun testfun ()
+;;   (defun innerefunktion () ())
+;;   innerefunktion)
+
+;; Endlosschleifentest
+
+;; (defun fendlosliste ()
+;;   (setq g (grower 'x))
+;;   (defun h ()
+;;     (dcons (g) (h)))
+;;   (h))
+
+;; (setq endlosliste (fendlosliste))
+(defun writelist (x)
+  (when x
+	(write (car x))
+	(writelist (cdr x))))
+
+(write "-end.limo")
