@@ -43,17 +43,39 @@ void number_writer(limo_data *ld)
   printf("%s", repr_number(ld));
 }
 
-void writer(limo_data *ld)
+void writer(limo_data *ld) // not threadsafe!
 {
+  static int in_env=0;
+
   switch (ld->type) {
   case limo_TYPE_STRING: string_writer(ld); break;
   case limo_TYPE_GMPQ: number_writer(ld); break;
   case limo_TYPE_CONS: cons_writer(ld); break;
   case limo_TYPE_SYMBOL: printf("%s", ld->data.d_string); break;
   case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->data.d_builtin); break;
-  case limo_TYPE_LAMBDA: printf("#<lambda:"); writer(CDR(ld->data.d_lambda)); printf(">"); break;
-  case limo_TYPE_MACRO: printf("#<macro:"); writer(CDR(ld->data.d_lambda)); printf(">"); break;
-  case limo_TYPE_ENV: printf("#<env:"); writer(ld->data.d_env); printf(">"); break;
-  case limo_TYPE_EAGAIN: printf("#<eagain:"); writer(CAR(ld->data.d_eagain)); printf(">"); break;
+
+  case limo_TYPE_EAGAIN:
+  case limo_TYPE_LAMBDA: 
+  case limo_TYPE_MACRO:
+    printf("#<%s:", (ld->type==limo_TYPE_LAMBDA?"lambda":
+		     (ld->type==limo_TYPE_MACRO?"macro":
+		      "eagain")));
+    writer(CDR(ld->data.d_lambda));
+    if (CAR(ld->data.d_lambda) != globalenv) {
+      printf(", env: ");
+      writer(CAR(ld->data.d_lambda));
+    }
+    printf(">"); 
+    break;
+
+  case limo_TYPE_ENV: 
+    if (in_env)
+      printf("#<env>");
+    else {
+      in_env++;
+      printf("#<env:"); writer(ld->data.d_env); printf(">"); 
+      in_env--;
+    }
+    break;
   }
 }

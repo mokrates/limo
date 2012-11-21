@@ -60,9 +60,11 @@ int limo_getc(reader_stream *rs)
       else {
 	rs->stream.readline = (char *)GC_malloc(strlen(rl)+2);
 	strcpy(rs->stream.readline, rl);
-	rs->stream.readline[strlen(rs->stream.readline)]=' ';
+	if (strlen(rl))
+	  add_history(rl);
+	rs->stream.readline[strlen(rs->stream.readline)]='\n';
 	free(rl);
-	add_history(rs->stream.readline);
+
 	rs->pos = 0;
       }
     }
@@ -115,17 +117,18 @@ char read_skip_space_comments(reader_stream *f)
   char c;
   c=limo_getc(f);
   while ((isspace(c) || c==';') && !limo_eof(f)) {
-    c=limo_getc(f);
     if (c == ';')
       while (c != '\n')
 	c=limo_getc(f);
+    else
+      c=limo_getc(f);
   }
   return c;
 }
 
 limo_data *read_list(reader_stream *f)
 {
-  limo_data *ld=(limo_data *)GC_malloc(sizeof (limo_data));
+  limo_data *ld=make_limo_data();
   limo_data **ld_into = &ld;
   char c;
 
@@ -153,7 +156,7 @@ limo_data *read_list(reader_stream *f)
     }
     else {
       limo_ungetc(c, f);
-      (*ld_into)->data.d_cons->cdr = (limo_data *)GC_malloc(sizeof (limo_data));
+      (*ld_into)->data.d_cons->cdr = make_limo_data();
       ld_into = &((*ld_into)->data.d_cons->cdr);
       (*ld_into)->type = limo_TYPE_CONS;
     }
@@ -239,6 +242,7 @@ limo_data *read_string(reader_stream *f)
 limo_data *reader(reader_stream *f)
 {
   char c;
+  limo_data *res;
 
   prompt = "λimo > ";
 

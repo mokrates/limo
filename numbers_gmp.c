@@ -1,7 +1,5 @@
 #include "limo.h"
 
-
-
 BUILTIN(builtin_numberp)
 {
   if (eval(FIRST_ARG, env)->type == limo_TYPE_GMPQ)
@@ -82,6 +80,15 @@ limo_data *make_number_from_str(char *str)
   limo_data *res = make_number();
 
   mpq_set_str(LIMO_MPQ(res), str, 10);
+  mpq_canonicalize(LIMO_MPQ(res));
+  return res;
+}
+
+limo_data *make_number_from_long_long(long long i)
+{
+  limo_data *res = make_number();
+
+  mpq_set_d(LIMO_MPQ(res), (double)i);
   mpq_canonicalize(LIMO_MPQ(res));
   return res;
 }

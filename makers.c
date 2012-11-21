@@ -2,9 +2,15 @@
 #include <gc/gc.h>
 #include <string.h>
 
-limo_data *make_nil(void)
+limo_data *make_limo_data(void)
 {
   limo_data *ld = (limo_data *)GC_malloc(sizeof (limo_data));
+  return memset(ld, 0, sizeof (limo_data));
+}
+
+limo_data *make_nil(void)
+{
+  limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_CONS;
   ld->data.d_cons = NULL;
   return ld;
@@ -21,7 +27,7 @@ limo_data *make_cons(limo_data *car, limo_data *cdr)
 
 limo_data *make_sym(char *name)
 {
-  limo_data *ld = (limo_data *)GC_malloc(sizeof (limo_data));
+  limo_data *ld = make_limo_data();
   char *cp;
   ld->type=limo_TYPE_SYMBOL;
   ld->data.d_string = (char *)GC_malloc(strlen(name) +1);
@@ -55,7 +61,7 @@ limo_data *make_env(limo_data *up)
 
 limo_data *make_eagain(limo_data *expr, limo_data *env)
 {
-  limo_data *l = make_cons(expr, env);
+  limo_data *l = make_cons(env, expr);
   limo_data *ea = make_nil();
   ea->type=limo_TYPE_EAGAIN;
   ea->data.d_eagain = l;

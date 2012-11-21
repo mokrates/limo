@@ -47,7 +47,9 @@ BUILTIN(builtin_macroexpand_1)
 
   res = real_eval(FIRST_ARG, env);
   if (res->type == limo_TYPE_EAGAIN) {
-    return CAR(res->data.d_eagain);
+    return make_cons(CDR(res->data.d_eagain),
+		     env!=CAR(res->data.d_eagain)?
+		     CAR(res->data.d_eagain):make_sym(":hidden"));
   }
   else
     return make_nil();

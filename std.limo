@@ -222,4 +222,4 @@
 	(write (car x))
 	(writelist (cdr x))))
 
-(write "-end.limo")
+(write "-std.limo")

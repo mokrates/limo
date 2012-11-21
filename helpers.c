@@ -37,3 +37,10 @@ int list_length(limo_data *l)
   }
   return i;
 }
+
+char *limo_strdup(char *in)
+{
+  char *newstr = (char *)GC_malloc(strlen(in)+1);
+  strcpy(newstr, in);
+  return newstr;
+}

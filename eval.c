@@ -104,8 +104,8 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
       limo_data *next_form;
       //      printf("EAGAIN:"); writer(form); printf("\n");
       again=1;
-      next_form= CAR(form->data.d_eagain);
-      env      = CDR(form->data.d_eagain);
+      next_form= CDR(form->data.d_eagain);
+      env      = CAR(form->data.d_eagain);
       form     = next_form;
     }
     else

@@ -6,6 +6,7 @@
 #include <gc/gc.h>   // boehm GC
 #include <gmp.h>     // gnu multiprecision lib
 
+#define limo_TYPE_EMPTY   0
 #define limo_TYPE_SYMBOL  1
 #define limo_TYPE_CONS    2
 #define limo_TYPE_LAMBDA  3
@@ -17,6 +18,11 @@
 
 #define limo_TYPE_ENV     9 
 #define limo_TYPE_EAGAIN  10  // eval again (for tail-opt) (cons expt env)
+
+typedef struct limo_ANNOTATION {
+  char *filename;
+  int line;
+} limo_annotation;
 
 typedef struct limo_DATA {
   int type;
@@ -30,6 +36,8 @@ typedef struct limo_DATA {
 #define d_env d_lambda
 #define d_eagain d_lambda
   } data;
+
+  limo_annotation *annotation;
 } limo_data;
 
 typedef struct limo_CONS {
@@ -44,17 +52,18 @@ limo_data *globalenv;
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env)
 
 #define LIMO_UNGETC_BUF 20
-typedef struct READER_STREAM {
+typedef struct limo_READER_STREAM {
   union {
     FILE *file;
     char *str;
     char *readline;
   } stream;
   enum { RS_FILE, RS_STR, RS_READLINE } type;
-  int pos; // only for RS_STR, RS_READLINE;
+  int pos; // linepos whereever it makes sense
   char ungetc_buf[LIMO_UNGETC_BUF];
   int ungetc_buf_pos;
   int eof; // only for readline
+  char *filename;
 } reader_stream;
 
 int limo_getc(reader_stream *);
@@ -68,6 +77,7 @@ void writer(limo_data *);
 
 void load_limo_file(char *fname, limo_data *env);
 
+limo_data *make_limo_data();
 limo_data *make_nil();
 limo_data *make_cons(limo_data *, limo_data *);
 limo_data *make_sym(char *);
@@ -89,6 +99,7 @@ jmp_buf *ljbuf;
 int is_nil(limo_data *);
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);
+char *limo_strdup(char *str);
 
 limo_data *var_lookup(limo_data *env, limo_data *name);
 void setq(limo_data *env, limo_data *name, limo_data *value);
