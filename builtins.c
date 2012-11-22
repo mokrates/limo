@@ -233,11 +233,15 @@ BUILTIN(builtin_exit)
 
 BUILTIN(builtin_load)
 {
-  if (list_length(arglist) != 2 ||
-      FIRST_ARG->type != limo_TYPE_STRING)
+  if (list_length(arglist) != 2)
     limo_error("(load FILENAME)");
 
-  load_limo_file(FIRST_ARG->data.d_string, env);
+  limo_data *filename = eval(FIRST_ARG, env);
+
+  if (filename->type != limo_TYPE_STRING)
+    limo_error("load arg must be a string");
+
+  load_limo_file(filename->data.d_string, env);
   return make_nil();
 }
 
@@ -255,5 +259,17 @@ BUILTIN(builtin_loaddll)
   if (!limo_dll_init)
     limo_error("dll load error");
   (*limo_dll_init)(env);
+  return make_nil();
+}
+
+BUILTIN(builtin_gc_disable)
+{
+  GC_disable();
+  return make_nil();
+}
+
+BUILTIN(builtin_gc_enable)
+{
+  GC_enable();
   return make_nil();
 }

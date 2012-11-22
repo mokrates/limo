@@ -26,6 +26,8 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "EXIT", builtin_exit },
   { "LOAD", builtin_load},
   { "LOADDLL", builtin_loaddll },
+  { "GCENABLE", builtin_gc_enable },
+  { "GCDISABLE", builtin_gc_disable },
 };
 
 limo_data *make_globalenv(int argc, char **argv)

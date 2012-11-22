@@ -2,6 +2,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <string.h>
 
 #include <gc/gc.h>   // boehm GC
 #include <gmp.h>     // gnu multiprecision lib
@@ -136,6 +137,8 @@ BUILTIN(builtin_throw);
 BUILTIN(builtin_exit);
 BUILTIN(builtin_load);
 BUILTIN(builtin_loaddll);
+BUILTIN(builtin_gc_enable);
+BUILTIN(builtin_gc_disable);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);
