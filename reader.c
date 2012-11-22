@@ -261,6 +261,10 @@ limo_data *reader(reader_stream *f)
     limo_ungetc(c, f);
     return reader_macro(f);
   }
+  else if (c==')') {
+    limo_error("Syntax_error: too many )s");
+    return make_nil();
+  }
   else {
     limo_ungetc(c, f);
     return read_sym_num(f);
