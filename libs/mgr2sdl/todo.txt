@@ -1,3 +1,0 @@
-Liste der zu portierenden Funktionen:
-
-Mausfunktionen. (mouse.h/.c)

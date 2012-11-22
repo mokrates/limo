@@ -1,3 +1,24 @@
+Limo:
+
+written by M. "mokrates" Molle
+
+Licensed under GPL (v3) (applies to all files in this tarball)
+http://www.gnu.org/licenses/gpl.html
+
+**************************************
+
+how to build:
+should be buildable by just entering 'make'.
+
+dependencies:
+
+build-essential (gcc, make)
+libgc (boehm garbage collector)
+libreadline
+libgmp (gnu multiprecision library)
+
+**************************************
+
 specials:
 
 _up		: the lexical upper environment. only valid in functions or macros
