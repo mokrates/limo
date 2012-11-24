@@ -28,6 +28,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "LOADDLL", builtin_loaddll },
   { "GCENABLE", builtin_gc_enable },
   { "GCDISABLE", builtin_gc_disable },
+  { "GCCOLLECT", builtin_gc_collect},
   { "EXTRACT-ENV", builtin_extract_env },
 };
 

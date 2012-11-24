@@ -274,6 +274,12 @@ BUILTIN(builtin_gc_enable)
   return make_nil();
 }
 
+BUILTIN(builtin_gc_collect)
+{
+  GC_gcollect();
+  return make_nil();
+}
+
 BUILTIN(builtin_extract_env)
 {
   if (list_length(arglist)!=2)

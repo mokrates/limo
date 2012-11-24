@@ -27,7 +27,7 @@
     (if l (helper (cdr l) (cons (car l) akku)) akku))
   (helper l ()))
 
-(defun undyn (x)   ;; recursive!
+(defun undyn (x)   ;; recursive! no dynamic version! (of course...)
   (cond ((and (consp x) x)  ;; cons and not empty
 	 (cons (undyn (car x)) (undyn (cdr x))))
 	(:t x)))
@@ -192,7 +192,7 @@
   (cond ((eq n 0) (car l))
 	(:else (nth (mpq_sub n 1) (cdr l)))))
 
-(defun range (start end step)  ;; recursive!
+(defun range (start end step)  ;; recursive! with generator: drange.
   (if (eq start end)
       ()
       (cons start (range (mpq_add start step) end step))))
@@ -202,6 +202,50 @@
       ()
       (dcons start (drange (mpq_add start step) end step))))
 
+(defun lreduce (f l)   ;; fold l with f from left
+  (loop
+   (akku (car l) l (cdr l))
+   (if l
+       (recur (f akku (car l)) (cdr l))
+       akku)))
+
+(setq reduce lreduce)
+	 
+(defun dfilter (p l)    ;; filter list with predicate p
+  (cond ((not l) l)
+	((p (car l)) (dcons (car l) (dfilter p (cdr l))))
+	(:else (dfilter p (cdr l)))))
+
+(defun filter (p l)    ;; recursive
+  (cond ((not l) l)
+	((p (car l)) (cons (car l) (filter p (cdr l))))
+	(:else (filter p (cdr l)))))
+
+(defun append (l1 l2)  ;; recursive: with generator: dappend
+  (if (not l1) l2
+      (cons (car l1) (append (cdr l1) l2))))
+
+(defun dappend (l1 l2)
+  (if (not l1) l2
+      (dcons (car l1) (dappend (cdr l1) l2))))
+
+(defun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
+  (defun ltx (x) (lt x (car l)))
+  (if (not l)
+      l
+      (reduce append 
+	      (list (dqsort lt (dfilter ltx (cdr l)))
+		    (list (car l)) 
+		    (dqsort lt (dfilter (comp not ltx) (cdr l)))))))
+
+(defun qsort (lt l) 
+  (defun ltx (x) (lt x (car l)))
+  (if (not l)
+      l
+      (reduce append 
+	      (list (qsort lt (filter ltx (cdr l)))
+		    (list (car l))
+		    (qsort lt (filter (comp not ltx) (cdr l)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; lustiger shit

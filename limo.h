@@ -169,6 +169,7 @@ BUILTIN(builtin_load);
 BUILTIN(builtin_loaddll);
 BUILTIN(builtin_gc_enable);
 BUILTIN(builtin_gc_disable);
+BUILTIN(builtin_gc_collect);
 BUILTIN(builtin_extract_env);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
