@@ -13,12 +13,11 @@ char *prompt=NULL;
 char *rl_completer_generator(const char *text, int state) 
 {
   static limo_data *lookup_pos;
-  limo_data *env_list = globalenv->data.d_env;
   static int textlen=0;
   char *res;
 
   if (!state) {
-    lookup_pos = globalenv->data.d_env;
+    lookup_pos = dict_to_list(CDR(globalenv->data.d_env));
     textlen = strlen(text);
   }
   
@@ -168,7 +167,6 @@ limo_data *read_list(reader_stream *f)
 
 limo_data *reader_macro(reader_stream *f)
 {
-  limo_data *ld;
   char c;
   char *macro;
 
@@ -242,7 +240,6 @@ limo_data *read_string(reader_stream *f)
 limo_data *reader(reader_stream *f)
 {
   char c;
-  limo_data *res;
 
   prompt = "λimo > ";
 

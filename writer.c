@@ -51,8 +51,9 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_STRING: string_writer(ld); break;
   case limo_TYPE_GMPQ: number_writer(ld); break;
   case limo_TYPE_CONS: cons_writer(ld); break;
-  case limo_TYPE_SYMBOL: printf("%s", ld->data.d_string); break;
+  case limo_TYPE_SYMBOL: printf("%s", ld->data.d_string, ld->hash); break;
   case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->data.d_builtin); break;
+  case limo_TYPE_DICT: printf("#<dict: "); writer(dict_to_list(ld)); printf(">"); break;
 
   case limo_TYPE_EAGAIN:
   case limo_TYPE_LAMBDA: 
@@ -77,5 +78,9 @@ void writer(limo_data *ld) // not threadsafe!
       in_env--;
     }
     break;
-  }
+
+  default:
+    printf("**BROKEN DATA(%i)**", ld->type);
+    break;
+  }  
 }

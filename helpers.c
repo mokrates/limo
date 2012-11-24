@@ -1,7 +1,7 @@
 #include "limo.h"
 #include <string.h>
 
-int is_nil(limo_data *ld)
+inline int (is_nil)(limo_data *ld)
 {
   if (!ld)
     limo_error("null pointer (is_nil)");
@@ -10,11 +10,19 @@ int is_nil(limo_data *ld)
 
 int limo_equals(limo_data *a, limo_data *b)
 {
+  if (a==b)
+    return 1;
+
   if (a->type != b->type)
     return 0;
 
   switch (a->type) {
   case limo_TYPE_SYMBOL:
+    if (a->hash == 0 || b->hash == 0)
+      return !strcmp(a->data.d_string, b->data.d_string);
+    else
+      return a->hash == b->hash;
+
   case limo_TYPE_STRING:
     return !strcmp(a->data.d_string, b->data.d_string);
     

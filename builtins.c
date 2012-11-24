@@ -273,3 +273,16 @@ BUILTIN(builtin_gc_enable)
   GC_enable();
   return make_nil();
 }
+
+BUILTIN(builtin_extract_env)
+{
+  if (list_length(arglist)!=2)
+    limo_error("(extract-env ENV) (1)");
+
+  limo_data *ld = eval(FIRST_ARG, env);
+
+  if (ld->type == limo_TYPE_ENV)
+    return ld->data.d_env;
+  else
+    limo_error("(extract-env ENV) (2)");
+}

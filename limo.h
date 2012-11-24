@@ -17,8 +17,10 @@
 #define limo_TYPE_FLOAT   7
 #define limo_TYPE_STRING  8
 
-#define limo_TYPE_ENV     9 
-#define limo_TYPE_EAGAIN  10  // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_DICT    9
+
+#define limo_TYPE_ENV     10
+#define limo_TYPE_EAGAIN  11  // eval again (for tail-opt) (cons expt env)
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -34,18 +36,31 @@ typedef struct limo_DATA {
     double d_float;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env);
     struct limo_DATA *d_lambda; // lambda, macro, env
+    struct limo_DICT *d_dict;
 #define d_env d_lambda
 #define d_eagain d_lambda
   } data;
-
-  limo_annotation *annotation;
+  unsigned int hash;  // for symbols and strings
+  //limo_annotation *annotation;
 } limo_data;
 
 typedef struct limo_CONS {
   limo_data *car, *cdr;
 } limo_cons;
 
-limo_data *globalenv;
+typedef struct limo_DICT {
+  limo_data **store;
+  int size;
+  int used;
+} limo_dict;
+
+extern limo_data *globalenv;
+extern limo_data *interned_symbols;
+
+extern limo_data *sym_env;
+extern limo_data *sym_callerenv;
+extern limo_data *sym_trace;
+extern limo_data *sym_true;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -82,6 +97,7 @@ limo_data *make_limo_data();
 limo_data *make_nil();
 limo_data *make_cons(limo_data *, limo_data *);
 limo_data *make_sym(char *);
+limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *);
 limo_data *make_builtin(limo_builtin);
 limo_data *make_env(limo_data *up);
@@ -97,10 +113,24 @@ void limo_error(char *, ...);
 limo_data *exception;
 jmp_buf *ljbuf;
 
-int is_nil(limo_data *);
+inline int is_nil(limo_data *);
+#define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);
 char *limo_strdup(char *str);
+
+int inter_symbol(limo_data *);
+
+unsigned int hash_string(char *);
+
+#define DICT_INIT_SIZE (1<<3)   // only powers of 2!
+limo_data *make_dict(void);
+limo_dict *make_dict_size(int minused);
+void dict_resize(limo_data *dict);
+void dict_put(limo_data *dict, limo_data *key, limo_data *value);
+limo_data **dict_get_place(limo_data *dict, limo_data *key);
+limo_data *dict_remove(limo_data *dict, limo_data *key);
+limo_data *dict_to_list(limo_data *dict);
 
 limo_data *var_lookup(limo_data *env, limo_data *name);
 void setq(limo_data *env, limo_data *name, limo_data *value);
@@ -139,6 +169,7 @@ BUILTIN(builtin_load);
 BUILTIN(builtin_loaddll);
 BUILTIN(builtin_gc_enable);
 BUILTIN(builtin_gc_disable);
+BUILTIN(builtin_extract_env);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);

@@ -49,7 +49,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 
   // associating params with names
   param_env = make_env(macro_env);
-  setq(param_env, make_sym("_CALLERENV"), env);
+  setq(param_env, sym_callerenv, env);
   while (!is_nil(params) && params->type==limo_TYPE_CONS) {
     if (is_nil(arglist))
       limo_error("too few arguments");
@@ -81,16 +81,13 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
   int again=1;
-  static limo_data *trace_sym=NULL;
   static int level=0;
+  int trace = !is_nil(var_lookup(env, sym_trace));
 
   ++level;
-
-  if (!trace_sym)
-    trace_sym = make_sym("_TRACE");
-
+  
   while (again) {
-    if (!is_nil(var_lookup(env, trace_sym))) {
+    if (trace) {
       printf("eval(level % 3i): ", level);
       writer(form);
       printf("\n");

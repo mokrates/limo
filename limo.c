@@ -2,6 +2,19 @@
 
 limo_data *globalenv;
 
+limo_data *sym_env;
+limo_data *sym_callerenv;
+limo_data *sym_trace;
+limo_data *sym_true;
+
+void init_syms()
+{
+  sym_env       = make_sym("_ENV");
+  sym_callerenv = make_sym("_CALLERENV");
+  sym_trace     = make_sym("_TRACE");
+  sym_true      = make_sym(":T");
+}
+
 void load_limo_file(char *filename, limo_data *env)
 {
   FILE *f;
@@ -21,6 +34,8 @@ int main(int argc, char **argv)
   reader_stream *rs;
 
   GC_init();
+
+  init_syms();
 
   env = make_globalenv(argc, argv);
   globalenv = env;
@@ -49,4 +64,6 @@ int main(int argc, char **argv)
       printf("\n");
     }
   }
+
+  return 0;
 }

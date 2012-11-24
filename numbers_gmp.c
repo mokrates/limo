@@ -3,7 +3,7 @@
 BUILTIN(builtin_numberp)
 {
   if (eval(FIRST_ARG, env)->type == limo_TYPE_GMPQ)
-    return make_sym(":T");
+    return sym_true;
   else
     return make_nil();
 }
@@ -46,7 +46,7 @@ CALC1_BUILTIN(mpq_inv)
 BUILTIN(builtin_ltn)
 {
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) < 0)
-    return make_sym(":T");
+    return sym_true;
   else
     return make_nil();
 }
@@ -54,7 +54,7 @@ BUILTIN(builtin_ltn)
 BUILTIN(builtin_gtn)
 {
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) > 0)
-    return make_sym(":T");
+    return sym_true;
   else
     return make_nil();
 }

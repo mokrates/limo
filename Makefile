@@ -1,9 +1,11 @@
 DEBUG=-g
 
-PROFILING=  #-pg
+PROFILING= #-pg
 
 OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
-	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o
+	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
+	dict.o
+
 CC=gcc $(DEBUG) $(PROFILING) -O3
 
 .PHONY: all clean realclean

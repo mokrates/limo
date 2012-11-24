@@ -28,6 +28,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "LOADDLL", builtin_loaddll },
   { "GCENABLE", builtin_gc_enable },
   { "GCDISABLE", builtin_gc_disable },
+  { "EXTRACT-ENV", builtin_extract_env },
 };
 
 limo_data *make_globalenv(int argc, char **argv)
@@ -40,14 +41,15 @@ limo_data *make_globalenv(int argc, char **argv)
   for (i=0; i<(sizeof builtin_array)/(sizeof builtin_array[0]); ++i)
     setq(env, make_sym(builtin_array[i].name), make_builtin(builtin_array[i].f));
 
-  setq(env, make_sym("_TRACE"), make_nil());
-
   for (i=1; i<argc; ++i) {
     (*args) = make_cons(make_string(argv[i]), NULL);
     args = &CDR(*args);
   }
   (*args) = make_nil();
+
   setq(env, make_sym("ARGV"), args_start);
+  setq(env, make_sym("_TRACE"), make_nil());
+  setq(env, make_sym("_INTERNED-SYMBOLS"), interned_symbols);
 
   number_builtins(env);
 

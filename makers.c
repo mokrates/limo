@@ -1,6 +1,7 @@
 #include "limo.h"
 #include <gc/gc.h>
 #include <string.h>
+#include <ctype.h>
 
 limo_data *make_limo_data(void)
 {
@@ -25,21 +26,53 @@ limo_data *make_cons(limo_data *car, limo_data *cdr)
   return ld;
 }
 
-limo_data *make_sym(char *name)
-{
-  limo_data *ld = make_limo_data();
-  char *cp;
-  ld->type=limo_TYPE_SYMBOL;
-  ld->data.d_string = (char *)GC_malloc(strlen(name) +1);
-  strcpy(ld->data.d_string, name);
-  cp = ld->data.d_string;
-  if ((*cp) != '|')
-    while (*cp) {
-      (*cp) = toupper(*cp);
-      ++cp;
-    }
+unsigned int next_symbol_identity=1;
+limo_data *interned_symbols = NULL;
 
-  return ld;
+limo_data *make_sym(char *name) // interned
+{
+  limo_data *ld;
+  limo_data *is;
+  char *cp, *cpi;
+  
+
+  if (interned_symbols == NULL) {
+    interned_symbols = make_limo_data();
+    interned_symbols->type = limo_TYPE_ENV;
+    (interned_symbols->data.d_env) = make_nil();
+  }
+
+  cp = (char *)GC_malloc(strlen(name) +1);
+  strcpy(cp, name);
+
+  if ((*cp) != '|') {
+    cpi = cp;
+    while (*cpi) {
+      (*cpi) = toupper(*cpi);
+      ++cpi;
+    }
+  }
+  
+  for (is=interned_symbols->data.d_env; 
+       !is_nil(is) && strcmp(cp, CAR(is)->data.d_string); 
+       is=CDR(is))
+    ;
+
+  if (is_nil(is)) {
+    ld = make_limo_data();
+    ld->type=limo_TYPE_SYMBOL;
+    ld->data.d_string = cp;
+    ld->hash = next_symbol_identity;
+    
+    ++next_symbol_identity;
+    
+    interned_symbols->data.d_env = make_cons(ld, interned_symbols->data.d_env);
+
+    return ld;
+  }
+  else {
+    return CAR(is);
+  }
 }
 
 limo_data *make_builtin(limo_builtin f)
@@ -47,16 +80,8 @@ limo_data *make_builtin(limo_builtin f)
   limo_data *ld = make_nil();
   ld->type = limo_TYPE_BUILTIN;
   ld->data.d_builtin=f;
-}
 
-limo_data *make_env(limo_data *up)
-{
-  limo_data *env = make_nil();
-  env->type = limo_TYPE_ENV;
-  env->data.d_env = make_nil();
-  if (up != NULL)
-    setq (env, make_sym("_UP"), up);
-  return env;
+  return ld;
 }
 
 limo_data *make_eagain(limo_data *expr, limo_data *env)
