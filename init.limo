@@ -1,9 +1,8 @@
 (load "std.limo")
-;(write "std loaded")
-;(write (list 'argv argv))
 
 (when argv
-      (progn (load (car argv))
+      (progn (write (list "running" (car argv)))
+      	     (load (car argv))
 	     (setf argv (car argv))
 	     (exit)))
 

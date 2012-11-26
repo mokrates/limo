@@ -164,22 +164,19 @@
 	      ,`(switch ,s ,@(cdr items)))))
 
 (defun * os
-  (defun helper (os akku)
-    (cond ((not os) akku)
-	  (:t (helper (cdr os) (mpq_mul (car os) akku)))))
-  (helper os 1))
+  (reduce mpq_mul os))
 
 (defun + os
-  (defun helper (os akku)
-    (cond ((not os) akku)
-	  (:t (helper (cdr os) (mpq_add (car os) akku)))))
-  (helper os 0))
+  (reduce mpq_add os))
 
 (defun - (start . os)
   (apply + (dcons start (dmap mpq_neg os))))
 
 (defun / (start . os)
   (apply * (dcons start (dmap mpq_inv os))))
+
+(setq < ltn)
+(setq > gtn)
 
 (defun fak (n)
   (defun helper (n akku)
@@ -229,6 +226,16 @@
   (if (not l1) l2
       (dcons (car l1) (dappend (cdr l1) l2))))
 
+(defmacro for-each (x l . body)
+  (setq it (gensym))
+  `(progn
+    ,`(defun recur ,`(,it)
+	,`(when ,it 
+		,`(setq ,x ,`(car ,it)) 
+		,@body
+		,`(recur ,`(cdr ,it))))
+    ,`(recur ,l)))
+
 (defun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
   (defun ltx (x) (lt x (car l)))
   (if (not l)
@@ -247,41 +254,49 @@
 		    (list (car l))
 		    (qsort lt (filter (comp not ltx) (cdr l)))))))
 
+(defun make-symbol (s)
+  (make-sym (string-concat "#:" s)))
+
+(setq _ngensym 0)
+(defun gensym x
+  (setf _ngensym (+ 1 _ngensym))
+  (if x 
+      (make-symbol (string-concat (car x) (reprn _ngensym)))
+      (make-symbol (string-concat "G" (reprn _ngensym)))))
+
+(setq _builtin-string-concat string-concat)
+(defun string-concat x
+  (reduce _builtin-string-concat x))
+
+(defmacro unify (l v)       ; destructuring assignment.
+  (setq index (gensym))
+  `(progn
+    ,`(setq ,index ,v)
+    ,@(loop (l l akku ())
+	    (if l 
+		(recur (cdr l) 
+		       (append akku
+			       `(,`(setq ,(car l) ,`(car ,index))
+				 ,`(setq ,index ,`(cdr ,index)))))
+		akku))))
+
+(defun assoc (name l)
+  (when l
+	(if (eq name (caar l)) 
+	    (car l)
+	    (assoc name (cdr l)))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; lustiger shit
+;;
+;; settings
 
-;; (defun inftylist (x y)
-;;   (dcons (cons x y) (inftylist x (cons x y))))
+(gcsetmax (* 1024 128))  ;; max 128mb ram for limo.
 
-;; ;; die tuerme von hanoi
-;; (defun hanoi (turm n1 n2 n3) 
-;;   (when turm
-;;     (hanoi (cdr turm) n1 n3 n2)
-;;     (write (list "bewege scheibe" (car turm) "von" n1 "nach" n3))
-;;     (hanoi (cdr turm) n2 n1 n3)))
-	    
-;; ;(hanoi '(vier drei zwei eins) 'turm_eins 'turm_zwei 'turm_drei)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; not so cool stuff
 
-;; (defun grower (x)
-;;   (setq l ())
-;;   (defun helper ()
-;;     (setf l (cons x l))
-;;     l)
-;;   helper)
-
-;; (defun testfun ()
-;;   (defun innerefunktion () ())
-;;   innerefunktion)
-
-;; Endlosschleifentest
-
-;; (defun fendlosliste ()
-;;   (setq g (grower 'x))
-;;   (defun h ()
-;;     (dcons (g) (h)))
-;;   (h))
-
-;; (setq endlosliste (fendlosliste))
 (defun writelist (x)
   (when x
 	(write (car x))

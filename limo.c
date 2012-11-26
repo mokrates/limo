@@ -1,4 +1,5 @@
 #include "limo.h"
+#include <signal.h>
 
 limo_data *globalenv;
 
@@ -28,6 +29,11 @@ void load_limo_file(char *filename, limo_data *env)
     limo_error("LOAD: %s not found", filename);
 }
 
+void limo_repl_sigint(int signum)
+{
+  limo_error("Keyboard Interrupt");
+}
+
 int main(int argc, char **argv)
 {
   limo_data *env;
@@ -43,6 +49,8 @@ int main(int argc, char **argv)
   load_limo_file("init.limo", env);
 
   rs = limo_rs_make_readline();
+
+  signal(SIGINT, limo_repl_sigint);
 
   while (!limo_eof(rs)) { // REPL
     //    jmp_buf jb;

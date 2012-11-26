@@ -75,6 +75,30 @@ limo_data *make_sym(char *name) // interned
   }
 }
 
+limo_data *make_sym_uninterned(char *name)
+{
+  limo_data *ld;
+  char *cp, *cpi;
+  
+  cp = (char *)GC_malloc(strlen(name) +1);
+  strcpy(cp, name);
+
+  if ((*cp) != '|') {
+    cpi = cp;
+    while (*cpi) {
+      (*cpi) = toupper(*cpi);
+      ++cpi;
+    }
+  }
+  
+  ld = make_limo_data();
+  ld->type=limo_TYPE_SYMBOL;
+  ld->data.d_string = cp;
+  ld->hash = 0;
+    
+  return ld;
+}
+
 limo_data *make_builtin(limo_builtin f)
 {
   limo_data *ld = make_nil();

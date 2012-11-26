@@ -6,7 +6,7 @@ OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
 	dict.o
 
-CC=gcc $(DEBUG) $(PROFILING) -O3
+CC=gcc $(DEBUG) $(PROFILING) 
 
 .PHONY: all clean realclean
 

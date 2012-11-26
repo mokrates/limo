@@ -1,4 +1,5 @@
 #include "limo.h"
+#include <unistd.h>
 
 BUILTIN(builtin_quote)
 {
@@ -254,10 +255,16 @@ BUILTIN(builtin_loaddll)
       FIRST_ARG->type != limo_TYPE_STRING)
     limo_error("(loaddll FILENAME)");
 
-  handle = dlopen(FIRST_ARG->data.d_string, RTLD_LAZY);
+  limo_data *filename = eval(FIRST_ARG, env);
+
+  handle = dlopen(filename->data.d_string, RTLD_LAZY);
+
+  if (!handle)
+    limo_error("dll load error: %s", dlerror());
+  
   limo_dll_init = dlsym(handle, "limo_dll_init");
   if (!limo_dll_init)
-    limo_error("dll load error");
+    limo_error("dll start error: %s", dlerror());
   (*limo_dll_init)(env);
   return make_nil();
 }
@@ -280,6 +287,22 @@ BUILTIN(builtin_gc_collect)
   return make_nil();
 }
 
+BUILTIN(builtin_gc_setmax)
+{
+  if (list_length(arglist)!=2)
+    limo_error("(gcsetmax KiloBytes) (1)");
+
+  limo_data *ld = eval(FIRST_ARG, env);
+  
+  if (ld->type == limo_TYPE_GMPQ) {
+    double n=mpq_get_d(*ld->data.d_mpq);
+    GC_set_max_heap_size(1024*n);
+    return make_nil();
+  }
+  else
+    limo_error("(gcsetmax KiloBytes) (2)");
+}
+
 BUILTIN(builtin_extract_env)
 {
   if (list_length(arglist)!=2)
@@ -291,4 +314,50 @@ BUILTIN(builtin_extract_env)
     return ld->data.d_env;
   else
     limo_error("(extract-env ENV) (2)");
+}
+
+BUILTIN(builtin_sleep)
+{
+  if (list_length(arglist)!=2)
+    limo_error("(sleep SECONDS) [1]");
+
+  limo_data *ld = eval(FIRST_ARG, env);
+
+  if (ld->type == limo_TYPE_GMPQ)
+    sleep(mpq_get_d(*ld->data.d_mpq));
+  else
+    limo_error("(sleep SECONDS) [2]");
+
+  return make_nil();
+}
+
+BUILTIN(builtin_string_concat)
+{
+  if (list_length(arglist) != 3)
+    limo_error("(string-concat STR1 STR2)");
+
+  limo_data *str1 = eval(FIRST_ARG, env);
+  limo_data *str2 = eval(SECOND_ARG, env);
+  if (str1->type != limo_TYPE_STRING ||
+      str2->type != str1->type)
+    limo_error("(string-concat STR1 STR2)");
+
+  limo_data *res = make_limo_data();
+  res->type = limo_TYPE_STRING;
+  res->data.d_string = (char *)GC_malloc(strlen(str1->data.d_string) + strlen(str2->data.d_string) + 1);
+  strcpy(res->data.d_string, str1->data.d_string);
+  strcat(res->data.d_string, str2->data.d_string);
+  return res;
+}
+
+BUILTIN(builtin_make_sym)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(make-sym STR)");
+
+  limo_data *str1 = eval(FIRST_ARG, env);
+  if (str1->type != limo_TYPE_STRING)
+    limo_error("(make-sym STR1)");
+
+  return make_sym_uninterned(str1->data.d_string);
 }
