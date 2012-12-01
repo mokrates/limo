@@ -236,6 +236,16 @@
 		,`(recur ,`(cdr ,it))))
     ,`(recur ,l)))
 
+(defmacro for-list (x l . body)
+  (setq it (gensym))
+  `(progn
+    ,`(defun recur ,`(,x)
+	,`(when ,x 
+		,@body
+		,`(recur ,`(cdr ,x))))
+    ,`(recur ,l)))
+
+
 (defun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
   (defun ltx (x) (lt x (car l)))
   (if (not l)

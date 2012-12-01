@@ -113,7 +113,10 @@ void *limo_gmp_gc_realloc(void *oldptr, size_t oldsize, size_t newsize)
 {
   return GC_realloc(oldptr, newsize);
 }
-void limo_gmp_gc_free(void *ptr, size_t size) { ; /* do nothing */ };
+void limo_gmp_gc_free(void *ptr, size_t size) 
+{ 
+  GC_free(ptr);
+}
 
 void number_builtins(limo_data *env)
 {

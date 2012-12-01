@@ -31,7 +31,7 @@ unsigned hash(limo_data *ld)
       return (ld->hash = hash_string(ld->data.d_string));
   }
   else
-    limo_error("data is not hashable");
+    throw(make_cons(make_string("data is not hashable"), ld));
 }
 
 limo_data *make_dict(void)
