@@ -9,4 +9,4 @@ clean:
 	@- $(foreach X, $(LIBS), make -C $X clean)
 
 realclean:
-	@- $(foreach X, $(LIBS), make -C $X clean)
+	@- $(foreach X, $(LIBS), make -C $X realclean)
