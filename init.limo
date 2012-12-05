@@ -1,3 +1,4 @@
+(loaddll "libs/string_builtins/string_builtins.so")
 (load "std.limo")
 
 (when argv

@@ -15,12 +15,17 @@ CC=gcc $(OPTIMIZE) $(DEBUG) $(PROFILING)
 limo: $(OBJ)
 	gcc $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
-all: limo
+libs:
+	make -C libs
+
+all: limo libs
 
 $(OBJ): limo.h Makefile
 
 clean:	
 	rm -f *.o *~
+	make -C libs clean
 
 realclean: clean
+	make -C libs realclean
 	rm limo

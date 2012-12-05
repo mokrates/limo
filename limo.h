@@ -203,3 +203,4 @@ void file_builtins(limo_data *env);
 char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);
+limo_data *make_number_from_long_long(long long i);

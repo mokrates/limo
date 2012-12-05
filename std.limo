@@ -304,6 +304,9 @@
 	    (car l)
 	    (assoc name (cdr l)))))
 
+(defmacro scope x
+  `(,`(lambda () ,`(progn ,@x))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings
