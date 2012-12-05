@@ -10,15 +10,15 @@ OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 
 CC=gcc $(OPTIMIZE) $(DEBUG) $(PROFILING) 
 
-.PHONY: all clean realclean
+.PHONY: all libs clean realclean
+
+all: limo libs
 
 limo: $(OBJ)
 	gcc $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
 libs:
 	make -C libs
-
-all: limo libs
 
 $(OBJ): limo.h Makefile
 

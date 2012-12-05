@@ -1,6 +1,6 @@
 LIBS=string_builtins
 
-.PHONY: clean realclean
+.PHONY: clean realclean $(LIBS)
 
 $(LIBS):
 	make -C $@
