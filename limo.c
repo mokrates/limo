@@ -16,7 +16,7 @@ void init_syms()
   sym_env        = make_sym("_ENV");
   sym_callerenv  = make_sym("_CALLERENV");
   sym_trace      = make_sym("_TRACE");
-  sym_stacktrace = make_sym("_STACKSTRACE");
+  sym_stacktrace = make_sym("_STACKTRACE");
   sym_true       = make_sym(":T");
 }
 
