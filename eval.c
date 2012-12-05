@@ -83,15 +83,18 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   int again=1;
   static int level=0;
   int trace = !is_nil(var_lookup(env, sym_trace));
+  limo_data *tmp_stacktrace = stacktrace;
 
   ++level;
-  
+
   while (again) {
     if (trace) {
       printf("eval(level % 3i): ", level);
       writer(form);
       printf("\n");
     }
+
+    stacktrace = make_cons(form, tmp_stacktrace);
 
     form=real_eval(form, env);
     if (!form)
@@ -108,6 +111,8 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     else
       again=0;
   }
+
+  stacktrace = tmp_stacktrace;
   --level;
   return form;
 }

@@ -35,7 +35,6 @@ limo_data *make_sym(char *name) // interned
   limo_data *is;
   char *cp, *cpi;
   
-
   if (interned_symbols == NULL) {
     interned_symbols = make_limo_data();
     interned_symbols->type = limo_TYPE_ENV;
@@ -70,8 +69,10 @@ limo_data *make_sym(char *name) // interned
 
     return ld;
   }
-  else {
-    return CAR(is);
+  else {   // found interned symbol. return a copy
+    ld = make_limo_data();
+    memcpy(ld, CAR(is), sizeof *ld);
+    return ld;
   }
 }
 

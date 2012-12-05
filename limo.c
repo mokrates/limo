@@ -3,17 +3,21 @@
 
 limo_data *globalenv;
 
+limo_data *stacktrace;
+
 limo_data *sym_env;
 limo_data *sym_callerenv;
 limo_data *sym_trace;
 limo_data *sym_true;
+limo_data *sym_stacktrace;
 
 void init_syms()
 {
-  sym_env       = make_sym("_ENV");
-  sym_callerenv = make_sym("_CALLERENV");
-  sym_trace     = make_sym("_TRACE");
-  sym_true      = make_sym(":T");
+  sym_env        = make_sym("_ENV");
+  sym_callerenv  = make_sym("_CALLERENV");
+  sym_trace      = make_sym("_TRACE");
+  sym_stacktrace = make_sym("_STACKSTRACE");
+  sym_true       = make_sym(":T");
 }
 
 void load_limo_file(char *filename, limo_data *env)
@@ -21,7 +25,11 @@ void load_limo_file(char *filename, limo_data *env)
   FILE *f;
   if (f=fopen(filename, "r")) {
     while (!feof(f)) {
-      eval(reader(limo_rs_from_file(f)), env);
+      if (NULL == try_catch(reader(limo_rs_from_file(f, filename)), env)) {
+	print_stacktrace(var_lookup(env, sym_stacktrace));
+	writer(exception); printf("\n");
+	exit(1);
+      }
     }
     fclose(f);
   }
@@ -42,6 +50,7 @@ int main(int argc, char **argv)
   GC_init();
 
   init_syms();
+  stacktrace = make_nil();
 
   env = make_globalenv(argc, argv);
   globalenv = env;
@@ -59,6 +68,8 @@ int main(int argc, char **argv)
     if (setjmp(*ljbuf)) {
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (exception) {
+	print_stacktrace(var_lookup(globalenv, sym_stacktrace));
+	stacktrace = make_nil();
 	writer(exception);
 	printf("\n");
       }

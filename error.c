@@ -8,6 +8,15 @@
 jmp_buf *ljbuf=NULL;
 limo_data *exception=NULL;
 
+void print_stacktrace(limo_data *s)
+{
+  while (!is_nil(s)) {
+    writer(get_annotation(CAR(s))); printf("\n  ");
+    writer(CAR(s)); printf("\n");
+    s = CDR(s);
+  }
+}
+
 limo_data *try_catch(limo_data *try, limo_data *env)
 {
   jmp_buf *ljstacksafe;  // here the bufs get stacked
@@ -33,6 +42,7 @@ void throw(limo_data *excp)
     exit(1);
   }
   exception = excp;
+  setq(globalenv, sym_stacktrace, stacktrace);
   longjmp(*ljbuf, 1);
 }
 

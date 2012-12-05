@@ -40,22 +40,22 @@
 	      (deepeq (cdr x) (cdr y))))
 	(:t (eq x y))))
 	 
-(defmacro quasiquote (l)
-  (defun helper (l akku)
-    (cond ((not l) akku)
-	  ((and (consp (car l)) 
-		(car l)  ;; not nil
-		(eq (caar l) 'comma))
-	   (helper (cdr l) 
-		   (cons (car (cdar l)) akku)))
-	  ((and (consp (car l))
-		(car l)
-		(eq (caar l) 'splice))
-	   (helper (cdr l) 
-		   (helper (eval (car (cdar l)) _callerenv) akku)))
-	  (:t (helper (cdr l) 
-		      (cons (list 'quote (car l)) akku)))))
-  (cons 'list (reverse (helper l ()))))
+(defmacro quasiquote (l) ; (using _callerenv)
+   (defun helper (l akku)
+     (cond ((not l) akku)
+	   ((and (consp (car l)) 
+		 (car l)  ;; not nil
+		 (eq (caar l) 'comma))
+	    (helper (cdr l) 
+		    (cons (car (cdar l)) akku)))
+	   ((and (consp (car l))
+		 (car l)
+		 (eq (caar l) 'splice))
+	    (helper (cdr l) 
+		    (helper (eval (car (cdar l)) _callerenv) akku)))
+	   (:t (helper (cdr l) 
+		       (cons (list 'quote (car l)) akku)))))
+   (cons 'list (reverse (helper l ()))))
 
 (defmacro limo-loop x
   `(progn
@@ -85,6 +85,10 @@
     (when a
 	  (cons (f (car a)) (helper f (cdr a)))))
   (helper f a))
+
+(defun curry (f . args)
+  (lambda x
+    (apply f (append args x))))
 
 (defun list-length (x)
   (loop (x x l 0)
@@ -274,6 +278,10 @@
       (make-symbol (string-concat (car x) (reprn _ngensym)))
       (make-symbol (string-concat "G" (reprn _ngensym)))))
 
+(defmacro with-gensym (syms . body)
+  `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
+	  ,@ body))
+
 (setq _builtin-string-concat string-concat)
 (defun string-concat x
   (reduce _builtin-string-concat x))
@@ -295,7 +303,6 @@
 	(if (eq name (caar l)) 
 	    (car l)
 	    (assoc name (cdr l)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

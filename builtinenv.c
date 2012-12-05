@@ -34,6 +34,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "SLEEP", builtin_sleep },
   { "STRING-CONCAT", builtin_string_concat },
   { "MAKE-SYM", builtin_make_sym },
+  { "GET_ANNOTATION", builtin_get_annotation }
 };
 
 limo_data *make_globalenv(int argc, char **argv)

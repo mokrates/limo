@@ -23,7 +23,7 @@ char *rl_completer_generator(const char *text, int state)
   
   while (!is_nil(lookup_pos)) {
     if (!strncasecmp(CAR(CAR(lookup_pos))->data.d_string, text, textlen)) {
-      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string));
+      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string)+1);
       strcpy(res, CAR(CAR(lookup_pos))->data.d_string);
       lookup_pos= CDR(lookup_pos);
       return res;
@@ -36,12 +36,24 @@ char *rl_completer_generator(const char *text, int state)
 
 int limo_getc(reader_stream *rs)
 {
+  int c;
+
   if (rs->ungetc_buf_pos > 0)
     return rs->ungetc_buf[--(rs->ungetc_buf_pos)];
 
   switch (rs->type) {
   case RS_FILE:
-    return fgetc(rs->stream.file);
+    c=fgetc(rs->stream.file);
+    if (c=='\n') {
+      rs->line ++;
+      rs->pos =0;
+    }
+    else if (c=='\t')
+      rs->pos +=8;
+    else
+      rs->pos ++;
+
+    return c;
 
   case RS_STR:
     if (!rs->stream.str[rs->pos])
@@ -83,6 +95,7 @@ char limo_eof(reader_stream *rs)
 reader_stream *limo_rs_make_readline(void)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
+  memset(rs, 0, sizeof *rs);
 
   rl_completion_entry_function = rl_completer_generator;
 
@@ -94,19 +107,36 @@ reader_stream *limo_rs_make_readline(void)
   return rs;
 }
 
-reader_stream *limo_rs_from_file(FILE *f)
+reader_stream *limo_rs_from_file(FILE *f, char *filename)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
+  memset(rs, 0, sizeof *rs);
+
   rs->type = RS_FILE;
   rs->stream.file = f;
   rs->ungetc_buf_pos=0;
   rs->eof=0;
+  rs->filename = filename;
   return rs;
 }
 
 void limo_ungetc(char c, reader_stream *rs)
 {
   rs->ungetc_buf[rs->ungetc_buf_pos++] = c;
+}
+
+limo_annotation *limo_rs_annotation(reader_stream *rs)
+{
+  switch (rs->type) {
+  case RS_FILE:
+    return make_annotation(rs->filename, rs->line, rs->pos);
+  
+  case RS_STR:
+    return make_annotation("*STRING*", 0, rs->pos);
+
+  case RS_READLINE:
+    return make_annotation("*READLINE*", 0, rs->pos);
+  }
 }
 
 //////////////////////////////////////////////////////////
@@ -213,7 +243,7 @@ limo_data *read_sym_num(reader_stream *f)
 
 limo_data *read_string(reader_stream *f)
 {
-  limo_data *ld = (limo_data *)GC_malloc(sizeof (limo_data));
+  limo_data *ld = make_limo_data();
   int i;
   char buf[BUFFER_SIZE];
   char c;
@@ -237,33 +267,43 @@ limo_data *read_string(reader_stream *f)
   return ld;
 }
 
+inline limo_data *annotate(limo_data *ld, limo_annotation *la)
+{
+  ld->annotation = la;
+  return ld;
+}
+
 limo_data *reader(reader_stream *f)
 {
   char c;
+  limo_data *ld;
+  limo_annotation *la;
 
   prompt = "λimo > ";
 
   c=read_skip_space_comments(f);
+  la = limo_rs_annotation(f);
 
   prompt = "λimo>> ";
 
   if (limo_eof(f))
     return make_nil();
 
-  if (c=='(')  // list
-    return read_list(f);
-  else if (c=='"')
-    return read_string(f);
+  if (c=='(') { // list
+    return annotate(read_list(f), la);
+  }
+  else if (c=='"') 
+    return annotate(read_string(f), la);
   else if (strchr("'`,", c)) {  // reader-macro-chars
     limo_ungetc(c, f);
-    return reader_macro(f);
+    return annotate(reader_macro(f), la);
   }
   else if (c==')') {
     limo_error("Syntax_error: too many )s");
-    return make_nil();
+    return annotate(make_nil(), la);
   }
   else {
     limo_ungetc(c, f);
-    return read_sym_num(f);
+    return annotate(read_sym_num(f), la);
   }
 }

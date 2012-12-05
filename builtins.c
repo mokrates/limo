@@ -361,3 +361,12 @@ BUILTIN(builtin_make_sym)
 
   return make_sym_uninterned(str1->data.d_string);
 }
+
+BUILTIN(builtin_get_annotation)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(get-annotation FORM)");
+  
+  limo_data *form = eval(FIRST_ARG, env);
+  return get_annotation(form);
+}

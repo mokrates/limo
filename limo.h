@@ -25,6 +25,7 @@
 typedef struct limo_ANNOTATION {
   char *filename;
   int line;
+  int col;
 } limo_annotation;
 
 typedef struct limo_DATA {
@@ -41,7 +42,7 @@ typedef struct limo_DATA {
 #define d_eagain d_lambda
   } data;
   unsigned int hash;  // for symbols and strings
-  //limo_annotation *annotation;
+  limo_annotation *annotation;
 } limo_data;
 
 typedef struct limo_CONS {
@@ -61,6 +62,7 @@ extern limo_data *sym_env;
 extern limo_data *sym_callerenv;
 extern limo_data *sym_trace;
 extern limo_data *sym_true;
+extern limo_data *sym_stacktrace;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -76,6 +78,7 @@ typedef struct limo_READER_STREAM {
   } stream;
   enum { RS_FILE, RS_STR, RS_READLINE } type;
   int pos; // linepos whereever it makes sense
+  int line;
   char ungetc_buf[LIMO_UNGETC_BUF];
   int ungetc_buf_pos;
   int eof; // only for readline
@@ -84,10 +87,14 @@ typedef struct limo_READER_STREAM {
 
 int limo_getc(reader_stream *);
 char limo_eof(reader_stream *);
-reader_stream *limo_rs_from_file(FILE *);
+reader_stream *limo_rs_from_file(FILE *, char *filename);
 reader_stream *limo_rs_make_readline(void);
 void limo_ungetc(char, reader_stream *);
+void limo_rs_annotate(limo_data *ld, reader_stream *rs);
 
+limo_annotation *make_annotation(char *filename, int line, int col);
+limo_data *get_annotation(limo_data *ld); // gets annotation from ld in readable form
+limo_data *annotate(limo_data *ld, limo_annotation *la); // annotates ld with la, and returns it.
 limo_data *reader(reader_stream *);
 void writer(limo_data *);
 
@@ -110,6 +117,8 @@ limo_data *make_globalenv(int, char **);
 limo_data *try_catch(limo_data *try, limo_data *env);
 void throw(limo_data *excp);
 void limo_error(char *, ...);
+void print_stacktrace(limo_data *s); // prints stacktrace s
+limo_data *stacktrace;
 limo_data *exception;
 jmp_buf *ljbuf;
 
@@ -175,6 +184,7 @@ BUILTIN(builtin_extract_env);
 BUILTIN(builtin_sleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);
+BUILTIN(builtin_get_annotation);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);
