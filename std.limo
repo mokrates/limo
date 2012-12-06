@@ -307,6 +307,9 @@
 (defmacro scope x
   `(,`(lambda () ,`(progn ,@x))))
 
+(defmacro set (k v)
+  `(setq ,(eval k) ,v))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings
