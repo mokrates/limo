@@ -1,3 +1,4 @@
+#include "config.h"
 #include <stdio.h>
 #include <setjmp.h>
 #include <stdlib.h>
@@ -22,6 +23,9 @@
 #define limo_TYPE_ENV     10
 #define limo_TYPE_EAGAIN  11  // eval again (for tail-opt) (cons expt env)
 
+#define limo_TYPE_SPECIAL 12  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 13  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+
 typedef struct limo_ANNOTATION {
   char *filename;
   int line;
@@ -38,8 +42,10 @@ typedef struct limo_DATA {
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env);
     struct limo_DATA *d_lambda; // lambda, macro, env
     struct limo_DICT *d_dict;
+    void *d_special_intern;
 #define d_env d_lambda
 #define d_eagain d_lambda
+#define d_special d_lambda
   } data;
   unsigned int hash;  // for symbols and strings
   limo_annotation *annotation;
@@ -63,6 +69,7 @@ extern limo_data *sym_callerenv;
 extern limo_data *sym_trace;
 extern limo_data *sym_true;
 extern limo_data *sym_stacktrace;
+extern limo_data *sym_underscore;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -204,3 +211,9 @@ char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);
 limo_data *make_number_from_long_long(long long i);
+
+limo_data *make_special(limo_data *type_symbol, void *content);
+void *get_special(limo_data *expr, limo_data *type_symbol);
+void writer_special(limo_data *expr);
+void writer_special_intern(limo_data *expr);
+limo_data *get_special_type_symbol(limo_data *expr);

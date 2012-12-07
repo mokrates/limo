@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <gc/gc.h>
 #include <ctype.h>
 #include <string.h>
 #include <readline/readline.h>
@@ -45,7 +44,7 @@ int limo_getc(reader_stream *rs)
   case RS_FILE:
     c=fgetc(rs->stream.file);
     if (c=='\n') {
-      rs->line ++;
+      rs->line++;
       rs->pos =0;
     }
     else if (c=='\t')
@@ -117,6 +116,8 @@ reader_stream *limo_rs_from_file(FILE *f, char *filename)
   rs->ungetc_buf_pos=0;
   rs->eof=0;
   rs->filename = filename;
+  rs->line = 0;
+  rs->pos = 0;
   return rs;
 }
 

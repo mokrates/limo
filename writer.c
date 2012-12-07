@@ -79,6 +79,9 @@ void writer(limo_data *ld) // not threadsafe!
     }
     break;
 
+  case limo_TYPE_SPECIAL: writer_special(ld); break;
+  case limo_TYPE_SPECIAL_INTERN: writer_special_intern(ld); break;
+
   default:
     printf("**BROKEN DATA(%i)**", ld->type);
     break;

@@ -21,7 +21,7 @@ libgmp (gnu multiprecision library)
 
 specials:
 
-_up		: the lexical upper environment. only valid in functions or macros
+on REPL:    _	: the last evaluated value
 
 (try TRY CATCH)	: the TRY form is tried. if an error occurs, the CATCH form will be executed
      	 	  In the CATCH form, there is a var _EXCEPTION which contains the

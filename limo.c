@@ -10,6 +10,7 @@ limo_data *sym_callerenv;
 limo_data *sym_trace;
 limo_data *sym_true;
 limo_data *sym_stacktrace;
+limo_data *sym_underscore;
 
 void init_syms()
 {
@@ -18,14 +19,17 @@ void init_syms()
   sym_trace      = make_sym("_TRACE");
   sym_stacktrace = make_sym("_STACKTRACE");
   sym_true       = make_sym(":T");
+  sym_underscore = make_sym("_");
 }
 
 void load_limo_file(char *filename, limo_data *env)
 {
   FILE *f;
+  reader_stream *rs;
   if (f=fopen(filename, "r")) {
-    while (!feof(f)) {
-      if (NULL == try_catch(reader(limo_rs_from_file(f, filename)), env)) {
+    rs = limo_rs_from_file(f, filename);
+    while (!limo_eof(rs)) {
+      if (NULL == try_catch(reader(rs), env)) {
 	print_stacktrace(var_lookup(env, sym_stacktrace));
 	writer(exception); printf("\n");
 	exit(1);
@@ -55,11 +59,11 @@ int main(int argc, char **argv)
   env = make_globalenv(argc, argv);
   globalenv = env;
 
+  signal(SIGINT, limo_repl_sigint);
+
   load_limo_file("init.limo", env);
 
   rs = limo_rs_make_readline();
-
-  signal(SIGINT, limo_repl_sigint);
 
   while (!limo_eof(rs)) { // REPL
     //    jmp_buf jb;
@@ -81,6 +85,7 @@ int main(int argc, char **argv)
       printf("-> ");
       writer(ld);
       printf("\n");
+      setq(globalenv, sym_underscore, ld);
     }
   }
 

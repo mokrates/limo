@@ -1,11 +1,12 @@
-(loaddll "libs/string_builtins/string_builtins.so")
 (load "std.limo")
+(loaddll "libs/string_builtins/string_builtins.so")
+(load "file.limo")
+
 
 (when argv
-      (progn (write (list "running" (car argv)))
-      	     (load (car argv))
+      (progn (load (car argv))
 	     (setf argv (car argv))
 	     (exit)))
 
 (load "tests.limo")
-(write "*** end of limo.init ****")
+

@@ -111,11 +111,15 @@ limo_data *make_builtin(limo_builtin f)
 
 limo_data *make_eagain(limo_data *expr, limo_data *env)
 {
+#if LIMO_TAILCALL_OPT
   limo_data *l = make_cons(env, expr);
-  limo_data *ea = make_nil();
+  limo_data *ea = make_limo_data();
   ea->type=limo_TYPE_EAGAIN;
   ea->data.d_eagain = l;
   return ea;
+#else
+  return eval(expr, env);
+#endif
 }
 
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env)

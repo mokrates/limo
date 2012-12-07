@@ -6,7 +6,8 @@ OPTIMIZE=-O3
 
 OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
-	dict.o
+	dict.o special.o
+HEADERS=limo.h config.h
 
 CC=gcc $(OPTIMIZE) $(DEBUG) $(PROFILING) 
 
@@ -20,7 +21,7 @@ limo: $(OBJ)
 libs:
 	make -C libs
 
-$(OBJ): limo.h Makefile
+$(OBJ): $(HEADERS) Makefile
 
 clean:	
 	rm -f *.o *~
@@ -28,4 +29,4 @@ clean:
 
 realclean: clean
 	make -C libs realclean
-	rm limo
+	rm -f limo

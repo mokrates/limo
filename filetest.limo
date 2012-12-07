@@ -1,0 +1,4 @@
+;; filetest!
+
+(with-file-open "/etc/passwd" "r" f
+		(writelist (file-readlines f)))

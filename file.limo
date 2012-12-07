@@ -1,0 +1,22 @@
+(loaddll "libs/file/file.so")
+
+(defun file-readline-list (f)
+  (setq c (file-getc f))
+  (cond ((eq c "\n") '("\n"))
+	((eq c "") '(""))
+	(:else (dcons c (file-readline-list f)))))
+
+(defun file-readline (f)
+  (reduce string-concat (file-readline-list f)))
+
+(defun file-readlines (f)
+  (setq l (file-readline f))
+  (if (eq l "")
+      ()
+      (dcons l (file-readlines f))))
+
+(defmacro with-file-open (filename mode f . body)
+  `(scope
+    ,`(setq ,f ,`(file-open ,filename ,mode))
+    ,@body
+    ,`(file-close ,f)))

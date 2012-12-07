@@ -1,8 +1,6 @@
 ;; limo.init
 ;; do it in limo!
 
-(write "+std.limo")
-
 ;(setq _trace :t)
 
 (setq defmacro 
@@ -325,4 +323,3 @@
 	(write (car x))
 	(writelist (cdr x))))
 
-(write "-std.limo")

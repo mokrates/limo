@@ -9,4 +9,4 @@ clean :
 	rm -f *.[oa] *~
 
 realclean: clean
-	rm string_builtins.so
+	rm -f string_builtins.so

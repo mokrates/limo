@@ -1,0 +1,1 @@
+#define LIMO_TAILCALL_OPT 1

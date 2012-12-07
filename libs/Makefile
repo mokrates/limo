@@ -1,12 +1,14 @@
-LIBS=string_builtins
+LIBS=file string_builtins
 
-.PHONY: clean realclean $(LIBS)
+.PHONY: all clean realclean $(LIBS)
+
+all: $(LIBS)
 
 $(LIBS):
 	make -C $@
 
 clean:
-	@- $(foreach X, $(LIBS), make -C $X clean)
+	$(foreach X,$(LIBS), make -C $X clean ; )
 
 realclean:
-	@- $(foreach X, $(LIBS), make -C $X realclean)
+	$(foreach X,$(LIBS), make -C $X realclean ; )

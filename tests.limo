@@ -1,6 +1,6 @@
 ;; debugging
 ;(setf _trace :t)
-(write "running tests...")
+
 (try 
  (progn
   (assert :t)  ;; asserting assert()
@@ -27,5 +27,3 @@
 
  ;; catch
  (write (list "Exception Caught: " _exception)))
-
-(write "done testing")
