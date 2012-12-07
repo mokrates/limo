@@ -1,12 +1,10 @@
-(load "std.limo")
-(loaddll "libs/string_builtins/string_builtins.so")
-(load "file.limo")
+(load (string-concat _limo-prefix "std.limo"))
+(loaddll (string-concat _limo-prefix "string_builtins.so"))
+(load (string-concat _limo-prefix "file.limo"))
 
 
 (when argv
       (progn (load (car argv))
-	     (setf argv (car argv))
 	     (exit)))
 
-(load "tests.limo")
-
+(load (string-concat _limo-prefix "tests.limo"))

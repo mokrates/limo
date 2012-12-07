@@ -1,4 +1,4 @@
-(loaddll "libs/file/file.so")
+(loaddll (string-concat _limo-prefix "/file.so"))
 
 (defun file-readline-list (f)
   (setq c (file-getc f))

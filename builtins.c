@@ -251,11 +251,13 @@ BUILTIN(builtin_loaddll)
   void *handle;
   void (*limo_dll_init)(limo_data *env);
 
-  if (list_length(arglist) != 2 ||
-      FIRST_ARG->type != limo_TYPE_STRING)
+  if (list_length(arglist) != 2)
     limo_error("(loaddll FILENAME)");
 
   limo_data *filename = eval(FIRST_ARG, env);
+
+  if (filename->type != limo_TYPE_STRING)
+    limo_error("filename must be a string");
 
   handle = dlopen(filename->data.d_string, RTLD_LAZY);
 

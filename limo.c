@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
   signal(SIGINT, limo_repl_sigint);
 
-  load_limo_file("init.limo", env);
+  load_limo_file(LIMO_PREFIX "/init.limo", env);
 
   rs = limo_rs_make_readline();
 

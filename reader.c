@@ -146,8 +146,8 @@ char read_skip_space_comments(reader_stream *f)
 {
   char c;
   c=limo_getc(f);
-  while ((isspace(c) || c==';') && !limo_eof(f)) {
-    if (c == ';')
+  while ((isspace(c) || c==';' || c=='#') && !limo_eof(f)) {
+    if (c == ';' || c=='#')
       while (c != '\n')
 	c=limo_getc(f);
     else
