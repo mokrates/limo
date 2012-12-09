@@ -5,7 +5,7 @@
 
 #include "limo.h"
 
-jmp_buf *ljbuf=NULL;
+sigjmp_buf *ljbuf=NULL;
 limo_data *exception=NULL;
 
 void print_stacktrace(limo_data *s)
@@ -23,8 +23,8 @@ limo_data *try_catch(limo_data *try, limo_data *env)
   limo_data *res;
   
   ljstacksafe = ljbuf;
-  ljbuf = (jmp_buf *)GC_malloc(sizeof (jmp_buf));
-  if (setjmp(*ljbuf)) { // if true; exception was thrown.
+  ljbuf = (sigjmp_buf *)GC_malloc(sizeof (sigjmp_buf));
+  if (sigsetjmp(*ljbuf, 1)) { // if true; exception was thrown.
     ljbuf = ljstacksafe;
     return NULL;
   }
@@ -43,7 +43,7 @@ void throw(limo_data *excp)
   }
   exception = excp;
   setq(globalenv, sym_stacktrace, stacktrace);
-  longjmp(*ljbuf, 1);
+  siglongjmp(*ljbuf, 1);
 }
 
 void limo_error(char *msg, ...)

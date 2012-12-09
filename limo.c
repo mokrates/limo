@@ -71,8 +71,8 @@ int main(int argc, char **argv)
   while (!limo_eof(rs)) { // REPL
     //    jmp_buf jb;
     limo_data *ld;
-    ljbuf = (jmp_buf *)GC_malloc(sizeof (jmp_buf));
-    if (setjmp(*ljbuf)) {
+    ljbuf = (sigjmp_buf *)GC_malloc(sizeof (sigjmp_buf));
+    if (sigsetjmp(*ljbuf, 1)) {
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (exception) {
 	print_stacktrace(var_lookup(globalenv, sym_stacktrace));

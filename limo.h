@@ -128,7 +128,7 @@ void limo_error(char *, ...);
 void print_stacktrace(limo_data *s); // prints stacktrace s
 limo_data *stacktrace;
 limo_data *exception;
-jmp_buf *ljbuf;
+sigjmp_buf *ljbuf;
 
 inline int is_nil(limo_data *);
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
