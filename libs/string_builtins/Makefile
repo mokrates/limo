@@ -1,5 +1,5 @@
 OBJ = string_builtins.o 
-CFLAGS = -I../.. 
+CFLAGS +=  -I../.. 
 
 string_builtins.so: $(OBJ) Makefile
 	$(CC) -o string_builtins.so -shared $(OBJ)

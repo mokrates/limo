@@ -1,6 +1,6 @@
 LIBNAME=file
 OBJ = $(LIBNAME).o 
-CFLAGS = -I../.. 
+CFLAGS += -I../.. 
 
 $(LIBNAME).so: $(OBJ) Makefile
 	$(CC) -o $(LIBNAME).so -shared $(OBJ)
