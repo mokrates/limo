@@ -17,6 +17,16 @@ BUILTIN(builtin_setq)
   return value;
 }
 
+BUILTIN(builtin_unsetq)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(unsetq VARNAME");
+
+  limo_data *name = FIRST_ARG;
+  unsetq(env, name);
+  return make_nil();
+}
+
 BUILTIN(builtin_lambda)
 {
   limo_data *lambda = make_nil();

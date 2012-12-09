@@ -1,0 +1,45 @@
+; -*- scheme -*-
+
+(loaddll (string-concat _limo-prefix "string_builtins.so"))
+
+(setq string-concat
+      (scope
+       (setq _builtin-string-concat string-concat)
+       (lambda x
+	 (reduce _builtin-string-concat (cons "" x)))))
+
+(defun list-to-string (l)
+       (apply string-concat l))
+
+(defun string-to-list (s)
+  (setq l (string-length s))
+  (defun string-to-list-helper (s p)  ;; string , pos
+    (if (< p l)
+	(dcons (string-nth p s) (string-to-list-helper s (+ 1 p)))
+	()))
+  (string-to-list-helper s 0))
+
+(unify (string-lstrip string-rstrip string-strip)
+       (scope 
+	(defun list-lstrip (l)
+	  (setq c (car l))
+	  (if (or (eq c " ") (eq c "\t") (eq c "\n"))
+	      (list-lstrip (cdr l))
+	      l))
+	
+	(setq string-lstrip
+	  (comp list-to-string list-lstrip string-to-list))
+	
+	(setq string-rstrip
+	  (comp list-to-string reverse list-lstrip reverse string-to-list))
+	
+	(setq string-strip
+	  (comp list-to-string reverse list-lstrip reverse list-lstrip string-to-list))
+	
+	(list string-lstrip string-rstrip string-strip)))
+
+(defun string-slice (s l u)  ; string, lower, upper
+  (list-to-string (list-slice (string-to-list s) l u)))
+
+(defun string-split (s d)
+  (map list-to-string (list-split (string-to-list s) d)))

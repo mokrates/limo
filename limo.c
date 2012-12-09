@@ -29,11 +29,7 @@ void load_limo_file(char *filename, limo_data *env)
   if (f=fopen(filename, "r")) {
     rs = limo_rs_from_file(f, filename);
     while (!limo_eof(rs)) {
-      if (NULL == try_catch(reader(rs), env)) {
-	print_stacktrace(var_lookup(env, sym_stacktrace));
-	writer(exception); printf("\n");
-	exit(1);
-      }
+      eval(reader(rs), env);
     }
     fclose(f);
   }
@@ -61,8 +57,15 @@ int main(int argc, char **argv)
 
   signal(SIGINT, limo_repl_sigint);
 
-  load_limo_file(LIMO_PREFIX "/init.limo", env);
-
+  if (argc != 2 || strcmp(argv[1], "-n")) {
+    rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
+    if (NULL==try_catch(reader(rs), env)) {
+	print_stacktrace(var_lookup(globalenv, sym_stacktrace));
+	writer(exception);
+	exit(1);
+    }
+  }
+  
   rs = limo_rs_make_readline();
 
   while (!limo_eof(rs)) { // REPL
@@ -77,6 +80,7 @@ int main(int argc, char **argv)
 	writer(exception);
 	printf("\n");
       }
+      signal(SIGINT, limo_repl_sigint);
       exception=NULL;
     }
     else {

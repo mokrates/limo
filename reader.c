@@ -121,6 +121,21 @@ reader_stream *limo_rs_from_file(FILE *f, char *filename)
   return rs;
 }
 
+reader_stream *limo_rs_from_string(char *str)
+{
+  reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
+  memset(rs, 0, sizeof *rs);
+
+  rs->type = RS_STR;
+  rs->stream.str = limo_strdup(str);
+  rs->ungetc_buf_pos=0;
+  rs->eof=0;
+  rs->filename = "*STRING*";
+  rs->line = 0;
+  rs->pos = 0;
+  return rs;
+}
+
 void limo_ungetc(char c, reader_stream *rs)
 {
   rs->ungetc_buf[rs->ungetc_buf_pos++] = c;

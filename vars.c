@@ -57,3 +57,8 @@ void setq(limo_data *env, limo_data *name, limo_data *value)
 {
   dict_put(CDR(env->data.d_env), name, value);
 }
+
+void unsetq(limo_data *env, limo_data *name)
+{
+  dict_remove(CDR(env->data.d_env), name);
+}

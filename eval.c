@@ -60,8 +60,34 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
   }
   if (params->type==limo_TYPE_SYMBOL)
     setq(param_env, params, arglist);
-  
-  return make_eagain(eval(body, param_env), env);
+
+#if STATIC_MACROEX
+  body = list_dup(body);
+#endif
+
+  limo_data *res = eval(body, param_env);
+
+#if STATIC_MACROEX
+  *call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
+#endif
+  return make_eagain(res, env);
+}
+
+limo_data *list_dup(limo_data *list)
+{
+  limo_data *ld;  
+  limo_data **el = &ld;
+  while (list->type == limo_TYPE_CONS && !is_nil(list)) {
+    if (CAR(list)->type == limo_TYPE_CONS)
+      (*el) = make_cons(list_dup(CAR(list)), NULL);
+    else
+      (*el) = make_cons(CAR(list), NULL);
+    el = &CDR(*el);
+
+    list=CDR(list);
+  }
+  (*el) = make_nil();
+  return ld;
 }
 
 limo_data *list_eval(limo_data *list, limo_data *env)

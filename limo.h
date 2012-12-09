@@ -95,6 +95,7 @@ typedef struct limo_READER_STREAM {
 int limo_getc(reader_stream *);
 char limo_eof(reader_stream *);
 reader_stream *limo_rs_from_file(FILE *, char *filename);
+reader_stream *limo_rs_from_string(char *);
 reader_stream *limo_rs_make_readline(void);
 void limo_ungetc(char, reader_stream *);
 void limo_rs_annotate(limo_data *ld, reader_stream *rs);
@@ -151,6 +152,7 @@ limo_data *dict_to_list(limo_data *dict);
 limo_data *var_lookup(limo_data *env, limo_data *name);
 void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
+void unsetq(limo_data *env, limo_data *name);
 
 // for arglists
 #define ZEROTH_ARG (CAR(arglist))
@@ -160,6 +162,7 @@ void setf(limo_data *env, limo_data *name, limo_data *value);
 
 BUILTIN(builtin_quote);
 BUILTIN(builtin_setq);
+BUILTIN(builtin_unsetq);
 BUILTIN(builtin_setf);
 BUILTIN(builtin_setcar);
 BUILTIN(builtin_setcdr);
@@ -195,6 +198,7 @@ BUILTIN(builtin_get_annotation);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);
+limo_data *list_dup(limo_data *list);
 limo_data *list_eval(limo_data *form, limo_data *env);
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args);
 

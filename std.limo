@@ -1,3 +1,5 @@
+; -*- scheme -*-
+
 ;; limo.init
 ;; do it in limo!
 
@@ -280,10 +282,6 @@
   `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
 	  ,@ body))
 
-(setq _builtin-string-concat string-concat)
-(defun string-concat x
-  (reduce _builtin-string-concat x))
-
 (defmacro unify (l v)       ; destructuring assignment.
   (setq index (gensym))
   `(progn
@@ -294,7 +292,8 @@
 		       (append akku
 			       `(,`(setq ,(car l) ,`(car ,index))
 				 ,`(setq ,index ,`(cdr ,index)))))
-		akku))))
+		akku))
+    ,`(unsetq ,index)))
 
 (defun assoc (name l)
   (when l

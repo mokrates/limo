@@ -3,6 +3,7 @@
 struct { char *name; limo_builtin f; } builtin_array[] = {
   { "QUOTE", builtin_quote },
   { "SETQ", builtin_setq },
+  { "UNSETQ", builtin_unsetq },
   { "SETF", builtin_setf },
   { "SETCAR", builtin_setcar },
   { "SETCDR", builtin_setcdr },
