@@ -11,14 +11,14 @@ OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 	dict.o special.o
 HEADERS=limo.h config.h
 
-CC=gcc $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
+CFLAGS=$(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 
 .PHONY: all libs clean realclean install uninstall
 
 all: limo libs
 
 limo: $(OBJ)
-	gcc $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
+	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
 libs:
 	make -C libs

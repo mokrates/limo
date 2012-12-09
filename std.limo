@@ -301,6 +301,11 @@
 	    (car l)
 	    (assoc name (cdr l)))))
 
+(defun member (m l)
+  (cond ((not l) ())
+	((eq (car l) m) l)
+	(:else (member m (cdr l)))))
+
 (defmacro scope x
   `(,`(lambda () ,`(progn ,@x))))
 

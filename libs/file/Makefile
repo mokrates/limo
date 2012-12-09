@@ -1,9 +1,9 @@
 LIBNAME=file
 OBJ = $(LIBNAME).o 
-CC = gcc -I../.. 
+CFLAGS = -I../.. 
 
 $(LIBNAME).so: $(OBJ) Makefile
-	gcc -o $(LIBNAME).so -shared $(OBJ)
+	$(CC) -o $(LIBNAME).so -shared $(OBJ)
 
 .PHONY: clean
 clean :
