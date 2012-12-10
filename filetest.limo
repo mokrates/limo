@@ -1,4 +1,7 @@
+#!./limo
+;; -*- scheme -*-
 ;; filetest!
 
-(with-file-open "/etc/passwd" "r" f
-		(writelist (file-readlines f)))
+(with-file-open "/etc/passwd" "r" f 
+		(writelist (dmap (lambda (x) (string-split (string-strip x) ":")) 
+				 (file-readlines f))))

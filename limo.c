@@ -47,6 +47,7 @@ int main(int argc, char **argv)
   limo_data *env;
   reader_stream *rs;
 
+  GC_all_interior_pointers = 0;
   GC_init();
 
   init_syms();
