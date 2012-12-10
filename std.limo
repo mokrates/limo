@@ -47,8 +47,24 @@
 	      (deepeq (car x) (car y))
 	      (deepeq (cdr x) (cdr y))))
 	(:t (eq x y))))
-	 
-(defmacro quasiquote (l) ; (using _callerenv)
+
+(defmacro quasiquote (l) ; (not using callerenv)
+   (defun helper (l akku)
+     (cond ((not l) akku)
+	   ((and (consp (car l)) 
+		 (car l)  ;; not nil
+		 (eq (caar l) 'comma))
+	    (helper (cdr l) 
+		    (cons (list 'list (cadar l)) akku)))
+	   ((and (consp (car l))
+		 (car l)
+		 (eq (caar l) 'splice))
+	    (helper (cdr l) (cons (cadar l) akku)))
+	   (:t (helper (cdr l) 
+		       (cons (list 'list (list 'quote (car l))) akku)))))
+   (cons 'append (reverse (helper l ()))))
+
+'(defmacro quasiquote (l) ; (using _callerenv)
    (defun helper (l akku)
      (cond ((not l) akku)
 	   ((and (consp (car l)) 
@@ -213,11 +229,11 @@
       (dcons start (drange (mpq_add start step) end step))))
 
 (defun lreduce (f l)   ;; fold l with f from left
-  (loop
-   (akku (car l) l (cdr l))
-   (if l
-       (recur (f akku (car l)) (cdr l))
-       akku)))
+  (defun recur (akku l)
+    (if l
+	(recur (f akku (car l)) (cdr l))
+	akku))
+  (recur (car l) (cdr l)))
 
 (setq reduce lreduce)
 	 
@@ -231,9 +247,11 @@
 	((p (car l)) (cons (car l) (filter p (cdr l))))
 	(:else (filter p (cdr l)))))
 
-(defun append (l1 l2)  ;; recursive: with generator: dappend
-  (if (not l1) l2
-      (cons (car l1) (append (cdr l1) l2))))
+(defun append l
+  (defun helper (l1 l2)  ;; recursive: with generator: dappend
+    (if (not l1) l2
+	(cons (car l1) (helper (cdr l1) l2))))
+  (reduce helper (cons () l)))
 
 (defun dappend (l1 l2)
   (if (not l1) l2
