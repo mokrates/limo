@@ -340,6 +340,21 @@
 (defmacro set (k v)
   `(setq ,(eval k) ,v))
 
+(setq _place-setters ())
+(defmacro setplacef (k v)
+  (cond ((consp k)
+	 `(,(cdr (assoc (car k) _place-setters)) ,@(append (cdr k) (list v))))
+	(:else `(setf ,k ,v))))
+
+(defmacro setplace (k v)
+  `(setplacef ,(eval k) ,v))
+
+(defun register-place-setter (g s)
+  (setf _place-setters (cons (cons g s) _place-setters)))
+
+(register-place-setter 'car 'setcar)
+(register-place-setter 'cdr 'setcdr)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings

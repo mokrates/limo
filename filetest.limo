@@ -1,7 +1,8 @@
 #!./limo
-;; -*- scheme -*-
 ;; filetest!
 
 (with-file-open "/etc/passwd" "r" f 
-		(writelist (dmap (lambda (x) (string-split (string-strip x) ":")) 
-				 (file-readlines f))))
+		(writelist { %( $(string-split (string-strip x) ":") 
+				 for x 
+				 in $(file-readlines f) ); }))
+

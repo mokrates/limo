@@ -1,10 +1,14 @@
 ; -*- scheme -*-
 
+;; a=b
+;; [a,b]=[x,y]
 (defmacro limpy-assign (a b)
   (if (consp a)
       `(unify ,a ,b)
       `(setq ,a ,b)))
 
+;; %[ x for y in z ]
+;; %( x for y in z )
 (defmacro limpy-gen (thecons compound lval li)
   (with-gensym (f args)
 	       `(scope 
@@ -14,6 +18,8 @@
 			     ,`(,thecons ,compound ,`(,f ,`(cdr ,args)))))
 		 ,`(,f ,li))))
 
+;; %[ x for y in z if c ]
+;; %( x for y in z if c )
 (defmacro limpy-gen-cond (thecons compound lval li condition)
   (with-gensym (args)
 	       `(limpy-gen ,thecons 
