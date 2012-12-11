@@ -13,3 +13,12 @@
 			     ,`(limpy-assign ,lval ,`(car ,args))
 			     ,`(,thecons ,compound ,`(,f ,`(cdr ,args)))))
 		 ,`(,f ,li))))
+
+(defmacro limpy-gen-cond (thecons compound lval li condition)
+  (with-gensym (args)
+	       `(limpy-gen ,thecons 
+			   ,compound 
+			   ,lval 
+			   ,`(filter ,`(lambda ,`(,args) ,`(progn
+							    ,`(limpy-assign ,lval ,args)
+							    ,condition)) ,li))))
