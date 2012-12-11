@@ -181,7 +181,7 @@ limo_data *read_list(reader_stream *f)
 
   c=read_skip_space_comments(f);
   while (1) {
-    if (c == ')') {
+    if (c == ')') { // ( for emacs
       (*ld_into)->data.d_cons = NULL;
       break;
     }
@@ -242,7 +242,7 @@ limo_data *read_sym_num(reader_stream *f)
 
   for (i=0; i<BUFFER_SIZE-1; ++i) {
     c=limo_getc(f);
-    if (strchr(")", c) || isspace(c)) {
+    if (strchr(")", c) || isspace(c)) {  // ( for emacs
       limo_ungetc(c, f);
       break;
     }
@@ -317,6 +317,9 @@ limo_data *reader(reader_stream *f)
   else if (c==')') {
     limo_error("Syntax_error: too many )s");
     return annotate(make_nil(), la);
+  }
+  else if (c=='{') {  // limpy start
+    return limpy_block_reader(f);
   }
   else {
     limo_ungetc(c, f);

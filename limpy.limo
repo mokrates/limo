@@ -1,0 +1,15 @@
+; -*- scheme -*-
+
+(defmacro limpy-assign (a b)
+  (if (consp a)
+      `(unify ,a ,b)
+      `(setq ,a ,b)))
+
+(defmacro limpy-gen (thecons compound lval li)
+  (with-gensym (f args)
+	       `(scope 
+		 ,`(defun ,f ,`(,args)
+		     ,`(when ,args 
+			     ,`(limpy-assign ,lval ,`(car ,args))
+			     ,`(,thecons ,compound ,`(,f ,`(cdr ,args)))))
+		 ,`(,f ,li))))

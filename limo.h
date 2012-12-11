@@ -221,3 +221,5 @@ void *get_special(limo_data *expr, limo_data *type_symbol);
 void writer_special(limo_data *expr);
 void writer_special_intern(limo_data *expr);
 limo_data *get_special_type_symbol(limo_data *expr);
+
+#include "limpy.h"

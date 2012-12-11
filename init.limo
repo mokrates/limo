@@ -4,6 +4,7 @@
 (load (string-concat _limo-prefix "list.limo"))
 (load (string-concat _limo-prefix "string.limo"))
 (load (string-concat _limo-prefix "file.limo"))
+(load (string-concat _limo-prefix "limpy.limo"))
 
 (when argv
       (progn (load (car argv))

@@ -307,7 +307,7 @@
 
 (defmacro with-gensym (syms . body)
   `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
-	  ,@ body))
+	  ,@body))
 
 (defmacro unify (l v)       ; destructuring assignment.
   (setq index (gensym))
@@ -319,6 +319,7 @@
 		       (append akku
 			       `(,`(setq ,(car l) ,`(car ,index))
 				 ,`(setq ,index ,`(cdr ,index)))))
+;;		akku))))
 		akku))
     ,`(unsetq ,index)))
 

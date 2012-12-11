@@ -118,6 +118,10 @@ limo_data *dict_remove(limo_data *dict, limo_data *key)
   limo_data **place = dict_get_place(dict, key);
   (*place) = NULL;
   dict->data.d_dict->used--;
+
+  // dict_resize MUST be done, or else items, which should have been stored in the same bucket as *key
+  // are unfindable after removal of this. SERIOUSLY hard to find bug!
+  dict_resize(dict);
 }
 
 limo_data *dict_to_list(limo_data *dict)
