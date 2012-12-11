@@ -76,6 +76,7 @@ int main(int argc, char **argv)
     if (sigsetjmp(*ljbuf, 1)) {
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (exception) {
+	rs = limo_rs_make_readline();
 	print_stacktrace(var_lookup(globalenv, sym_stacktrace));
 	stacktrace = make_nil();
 	writer(exception);

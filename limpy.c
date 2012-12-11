@@ -2,7 +2,10 @@
 
 // chartokens: (, ), {, }, [, ], ',', ;, *, %, $
 #define limpy_TOKEN_EQUALS 1
-#define limpy_TOKEN_MULMUL 2
+#define limpy_TOKEN_SETF   2
+#define limpy_TOKEN_MULMUL 3
+
+#define limpy_TOKEN_VAR    5
 
 #define limpy_TOKEN_FOR    10
 #define limpy_TOKEN_IN     11
@@ -23,6 +26,11 @@ static struct {
   limo_data *data;
 } putback_token = {0, 0, NULL};
 
+void limpy_parser_error(char *msg, reader_stream *rs)
+{
+  limo_error("limpy parse error(%i, %i): %s", rs->line, rs->pos, msg);
+}
+
 char limpy_read_skip_space_comments(reader_stream *f)
 {
   char c;
@@ -40,7 +48,7 @@ char limpy_read_skip_space_comments(reader_stream *f)
 void limpy_ungettoken(int token, limo_data *data)
 {
   if (putback_token.full)
-    limo_error("parser error, putback_token already full. implementation error");
+    limo_error("putback_token already full. implementation error");
 
   putback_token.full = 1;
   putback_token.token = token;
@@ -61,12 +69,22 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
 
   c = limpy_read_skip_space_comments(rs);
 
-  if (strchr("[]{}()=+-$%,;\"", c))
+  if (strchr("[]{}()=+-$%.,;\"", c))
     return c;
 
-  if (isalnum(c)) {
+  if (c==':') {
+    c=limo_getc(rs);
+    if (c=='=')
+      return limpy_TOKEN_SETF;
+    else {
+      limo_ungetc(c, rs);
+      c=':';
+    }
+  }
+
+  if (isalnum(c) || c==':') {
     i=0;
-    while (isalnum(c) && i<255) {
+    while ((isalnum(c) || c=='-' || (c==':' && i==0)) && i<255) {
       buf[i++] = c;
       c=limo_getc(rs);
     }
@@ -98,11 +116,6 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
   }
 }
 
-limo_data *limpy_param_reader(reader_stream *rs)
-{
-
-}
-
 limo_data *limpy_generator_reader(reader_stream *rs)
 {
   int t;
@@ -124,16 +137,16 @@ limo_data *limpy_generator_reader(reader_stream *rs)
   switch (gen_or_it) {
   case '(': cons = make_sym("DCONS"); break;
   case '[': cons = make_sym("CONS"); break;
-  default: limo_error("'(' or '[' expected.");
+  default: limpy_parser_error("'(' or '[' expected.", rs);
   }
 
   compound = limpy_assignment_reader(rs);
   if (limpy_gettoken(rs, &token_ld) != limpy_TOKEN_FOR)
-    limo_error("'for' expected.");
+    limpy_parser_error("'for' expected.", rs);
 
   t = limpy_gettoken(rs, &token_ld);
   if (t == '[') {
-    lval = limpy_list_reader(rs);
+    lval = limpy_list_reader(rs, ']'); // [ emacs
     lval_is_limpy_list = 1;
     lval = CDR(lval); // removing "LIST" token
   }
@@ -143,7 +156,7 @@ limo_data *limpy_generator_reader(reader_stream *rs)
   }
   
   if (limpy_gettoken(rs, &token_ld) != limpy_TOKEN_IN)
-    limo_error("'in' expected.");
+    limpy_parser_error("'in' expected.", rs);
   
   list = limpy_assignment_reader(rs);
 
@@ -174,7 +187,7 @@ limo_data *limpy_generator_reader(reader_stream *rs)
 }
 
 
-limo_data *limpy_list_reader(reader_stream *rs)
+limo_data *limpy_list_reader(reader_stream *rs, int right_bracket)
 {
   limo_data *ld, *token_ld;
   limo_data **ld_into = &ld;
@@ -186,7 +199,7 @@ limo_data *limpy_list_reader(reader_stream *rs)
   c = limpy_gettoken(rs, &token_ld);
 
   while (1) {
-    if (c == ']') {  // emacs
+    if (c == right_bracket) {  // emacs
       (*ld_into)->data.d_cons = NULL;
       break;
     }
@@ -205,16 +218,16 @@ limo_data *limpy_list_reader(reader_stream *rs)
 
     if (c==',') 
       c=limpy_gettoken(rs, &token_ld);
-    else if (c==']') // [ emacs
+    else if (c==right_bracket) // [ emacs
       continue;
     else
-      limo_error("',' or ']' expected."); // [ emacs
+      limo_error("',' or '%c' expected.", right_bracket); // [ emacs
   }
 
   return ld;
 }
 
-limo_data *limpy_expr_reader(reader_stream *rs)
+limo_data *limpy_atom_reader(reader_stream *rs)
 {
   int t;
   limo_data *token_ld;
@@ -227,11 +240,18 @@ limo_data *limpy_expr_reader(reader_stream *rs)
     return limo_expr;
 
   case '[':   // ] emacs
-    limo_expr = limpy_list_reader(rs);
+    limo_expr = limpy_list_reader(rs, ']'); // [ emacs
     return limo_expr;
 
   case '%':
     limo_expr = limpy_generator_reader(rs);
+    return limo_expr;
+
+  case '(':
+    limo_expr = limpy_assignment_reader(rs);
+    t = limpy_gettoken(rs, &token_ld);
+    if (t != ')')  // ( emacs
+      limpy_parser_error("')' expected.", rs); // ( emacs
     return limo_expr;
 
   case '"':
@@ -240,12 +260,64 @@ limo_data *limpy_expr_reader(reader_stream *rs)
     return limo_expr;
 
   case limpy_TOKEN_NUMBER:
-  case limpy_TOKEN_SYMBOL:
+  case limpy_TOKEN_SYMBOL: 
     return token_ld;
 
   default:
-    limo_error("unimplemented");
+    limpy_parser_error("unimplemented", rs);
   }
+}
+
+limo_data *limpy_rgroup_reader(limo_data *left_side, reader_stream *rs)
+{
+  int token;
+  limo_data *token_ld;
+  limo_data *right_side;
+  limo_data *codeblock;
+
+  token = limpy_gettoken(rs, &token_ld);
+  switch (token) {
+  case '(':  // function call // ) emacs
+    right_side = CDR(limpy_list_reader(rs, ')')); // parameters
+
+    token = limpy_gettoken(rs, &token_ld);
+    if (token == '{') {
+      limo_data *iter = right_side;
+      codeblock = limpy_block_reader(rs);
+      if (!is_nil(iter)) {
+	while (! is_nil(CDR(iter)))
+	  iter = CDR(iter);
+	CDR(iter) = make_cons(codeblock, make_nil());
+      }
+      else
+	right_side = make_cons(codeblock, make_nil());
+      
+      return limpy_rgroup_reader(make_cons(left_side,right_side), rs);
+    }
+    else {
+      limpy_ungettoken(token, token_ld);
+      return limpy_rgroup_reader(make_cons(left_side,right_side), rs);
+    }
+
+  case '[':  // index // ] emacs
+    // TODO implement slicing
+    right_side = limpy_assignment_reader(rs);
+    token = limpy_gettoken(rs, &token_ld);
+    if (token != ']') // [ emacs
+      limpy_parser_error("']' expected.", rs);
+    return limpy_rgroup_reader(make_cons(make_sym("LIMPY-GETINDEX"),
+					 make_cons(left_side, // index
+						   make_cons(right_side, make_nil()))), rs); // list/string
+    
+  default:
+    limpy_ungettoken(token, token_ld);
+    return left_side;
+  }
+}
+
+limo_data *limpy_expr_reader(reader_stream *rs)
+{
+  return limpy_rgroup_reader(limpy_atom_reader(rs), rs);
 }
 
 limo_data *limpy_assignment_reader(reader_stream *rs)
@@ -255,10 +327,11 @@ limo_data *limpy_assignment_reader(reader_stream *rs)
   limo_data *lval;
   limo_data *rval;
   int lval_is_limpy_list = 0;
+  int setq_or_setf;
 
   t =limpy_gettoken(rs, &token_ld);
   if (t == '[') {
-    lval = limpy_list_reader(rs);
+    lval = limpy_list_reader(rs, ']');
     lval_is_limpy_list = 1;
   }
   else {
@@ -268,17 +341,52 @@ limo_data *limpy_assignment_reader(reader_stream *rs)
 
   t = limpy_gettoken(rs, &token_ld);
 
-  if (t == '=') {
+  if (t == '=' || t==limpy_TOKEN_SETF) {
+    setq_or_setf = t;
     if (lval_is_limpy_list)
       lval = CDR(lval);
     rval = limpy_assignment_reader(rs);
-    return make_cons(make_sym("LIMPY-ASSIGN"), 
-		     make_cons(lval, make_cons(rval, make_nil())));
+
+    if (setq_or_setf == '=') {
+      return make_cons(make_sym("LIMPY-ASSIGNQ"), 
+		       make_cons(lval, make_cons(rval, make_nil())));
+    }
+    else if (setq_or_setf==limpy_TOKEN_SETF && lval_is_limpy_list) {
+      return make_cons(make_sym("LIMPY-UNIFYF"), 
+		       make_cons(lval, make_cons(rval, make_nil())));
+    }
+    else 
+      return make_cons(make_sym("LIMPY-ASSIGNF"), 
+		       make_cons(lval, make_cons(rval, make_nil())));
   }
   else {
     limpy_ungettoken(t, token_ld);
     return lval;
   }
+}
+
+limo_data *limpy_def_reader(reader_stream *rs)
+{
+  limo_data *name;
+  limo_data *params;
+  limo_data *codeblock;
+  limo_data *token_ld;
+
+  if (limpy_gettoken(rs, &name) != limpy_TOKEN_SYMBOL)
+    limpy_parser_error("symbol expected.", rs);
+  if (limpy_gettoken(rs, &token_ld) != '(') 
+    limpy_parser_error("'(' expected.", rs);
+
+  params = limpy_list_reader(rs, ')'); 
+
+  if (limpy_gettoken(rs, &token_ld) != '{') 
+    limpy_parser_error("'{' expected.", rs); 
+  codeblock = limpy_block_reader(rs);
+  
+  return make_cons(make_sym("DEFUN"),
+		   make_cons(name,
+			     make_cons(CDR(params),
+				       make_cons(codeblock, make_nil()))));
 }
 
 limo_data *limpy_statement_reader(reader_stream *rs)
@@ -287,13 +395,22 @@ limo_data *limpy_statement_reader(reader_stream *rs)
   limo_data *token_ld;
   limo_data *limo_expr;
 
-  limo_expr = limpy_assignment_reader(rs);
+  t = limpy_gettoken(rs, &token_ld);
+  switch (t) {
+  case limpy_TOKEN_DEF: 
+    limo_expr= limpy_def_reader(rs);
+    break;
+
+  default:
+    limpy_ungettoken(t, token_ld);
+    limo_expr = limpy_assignment_reader(rs);
+    break;
+  }
   
   if (limpy_gettoken(rs, &token_ld) != ';')
-    limo_error("';' expected.");
+    limpy_parser_error("';' expected.", rs);
   return limo_expr;
 }
-
 
 limo_data *limpy_block_reader(reader_stream *rs)
 {

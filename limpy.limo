@@ -1,11 +1,32 @@
 ; -*- scheme -*-
 
-;; a=b
-;; [a,b]=[x,y]
-(defmacro limpy-assign (a b)
+;; := is 'setf'-like
+;; =  is 'setq'-like
+;; [a,b] =  ... is destructuring
+;; [a,b] := ... is destructuring too
+;; for destructuring the lval MUST be LITERAL limpy-list, limo-lists don't work
+;;   that is because if the lval is car(l) == (car l) there should setplacef be used,
+;;   but the macro cannot differentiate between limo-lists and limpy-lists
+
+;; a      = ...  limpy-assignq
+;; [a,b]  = ...  limpy-assignq
+
+;; [a,b] := ...  limpy-unifyf
+
+;; a     := ...  limpy-assignf (setplacef)
+;; a.b   := ...  limpy-assignf (setplacef)
+;; a[b]  := ...  limpy-assignf (setplacef)
+
+(defmacro limpy-assignq (a b)
   (if (consp a)
       `(unify ,a ,b)
       `(setq ,a ,b)))
+
+(defmacro limpy-unifyf (a b)
+  `(unifyf ,a ,b))
+
+(defmacro limpy-assignf (a b)
+  `(setplacef ,a ,b))
 
 ;; %[ x for y in z ]
 ;; %( x for y in z )
@@ -14,7 +35,7 @@
 	       `(scope 
 		 ,`(defun ,f ,`(,args)
 		     ,`(when ,args 
-			     ,`(limpy-assign ,lval ,`(car ,args))
+			     ,`(limpy-assignq ,lval ,`(car ,args))
 			     ,`(,thecons ,compound ,`(,f ,`(cdr ,args)))))
 		 ,`(,f ,li))))
 
@@ -26,5 +47,5 @@
 			   ,compound 
 			   ,lval 
 			   ,`(filter ,`(lambda ,`(,args) ,`(progn
-							    ,`(limpy-assign ,lval ,args)
+							    ,`(limpy-assignq ,lval ,args)
 							    ,condition)) ,li))))

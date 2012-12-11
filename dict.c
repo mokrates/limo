@@ -113,15 +113,19 @@ limo_data **dict_get_place(limo_data *dict, limo_data *key)
   limo_error("dict_get_place(): this should not happen!");
 }
 
-limo_data *dict_remove(limo_data *dict, limo_data *key)
+void dict_remove(limo_data *dict, limo_data *key)
 {
-  limo_data **place = dict_get_place(dict, key);
-  (*place) = NULL;
-  dict->data.d_dict->used--;
+  limo_data **place;
 
-  // dict_resize MUST be done, or else items, which should have been stored in the same bucket as *key
-  // are unfindable after removal of this. SERIOUSLY hard to find bug!
-  dict_resize(dict);
+  place = dict_get_place(dict, key);
+  if (place !=NULL) {
+    (*place) = NULL;
+    dict->data.d_dict->used--;
+
+    // dict_resize MUST be done, or else items, which should have been stored in the same bucket as *key
+    // are unfindable after removal of this. SERIOUSLY hard to find bug!
+    dict_resize(dict);
+  }
 }
 
 limo_data *dict_to_list(limo_data *dict)
@@ -134,4 +138,104 @@ limo_data *dict_to_list(limo_data *dict)
       res = make_cons(d->store[i], res);
 
   return res;
+}
+
+////////// BUILTINS ////////////
+
+BUILTIN(builtin_make_dict)
+{
+  return make_dict();  
+}
+
+BUILTIN(builtin_dict_get)
+{
+  limo_data *dict;
+  limo_data *key;
+  limo_data **res;
+
+  if (list_length(arglist) != 3)
+    limo_error("(dict-get DICT KEY)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    limo_error("(dict-get DICT KEY)");
+
+  key = eval(SECOND_ARG, env);
+  res = dict_get_place(dict, key);
+  if (res == NULL)
+    throw(make_cons(make_string("Could not find key"), key));
+  return *res;
+}
+
+BUILTIN(builtin_dict_set)
+{
+  limo_data *dict;
+  limo_data *key;
+  limo_data *value;
+
+  if (list_length(arglist) != 4)
+    limo_error("(dict-set DICT KEY VALUE)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    limo_error("(dict-set DICT KEY VALUE)");
+
+  key = eval(SECOND_ARG, env);
+  value = eval(THIRD_ARG, env);
+
+  dict_put(dict, key, value);
+  return make_nil();
+}
+
+
+BUILTIN(builtin_dict_unset)
+{
+  limo_data *dict;
+  limo_data *key;
+
+  if (list_length(arglist) != 3)
+    limo_error("(dict-unset DICT KEY)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    limo_error("(dict-unset DICT KEY)");
+
+  key = eval(SECOND_ARG, env);
+  dict_remove(dict, key);
+  return make_nil();
+}
+
+BUILTIN(builtin_dict_has_key)
+{
+  limo_data *dict;
+  limo_data *key;
+  limo_data **res;
+
+  if (list_length(arglist) != 3)
+    limo_error("(dict-has-key DICT KEY)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    limo_error("(dict-has-key DICT KEY)");
+
+  key = eval(SECOND_ARG, env);
+  res = dict_get_place(dict, key);
+  if (res == NULL)
+    return make_nil();
+  else
+    return sym_true;
+}
+
+BUILTIN(builtin_dict_to_list)
+{
+  limo_data *dict;
+
+  if (list_length(arglist) != 2)
+    limo_error("(dict-unset DICT KEY)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    limo_error("(dict-unset DICT KEY)");  
+
+  return dict_to_list(dict);
 }

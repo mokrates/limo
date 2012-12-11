@@ -146,7 +146,7 @@ limo_dict *make_dict_size(int minused);
 void dict_resize(limo_data *dict);
 void dict_put(limo_data *dict, limo_data *key, limo_data *value);
 limo_data **dict_get_place(limo_data *dict, limo_data *key);
-limo_data *dict_remove(limo_data *dict, limo_data *key);
+void dict_remove(limo_data *dict, limo_data *key);
 limo_data *dict_to_list(limo_data *dict);
 
 limo_data *var_lookup(limo_data *env, limo_data *name);
@@ -195,6 +195,12 @@ BUILTIN(builtin_sleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);
 BUILTIN(builtin_get_annotation);
+BUILTIN(builtin_make_dict);
+BUILTIN(builtin_dict_get);
+BUILTIN(builtin_dict_set);
+BUILTIN(builtin_dict_unset);
+BUILTIN(builtin_dict_to_list);
+BUILTIN(builtin_dict_has_key);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);

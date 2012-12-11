@@ -319,9 +319,22 @@
 		       (append akku
 			       `(,`(setq ,(car l) ,`(car ,index))
 				 ,`(setq ,index ,`(cdr ,index)))))
-;;		akku))))
 		akku))
     ,`(unsetq ,index)))
+
+(defmacro unifyf (l v)       ; destructuring assignment.
+  (setq index (gensym))
+  `(progn
+    ,`(setq ,index ,v)
+    ,@(loop (l l akku ())
+	    (if l 
+		(recur (cdr l) 
+		       (append akku
+			       `(,`(setf ,(car l) ,`(car ,index))
+				 ,`(setf ,index ,`(cdr ,index)))))
+		akku))
+    ,`(unsetq ,index)))
+
 
 (defun assoc (name l)
   (when l
@@ -340,20 +353,25 @@
 (defmacro set (k v)
   `(setq ,(eval k) ,v))
 
-(setq _place-setters ())
+(setq _place-setters (make-dict))
 (defmacro setplacef (k v)
   (cond ((consp k)
-	 `(,(cdr (assoc (car k) _place-setters)) ,@(append (cdr k) (list v))))
+	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
 	(:else `(setf ,k ,v))))
 
 (defmacro setplace (k v)
   `(setplacef ,(eval k) ,v))
 
 (defun register-place-setter (g s)
-  (setf _place-setters (cons (cons g s) _place-setters)))
+  (dict-set _place-setters g s))
 
 (register-place-setter 'car 'setcar)
 (register-place-setter 'cdr 'setcdr)
+(register-place-setter 'dict-getvalue 'dict-set)
+
+(defun dict-getvalue (d k)
+  (cdr (dict-get d k)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
