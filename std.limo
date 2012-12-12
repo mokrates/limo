@@ -353,6 +353,11 @@
 (defmacro set (k v)
   `(setq ,(eval k) ,v))
 
+(defun setnth (n l v)
+  (if (eq n 0)
+      (setcar l v)
+      (setnth (- n 1) (cdr l) v)))
+
 (setq _place-setters (make-dict))
 (defmacro setplacef (k v)
   (cond ((consp k)

@@ -201,6 +201,7 @@ BUILTIN(builtin_dict_set);
 BUILTIN(builtin_dict_unset);
 BUILTIN(builtin_dict_to_list);
 BUILTIN(builtin_dict_has_key);
+BUILTIN(builtin_dictp);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);

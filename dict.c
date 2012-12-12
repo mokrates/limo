@@ -231,11 +231,25 @@ BUILTIN(builtin_dict_to_list)
   limo_data *dict;
 
   if (list_length(arglist) != 2)
-    limo_error("(dict-unset DICT KEY)");
+    limo_error("(dict-to-list DICT)");
 
   dict = eval(FIRST_ARG, env);
   if (dict->type != limo_TYPE_DICT)
-    limo_error("(dict-unset DICT KEY)");  
+    limo_error("(dict-to-list DICT)");  
 
   return dict_to_list(dict);
+}
+
+BUILTIN(builtin_dictp)
+{
+ limo_data *dict;
+
+  if (list_length(arglist) != 2)
+    limo_error("(dictp VALUE)");
+
+  dict = eval(FIRST_ARG, env);
+  if (dict->type != limo_TYPE_DICT)
+    return make_nil();
+  else
+    return sym_true;
 }
