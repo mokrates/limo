@@ -1,19 +1,54 @@
+-*- scheme -*-
+
 (loaddll (string-concat _limo-prefix "/file.so"))
 
-(defun file-readline-list (f)
-  (setq c (file-getc f))
-  (cond ((eq c "\n") '("\n"))
-	((eq c "") '(""))
-	(:else (dcons c (file-readline-list f)))))
+##doc: file-readline
+## TYPE: function@*
+## SYNTAX: @code{(file-readline FILE)}@*
+##
+## reads and returns one line out of FILE
+##
+##enddoc
 
 (defun file-readline (f)
+  (defun file-readline-list (f)
+    (setq c (file-getc f))
+    (cond ((eq c "\n") '("\n"))
+	  ((eq c "") '(""))
+	  (:else (dcons c (file-readline-list f)))))
+
   (reduce string-concat (file-readline-list f)))
+
+
+##doc: file-readlines
+## TYPE: function @*
+## SYNTAX: @code{(file-readlines FILE)} @*
+##
+## returns the complete file in a (dynamic) list of lines.
+## 
+##enddoc
 
 (defun file-readlines (f)
   (setq l (file-readline f))
   (if (eq l "")
       ()
       (dcons l (file-readlines f))))
+
+##doc: with-file-open
+## TYPE: macro @*
+## SYNTAX: @code{(with-file-open STRING STRING SYMBOL ...)} @*
+## USAGE: @code{(with-file-open FILENAME MODE FILEHANDLE BODY...)} @*
+##
+## Opens a file @code{FILENAME} in mode @code{MODE} and sets @code{FILEHANDLE} 
+## to be the filehandle. At the end of the execution of body, @code{FILEHANDLE} will 
+## be closed
+##
+## @example
+## (with-file-open "textfile" "r" f
+##   (write (undyn f)))
+## @end example
+##
+##enddoc
 
 (defmacro with-file-open (filename mode f . body)
   `(scope

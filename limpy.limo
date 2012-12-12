@@ -70,3 +70,9 @@
 	(:else (throw "LIMPY-SETINDEX: Don't know how to use this Type"))))
 
 (register-place-setter 'limpy-getindex 'limpy-setindex)
+
+(defmacro var (x)  ;; declare a variable
+  `(setq ,x ()))
+
+(setq true :t)
+(setq false ())

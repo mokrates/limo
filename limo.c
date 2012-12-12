@@ -63,6 +63,7 @@ int main(int argc, char **argv)
     if (NULL==try_catch(reader(rs), env)) {
 	print_stacktrace(var_lookup(globalenv, sym_stacktrace));
 	writer(exception);
+	printf("\n");
 	exit(1);
     }
   }

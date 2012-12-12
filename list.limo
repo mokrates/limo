@@ -1,12 +1,12 @@
 ; -*- scheme -*-
 
 (defun list-rslice (l p)  ; get list from p up
-  (if (eq p 0)
+  (if (or (eq p 0) (not l))
       l
       (list-rslice (cdr l) (- p 1))))
 
 (defun list-lslice (l p)  ; get list up to p
-  (if (eq p 0)
+  (if (or (not l) (eq p 0))
       ()
       (dcons (car l) (list-lslice (cdr l) (- p 1)))))
 

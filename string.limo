@@ -22,10 +22,11 @@
 (unify (string-lstrip string-rstrip string-strip)
        (scope 
 	(defun list-lstrip (l)
-	  (setq c (car l))
-	  (if (or (eq c " ") (eq c "\t") (eq c "\n"))
-	      (list-lstrip (cdr l))
-	      l))
+	  (when l
+		(setq c (car l))
+		(if (or (eq c " ") (eq c "\t") (eq c "\n"))
+		    (list-lstrip (cdr l))
+		    l)))
 	
 	(setq string-lstrip
 	  (comp list-to-string list-lstrip string-to-list))

@@ -1,0 +1,75 @@
+#!/usr/bin/env limo
+# -*- ruby -*-
+
+##doc: make-limo-docs.limo
+##
+## Generates @limo{}-Documentation
+##
+## reads from stdin and creates a file @code{NAME.texinfo} for each encountered
+## doctag: @code{##doc: NAME}.
+## to end documentation write
+## @code{##enddoc}. the documentation itself must be preceeded 
+## by @code{## } (Hash Hash Space) on 
+## every line.
+##
+## the syntax of the docstrings should be texinfo, as there are texinfo files created
+## 
+## for every generated article, there will be a line written to 'generated-docs.texinfo'
+##
+## @noindent
+## EXAMPLE:
+## @example
+## ##doc: example
+## ## this will be written to example.texinfo.
+## ##enddoc
+## @end example
+##
+##enddoc
+
+
+(define (string-starts-with string match)
+ (eq (string-slice string 0 (string-length match)) match))
+
+{ # limpy
+
+  limo-docs = file-open("generated-docs.texinfo", "w");
+
+  limo-docs-list = [];
+
+  with-file-open("/dev/stdin", "r", f) {
+    print = comp($(lambda (s) {file-print(indoc, s);}), string-concat);
+    indoc = false;
+    var(docname);
+
+    for-each(l, %(string-strip(x) for x in file-readlines(f))) {
+        $(cond ((string-starts-with l "##doc:") {
+                  docname := string-strip(string-slice(l, string-length("##doc:"), string-length(l)));
+                  indoc := file-open(string-concat(docname, ".texinfo"), "w");
+                  print("@node ", docname, "\n");
+                  print("@chapter ", docname, "\n");
+          })
+        ((string-starts-with l "##enddoc") { 
+           file-close(indoc); 
+           limo-docs-list := cons(docname, limo-docs-list);
+
+           indoc := false; 
+           docname := false; 
+         })
+        (indoc { print(string-slice(l, 3, string-length(l)), "\n"); }));
+    };
+  };
+
+  file-print(limo-docs, "@menu\n");
+  for-each(d, limo-docs-list) {
+     file-print(limo-docs, string-concat("* ", d, "::\n"));
+  };
+  file-print(limo-docs, "@end menu\n");
+  
+  file-print(limo-docs, "@lowersections\n");
+  for-each(d, limo-docs-list) {
+    file-print(limo-docs, string-concat("@include ", d, ".texinfo\n"));
+  };
+  file-print(limo-docs, "@raisesections\n");
+
+  file-close(limo-docs);
+}

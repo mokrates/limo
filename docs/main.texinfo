@@ -1,0 +1,131 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename limo.info
+@settitle LIMO-MANUAL EARLY
+@c %**end of header
+
+@iftex
+@macro limo
+@math{\\lambda}imo
+@end macro
+@end iftex
+
+@ifinfo
+@macro limo
+λimo
+@end macro
+@end ifinfo
+
+@ifhtml
+@macro limo
+@html
+&lambda;imo@end html
+@end macro
+@end ifhtml
+
+@copying
+This manual is for LIMO, version EARLY.
+      Copyright @copyright{} 2012 M. Molle.
+
+@quotation
+GPL v3. 
+@end quotation
+@end copying
+
+@titlepage
+@title LIMO-MANUAL
+@c     @subtitle SUBTITLE-IF-ANY
+@c @subtitle SECOND-SUBTITLE
+     @author M. Molle
+
+@c	 The following two commands
+@c	 start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+     Published by M. Molle
+@end titlepage
+
+@c So the toc is printed at the start.
+@contents
+
+@ifnottex
+@node Top
+@top Limo
+
+This manual is for LIMO, version EARLY.
+@end ifnottex
+
+@menu
+* Limo Interpreter::
+* Limo Language::
+* Limo Standard-Functions::
+* Limpy-Syntax::
+* Generated Docs::
+@c * Copying::
+* Index::
+@end menu
+
+@node Limo Interpreter
+@chapter Limo Interpreter
+
+@heading Command line parameters
+@example
+$ limo @{ -n | <file> @}
+@end example
+
+@noindent
+If limo gets started with @code{-n}, it refrains from loading
+@code{init.limo} and there are only builtins available. This is mainly
+useful for debugging the interpreter itself.
+
+@node Limo Language
+@chapter Limo Language
+
+@node Limo Standard-Functions
+@chapter Limo Standard-Functions
+@menu
+* SETQ::
+@c SETF::
+@c SETPLACEF::
+@end menu
+
+@node SETQ
+@section SETQ
+
+TYPE: builtin @*
+SYNTAX: @code{(setq SYMBOL VALUE)}@*
+@sp 1
+Assigns VALUE to SYMBOL in the enclosing, current scope, possibly
+creating it if it doesn't already exist.
+
+Variables with the same name in upper scopes with the same name are
+not touched and continue to exist.
+
+@example
+@c @math{\lambda}
+@limo{} > (scope (setq x 1) 
+              (scope (setq x 2) 
+                     (write x)) 
+              (write x))
+2
+1
+-> 1
+@end example
+
+@node Limpy-Syntax
+@chapter Limpy-Syntax
+
+@node Generated Docs
+@chapter Generated Docs
+
+@include generated-docs.texinfo
+
+@node Index
+@c @chapter Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

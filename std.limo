@@ -118,16 +118,16 @@
   (loop (x x l 0)
 	(if x (recur (cdr x) (+ 1 l)) l)))
 
-(defun identity (x)
-  x)
+(defun identity (x) x)
+(defun list x x)
 
 (defun comp fs
   (cond ((not fs) identity)
-	((not (consp fs)) (write "(comp {fun}*)"))
+	((not (consp fs)) (throw "(comp {fun}*)"))
 	((not (cdr fs)) (car fs))
-	(:t (lambda (x) ((car fs) ((apply comp 
-					  (cdr fs)) 
-				   x))))))
+	(:t (lambda x ((car fs) (apply (apply comp 
+					      (cdr fs))
+				       x))))))
 
 (defun dzipn x
   (when (and (apply andf (dmap consp x))
