@@ -193,10 +193,16 @@
 	      ,`(switch ,s ,@(cdr items)))))
 
 (defun * os
-  (reduce mpq_mul os))
+  (if os
+      (reduce mpq_mul os)
+      1))
 
 (defun + os
-  (reduce mpq_add os))
+  (if os
+      (if (numberp (car os))
+	  (reduce mpq_add os)
+	  (apply string-concat os))
+      0))
 
 (defun - (start . os)
   (apply + (dcons start (dmap mpq_neg os))))
@@ -206,6 +212,13 @@
 
 (setq < ltn)
 (setq > gtn)
+(setq = eq)
+(defun <= (x y)
+  (or (< x y) (= x y)))
+(defun >= (x y)
+  (or (< x y) (= x y)))
+(setq != (comp not eq))
+
 
 (defun fak (n)
   (defun helper (n akku)
@@ -379,12 +392,6 @@
 
 (setq true :t)
 (setq false ())
-
-(defmacro while (condition . body)
-  (with-gensym (fun)
-	       `(progn
-		 ,`(defun ,fun () ,@body ,`(if ,condition ,`(,fun) ()))
-		 ,`(if ,condition ,`(,fun) ()))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

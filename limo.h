@@ -70,6 +70,7 @@ extern limo_data *sym_trace;
 extern limo_data *sym_true;
 extern limo_data *sym_stacktrace;
 extern limo_data *sym_underscore;
+extern limo_data *sym_block;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -202,6 +203,9 @@ BUILTIN(builtin_dict_unset);
 BUILTIN(builtin_dict_to_list);
 BUILTIN(builtin_dict_has_key);
 BUILTIN(builtin_dictp);
+
+BUILTIN(builtin_block);
+BUILTIN(builtin_return_from);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);

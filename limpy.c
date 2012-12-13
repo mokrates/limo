@@ -581,7 +581,7 @@ limo_data *limpy_def_reader(reader_stream *rs)
     limpy_parser_error("'{' expected.", rs); 
   codeblock = limpy_block_reader(rs);
   
-  return make_cons(make_sym("DEFUN"),
+  return make_cons(make_sym("LIMPY-DEFUN"),
 		   make_cons(name,
 			     make_cons(CDR(params),
 				       make_cons(codeblock, make_nil()))));

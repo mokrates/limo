@@ -28,6 +28,38 @@
 (defmacro limpy-assignf (a b)
   `(setplacef ,a ,b))
 
+(defmacro limpy-defun (name params . body)
+  `(setq ,name ,`(lambda ,params ,`(block _return ,`(progn ,@body)))))
+
+(defmacro return x
+  (if x
+      `(return-from _return ,(car x))
+      `(return-from _return)))
+
+(defmacro while (condition . body)
+  (with-gensym (fun)
+	       `(block _break
+		       ,`(progn
+			  ,`(defun ,fun ()
+			      ,`(if ,condition
+				    ,`(progn ,`(block _continue
+						      ,`(progn
+							 ,@body))
+					     ,`(,fun))
+				    ()))
+			  ,`(,fun)))))
+
+(defmacro break x
+  (if x
+      `(return-from _break ,(car x))
+      `(return-from _break)))
+
+(defmacro continue x
+  (if x
+      `(return-from _continue ,(car x))
+      `(return-from _continue)))
+
+
 ;; %[ x for y in z ] => limpy-parser sets thecons == cons
 ;; %( x for y in z ) => limpy-parser sets thecons == dcons
 (defmacro limpy-gen (thecons compound lval li)

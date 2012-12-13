@@ -1,5 +1,5 @@
 #!/usr/bin/env limo
-# -*- ruby -*-
+# -*- c -*-
 
 ##doc: make-limo-docs.limo
 ##

@@ -43,6 +43,8 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "DICT-TO-LIST", builtin_dict_to_list },
   { "DICT-HAS-KEY", builtin_dict_has_key },
   { "DICTP", builtin_dictp },
+  { "BLOCK", builtin_block},
+  { "RETURN-FROM", builtin_return_from},
 };
 
 limo_data *make_globalenv(int argc, char **argv)

@@ -11,6 +11,7 @@ limo_data *sym_trace;
 limo_data *sym_true;
 limo_data *sym_stacktrace;
 limo_data *sym_underscore;
+limo_data *sym_block;
 
 void init_syms()
 {
@@ -20,6 +21,7 @@ void init_syms()
   sym_stacktrace = make_sym("_STACKTRACE");
   sym_true       = make_sym(":T");
   sym_underscore = make_sym("_");
+  sym_block      = make_sym("BLOCK");
 }
 
 void load_limo_file(char *filename, limo_data *env)
