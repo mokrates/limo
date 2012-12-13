@@ -103,6 +103,7 @@ reader_stream *limo_rs_make_readline(void)
   rs->stream.readline[0] = '\0';
   rs->ungetc_buf_pos=0;
   rs->eof=0;
+  rs->filename="*READLINE*";
   return rs;
 }
 

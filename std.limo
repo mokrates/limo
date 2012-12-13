@@ -377,6 +377,14 @@
 (defun dict-getvalue (d k)
   (cdr (dict-get d k)))
 
+(setq true :t)
+(setq false ())
+
+(defmacro while (condition . body)
+  (with-gensym (fun)
+	       `(progn
+		 ,`(defun ,fun () ,@body ,`(if ,condition ,`(,fun) ()))
+		 ,`(if ,condition ,`(,fun) ()))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

@@ -98,7 +98,7 @@ reader_stream *limo_rs_from_file(FILE *, char *filename);
 reader_stream *limo_rs_from_string(char *);
 reader_stream *limo_rs_make_readline(void);
 void limo_ungetc(char, reader_stream *);
-void limo_rs_annotate(limo_data *ld, reader_stream *rs);
+limo_annotation *limo_rs_annotation(reader_stream *rs);
 
 limo_annotation *make_annotation(char *filename, int line, int col);
 limo_data *get_annotation(limo_data *ld); // gets annotation from ld in readable form

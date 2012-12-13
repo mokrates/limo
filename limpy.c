@@ -2,19 +2,22 @@
 
 // chartokens: (, ), {, }, [, ], ',', ;, *, %, $
 #define limpy_TOKEN_EQUALS 1
-#define limpy_TOKEN_SETF   2
-#define limpy_TOKEN_MULMUL 3
+#define limpy_TOKEN_NEQ    2
+#define limpy_TOKEN_LTE    3
+#define limpy_TOKEN_GTE    4
+#define limpy_TOKEN_SETF   5
+#define limpy_TOKEN_MULMUL 6
+#define limpy_TOKEN_ANDAND 7
+#define limpy_TOKEN_OROR   8
 
-#define limpy_TOKEN_VAR    5
+#define limpy_TOKEN_VAR    6
 
 #define limpy_TOKEN_FOR    10
 #define limpy_TOKEN_IN     11
 
 #define limpy_TOKEN_IF     12
-#define limpy_TOKEN_ELIF   13
 #define limpy_TOKEN_ELSE   14
 
-#define limpy_TOKEN_WHILE  15
 #define limpy_TOKEN_DEF    16
 
 #define limpy_TOKEN_SYMBOL 20
@@ -28,7 +31,7 @@ static struct {
 
 void limpy_parser_error(char *msg, reader_stream *rs)
 {
-  limo_error("limpy parse error(%i, %i): %s", rs->line, rs->pos, msg);
+  limo_error("limpy parse error(%s, %i, %i): %s", rs->filename, rs->line, rs->pos, msg);
 }
 
 char limpy_read_skip_space_comments(reader_stream *f)
@@ -60,6 +63,7 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
   int c;
   char buf[256];
   int i;
+  limo_annotation *la;
 
   if (putback_token.full) {
     putback_token.full = 0;
@@ -67,9 +71,11 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
     return putback_token.token;
   }
 
+  la  = limo_rs_annotation(rs);
+
   c = limpy_read_skip_space_comments(rs);
 
-  if (strchr("[]{}()=+-$%.,;\"", c))
+  if (strchr("[]{}()+-$%.,;\"", c))
     return c;
 
   if (c==':') {
@@ -81,10 +87,64 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
       c=':';
     }
   }
-
-  if (isalnum(c) || c==':') {
+  if (c=='=') {
+    c=limo_getc(rs);
+    if (c=='=')
+      return limpy_TOKEN_EQUALS;
+    else {
+      limo_ungetc(c, rs);
+      c='=';
+    }
+  }
+  if (c=='!') {
+    c=limo_getc(rs);
+    if (c=='=')
+      return limpy_TOKEN_NEQ;
+    else {
+      limo_ungetc(c, rs);
+      c='!';
+    }
+  }
+  if (c=='<') {
+    c=limo_getc(rs);
+    if (c=='=')
+      return limpy_TOKEN_LTE;
+    else {
+      limo_ungetc(c, rs);
+      c='<';
+    }
+  }
+  if (c=='>') {
+    c=limo_getc(rs);
+    if (c=='=')
+      return limpy_TOKEN_GTE;
+    else {
+      limo_ungetc(c, rs);
+      c='>';
+    }
+  }
+  if (c=='|') {
+    c=limo_getc(rs);
+    if (c=='|')
+      return limpy_TOKEN_OROR;
+    else {
+      limo_ungetc(c, rs);
+      c='|';
+    }
+  }
+  if (c=='&') {
+    c=limo_getc(rs);
+    if (c=='&')
+      return limpy_TOKEN_ANDAND;
+    else {
+      limo_ungetc(c, rs);
+      c='&';
+    }
+  }
+    
+  if (isalnum(c) || c==':' || c=='_') {
     i=0;
-    while ((isalnum(c) || c=='-' || (c==':' && i==0)) && i<255) {
+    while ((isalnum(c) || c=='_' || c=='-' || (c==':' && i==0)) && i<255) {
       buf[i++] = c;
       c=limo_getc(rs);
     }
@@ -93,27 +153,27 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
 
     if (isdigit(buf[0])) {
       *ld = make_number_from_str(buf);
+      annotate(*ld, la);
       return limpy_TOKEN_NUMBER;
     }
     if (!(strcmp("for", buf)))
       return limpy_TOKEN_FOR;
     else if (!(strcmp("in", buf)))
       return limpy_TOKEN_IN;
-    else if (!(strcmp("while", buf)))
-      return limpy_TOKEN_WHILE;
     else if (!(strcmp("if", buf)))
       return limpy_TOKEN_IF;
-    else if (!(strcmp("elif", buf)))
-      return limpy_TOKEN_ELIF;
     else if (!(strcmp("else", buf)))
       return limpy_TOKEN_ELSE;
     else if (!(strcmp("def", buf)))
       return limpy_TOKEN_DEF;
     else {
       *ld = make_sym(buf);
+      annotate(*ld, la);
       return limpy_TOKEN_SYMBOL;
     }
   }
+
+  return c;
 }
 
 limo_data *limpy_generator_reader(reader_stream *rs)
@@ -320,6 +380,144 @@ limo_data *limpy_expr_reader(reader_stream *rs)
   return limpy_rgroup_reader(limpy_atom_reader(rs), rs);
 }
 
+limo_data *limpy_mul_reader(reader_stream *rs)
+{
+  int t;
+  limo_data *token_ld;
+  limo_data *lval;
+  limo_data *rval;
+  limo_data *mulfunc;
+
+  lval = limpy_expr_reader(rs);
+
+  t = limpy_gettoken(rs, &token_ld);
+
+  switch (t) {
+  case '*': mulfunc=make_sym("*"); break;
+  case '/': mulfunc=make_sym("/"); break;
+  default: 
+    limpy_ungettoken(t, token_ld);
+    return lval;
+  }
+
+  rval = limpy_mul_reader(rs);
+  
+  return make_cons(mulfunc,
+		   make_cons(lval, 
+			     make_cons(rval, make_nil())));
+
+}
+
+limo_data *limpy_add_reader(reader_stream *rs)
+{
+  int t;
+  limo_data *token_ld;
+  limo_data *lval;
+  limo_data *rval;
+  limo_data *addfunc;
+
+  lval = limpy_mul_reader(rs);
+
+  t = limpy_gettoken(rs, &token_ld);
+
+  switch (t) {
+  case '+': addfunc=make_sym("+"); break;
+  case '-': addfunc=make_sym("-"); break;
+  default: 
+    limpy_ungettoken(t, token_ld);
+    return lval;
+  }
+
+  rval = limpy_add_reader(rs);
+  
+  return make_cons(addfunc,
+		   make_cons(lval, 
+			     make_cons(rval, make_nil())));
+}
+
+limo_data *limpy_cmp_reader(reader_stream *rs)
+{
+  int t;
+  limo_data *token_ld;
+  limo_data *lval;
+  limo_data *rval;
+  limo_data *cmpfunc;
+
+  lval = limpy_add_reader(rs);
+
+  t = limpy_gettoken(rs, &token_ld);
+
+  switch (t) {
+  case '<': cmpfunc=make_sym("<"); break;
+  case '>': cmpfunc=make_sym(">"); break;
+  case limpy_TOKEN_EQUALS: cmpfunc=make_sym("="); break;
+  case limpy_TOKEN_NEQ: cmpfunc=make_sym("!="); break;
+  case limpy_TOKEN_GTE: cmpfunc=make_sym(">="); break;
+  case limpy_TOKEN_LTE: cmpfunc=make_sym("<="); break;
+  default: 
+    limpy_ungettoken(t, token_ld);
+    return lval;
+  }
+
+  rval = limpy_add_reader(rs);
+  
+  return make_cons(cmpfunc,
+		   make_cons(lval, 
+			     make_cons(rval, make_nil())));
+}
+
+limo_data *limpy_and_reader(reader_stream *rs)
+{
+  int t;
+  limo_data *token_ld;
+  limo_data *lval;
+  limo_data *rval;
+  limo_data *andfunc;
+
+  lval = limpy_cmp_reader(rs);
+
+  t = limpy_gettoken(rs, &token_ld);
+
+  switch (t) {
+  case limpy_TOKEN_ANDAND: andfunc=make_sym("AND"); break;
+  default: 
+    limpy_ungettoken(t, token_ld);
+    return lval;
+  }
+
+  rval = limpy_and_reader(rs);
+  
+  return make_cons(andfunc,
+		   make_cons(lval, 
+			     make_cons(rval, make_nil())));
+}
+
+limo_data *limpy_or_reader(reader_stream *rs)
+{
+  int t;
+  limo_data *token_ld;
+  limo_data *lval;
+  limo_data *rval;
+  limo_data *orfunc;
+
+  lval = limpy_and_reader(rs);
+
+  t = limpy_gettoken(rs, &token_ld);
+
+  switch (t) {
+  case limpy_TOKEN_OROR: orfunc=make_sym("OR"); break;
+  default: 
+    limpy_ungettoken(t, token_ld);
+    return lval;
+  }
+
+  rval = limpy_or_reader(rs);
+  
+  return make_cons(orfunc,
+		   make_cons(lval, 
+			     make_cons(rval, make_nil())));
+}
+
 limo_data *limpy_assignment_reader(reader_stream *rs)
 {
   int t;
@@ -336,7 +534,7 @@ limo_data *limpy_assignment_reader(reader_stream *rs)
   }
   else {
     limpy_ungettoken(t, token_ld);
-    lval = limpy_expr_reader(rs);
+    lval = limpy_or_reader(rs);
   }
 
   t = limpy_gettoken(rs, &token_ld);
@@ -389,6 +587,41 @@ limo_data *limpy_def_reader(reader_stream *rs)
 				       make_cons(codeblock, make_nil()))));
 }
 
+limo_data *limpy_if_reader(reader_stream *rs)
+{
+  limo_data *condition;
+  limo_data *then_side;
+  limo_data *else_side;
+  int t;
+  limo_data *token_ld;
+
+  if (limpy_gettoken(rs, &token_ld) != '(')
+    limpy_parser_error("'(' expected.", rs);
+
+  condition = limpy_assignment_reader(rs);
+
+  if (limpy_gettoken(rs, &token_ld) != ')')
+    limpy_parser_error("')' expected.", rs);
+
+  then_side = limpy_statement_reader(rs);
+
+  if (limpy_TOKEN_ELSE != (t = limpy_gettoken(rs, &token_ld))) {
+    limpy_ungettoken(t, token_ld);
+    return make_cons(make_sym("IF"),
+		     make_cons(condition,
+			       make_cons(then_side,
+					 make_cons(make_nil(), make_nil()))));// else-side
+						   
+  }
+  else {
+    else_side = limpy_statement_reader(rs);
+    return make_cons(make_sym("IF"),
+		     make_cons(condition,
+			       make_cons(then_side,
+					 make_cons(else_side, make_nil()))));// else-side
+  }
+}
+
 limo_data *limpy_statement_reader(reader_stream *rs)
 {
   int t;
@@ -397,9 +630,18 @@ limo_data *limpy_statement_reader(reader_stream *rs)
 
   t = limpy_gettoken(rs, &token_ld);
   switch (t) {
+  case ';':
+    return make_nil();
+    
+  case '{':
+    limo_expr = limpy_block_reader(rs);
+    return limo_expr;
+
   case limpy_TOKEN_DEF: 
-    limo_expr= limpy_def_reader(rs);
-    break;
+    return limpy_def_reader(rs);
+
+  case limpy_TOKEN_IF:
+    return limpy_if_reader(rs);
 
   default:
     limpy_ungettoken(t, token_ld);

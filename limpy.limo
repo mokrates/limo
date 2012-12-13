@@ -28,8 +28,8 @@
 (defmacro limpy-assignf (a b)
   `(setplacef ,a ,b))
 
-;; %[ x for y in z ]
-;; %( x for y in z )
+;; %[ x for y in z ] => limpy-parser sets thecons == cons
+;; %( x for y in z ) => limpy-parser sets thecons == dcons
 (defmacro limpy-gen (thecons compound lval li)
   (with-gensym (f args)
 	       `(scope 
@@ -71,8 +71,8 @@
 
 (register-place-setter 'limpy-getindex 'limpy-setindex)
 
+;; for use by limpy programs
+
 (defmacro var (x)  ;; declare a variable
   `(setq ,x ()))
 
-(setq true :t)
-(setq false ())

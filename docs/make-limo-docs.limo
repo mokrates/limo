@@ -32,6 +32,8 @@
 
 { # limpy
 
+  stdout = file-open("/dev/stdout", "w");
+
   limo-docs = file-open("generated-docs.texinfo", "w");
 
   limo-docs-list = [];
@@ -42,20 +44,22 @@
     var(docname);
 
     for-each(l, %(string-strip(x) for x in file-readlines(f))) {
-        $(cond ((string-starts-with l "##doc:") {
-                  docname := string-strip(string-slice(l, string-length("##doc:"), string-length(l)));
-                  indoc := file-open(string-concat(docname, ".texinfo"), "w");
-                  print("@node ", docname, "\n");
-                  print("@chapter ", docname, "\n");
-          })
-        ((string-starts-with l "##enddoc") { 
-           file-close(indoc); 
-           limo-docs-list := cons(docname, limo-docs-list);
-
-           indoc := false; 
-           docname := false; 
-         })
-        (indoc { print(string-slice(l, 3, string-length(l)), "\n"); }));
+        file-print(stdout, string-concat(l, "\n"));
+        if (string-starts-with(l, "##doc:")) {
+            docname := string-strip(string-slice(l, string-length("##doc:"), string-length(l)));
+            indoc := file-open(string-concat(docname, ".texinfo"), "w");
+            print("@node ", docname, "\n");
+            print("@chapter ", docname, "\n");
+         }
+         else if (string-starts-with(l,"##enddoc")) { 
+            file-close(indoc); 
+            limo-docs-list := cons(docname, limo-docs-list);
+              
+            indoc := false; 
+            docname := false; 
+         }
+         else if (indoc)
+            print(string-slice(l, 3, string-length(l)), "\n");
     };
   };
 

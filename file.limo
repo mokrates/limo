@@ -1,4 +1,4 @@
--*- scheme -*-
+; -*- scheme -*-
 
 (loaddll (string-concat _limo-prefix "/file.so"))
 
