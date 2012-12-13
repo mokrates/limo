@@ -22,6 +22,12 @@ BUILTIN(builtin_block)
   else
     res = eval(SECOND_ARG, env);
 
+  // this invalidates the jmpbuf. it could be taken out
+  // of the BLOCK form, and return-fromed to, and that gives 
+  //a segfault. hence: invalidating
+  // (setq x (block foo foo)) (return-from x) ; BOOM!
+  CAR(special_jb->data.d_special) = make_nil(); 
+
   return res;
 }
 
