@@ -6,14 +6,12 @@
 
 @iftex
 @macro limo
-@math{\\lambda}imo
-@end macro
+@math{\\lambda}imo@end macro
 @end iftex
 
 @ifinfo
 @macro limo
-λimo
-@end macro
+λimo@end macro
 @end ifinfo
 
 @ifhtml
@@ -104,8 +102,7 @@ Variables with the same name in upper scopes with the same name are
 not touched and continue to exist.
 
 @example
-@c @math{\lambda}
-@limo{} > (scope (setq x 1) 
+limo > (scope (setq x 1) 
               (scope (setq x 2) 
                      (write x)) 
               (write x))
