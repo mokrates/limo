@@ -125,6 +125,7 @@ limo_data *make_globalenv(int, char **);
 
 limo_data *try_catch(limo_data *try, limo_data *env);
 void throw(limo_data *excp);
+void throw_after_finally(void);
 void limo_error(char *, ...);
 void print_stacktrace(limo_data *s); // prints stacktrace s
 limo_data *stacktrace;
@@ -184,6 +185,7 @@ BUILTIN(builtin_eq);
 BUILTIN(builtin_write);
 BUILTIN(builtin_try);
 BUILTIN(builtin_throw);
+BUILTIN(builtin_finally);
 BUILTIN(builtin_exit);
 BUILTIN(builtin_load);
 BUILTIN(builtin_loaddll);

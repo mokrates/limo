@@ -1,4 +1,5 @@
 #include "limo.h"
+#include <stdarg.h>
 
 // chartokens: (, ), {, }, [, ], ',', ;, *, %, $
 #define limpy_TOKEN_EQUALS 1
@@ -174,6 +175,27 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
   }
 
   return c;
+}
+
+limo_data *make_list_va(va_list ap)
+{
+  limo_data *next;
+
+  next = va_arg(ap, limo_data * );
+  if (next == NULL)
+    return make_nil();
+  else
+    return make_cons(next, make_list_va(ap));
+}
+
+limo_data *make_list(int start, ...)
+{
+  va_list ap;
+  limo_data *res;
+  va_start(ap, start);
+  res=make_list_va(ap);
+  va_end(ap);
+  return res;
 }
 
 limo_data *limpy_generator_reader(reader_stream *rs)

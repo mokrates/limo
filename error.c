@@ -46,6 +46,16 @@ void throw(limo_data *excp)
   siglongjmp(*ljbuf, 1);
 }
 
+void throw_after_finally(void)
+{
+  if (!ljbuf) {
+    if (exception)
+      writer(exception);
+    exit(1);
+  }
+  siglongjmp(*ljbuf, 1);
+}
+
 void limo_error(char *msg, ...)
 {
   va_list ap;

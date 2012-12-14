@@ -229,6 +229,21 @@ BUILTIN(builtin_try)
   }
 }
 
+BUILTIN(builtin_finally)
+{
+  limo_data *res;
+
+  if (list_length(arglist) != 3)
+    limo_error("(finally <TRY> <FINALLY>)");
+  
+  res = try_catch(FIRST_ARG, make_env(env));
+  eval(SECOND_ARG, env);
+  if (!res)
+    throw_after_finally();
+  return res;
+}
+
+
 BUILTIN(builtin_throw)
 {
   if (list_length(arglist) != 2)

@@ -23,6 +23,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "EQ", builtin_eq},
   { "WRITE", builtin_write},
   { "TRY", builtin_try },
+  { "FINALLY", builtin_finally},
   { "THROW", builtin_throw },
   { "EXIT", builtin_exit },
   { "LOAD", builtin_load},
