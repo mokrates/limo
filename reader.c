@@ -241,7 +241,7 @@ limo_data *read_sym_num(reader_stream *f)
   char buf[BUFFER_SIZE];
   char c;
 
-  for (i=0; i<BUFFER_SIZE-1; ++i) {
+  for (i=0; i<BUFFER_SIZE-1 && !limo_eof(f); ++i) {
     c=limo_getc(f);
     if (strchr(")", c) || isspace(c)) {  // ( for emacs
       limo_ungetc(c, f);
@@ -264,7 +264,7 @@ limo_data *read_string(reader_stream *f)
   int i;
   char buf[BUFFER_SIZE];
   char c;
-  for (i=0; i<BUFFER_SIZE-1; ++i) {
+  for (i=0; i<BUFFER_SIZE-1 && !limo_eof(f); ++i) {
     c=limo_getc(f);
     if (c=='"')
       break;
