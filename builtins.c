@@ -147,13 +147,17 @@ BUILTIN(builtin_list)
 
 BUILTIN(builtin_cons)
 {
-  return make_cons(eval(CAR(CDR(arglist)),env),
-		   eval(CAR(CDR(CDR(arglist))), env));
+  if (list_length(arglist)!=3)
+    limo_error("(cons CAR CDR)");
+  return make_cons(eval(FIRST_ARG,env),
+		   eval(SECOND_ARG,env));
 }
 
 BUILTIN(builtin_dcons)
 {
-  return make_dcons(eval(CAR(CDR(arglist)), env), CAR(CDR(CDR(arglist))), env);
+  if (list_length(arglist)!=3)
+    limo_error("(cons CAR CDR)");
+  return make_dcons(eval(FIRST_ARG, env), SECOND_ARG, env);
 }
 
 BUILTIN(builtin_consp)
@@ -171,7 +175,7 @@ BUILTIN(builtin_car)
 {
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
-    limo_error("error: (car CONS!=nil)");
+    throw(make_cons(make_string("error: (car CONS!=nil)"), ld));
   return CAR(ld);
 }
 
@@ -179,7 +183,7 @@ BUILTIN(builtin_cdr)
 {
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
-    limo_error("error: (cdr CONS!=nil)");
+    throw(make_cons(make_string("error: (cdr CONS!=nil)"), ld));
   return CDR(ld);
 
 }

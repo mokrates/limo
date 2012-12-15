@@ -181,7 +181,7 @@ limo_data *read_list(reader_stream *f)
   ld->type = limo_TYPE_CONS;
 
   c=read_skip_space_comments(f);
-  while (1) {
+  while (!limo_eof(f)) {
     if (c == ')') { // ( for emacs
       (*ld_into)->data.d_cons = NULL;
       break;

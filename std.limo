@@ -26,23 +26,32 @@
       (list 'setq (car x) (cadr x))))
 
 (defmacro assert (x)
-  `(try
-    ,`(if ,x :t 
-	  ,`(throw ,`(list 'ASSERT_FAIL ,`(quote ,x))))
-    ,`(throw ,`(list 'ASSERT_FAIL_WITH_EXCEPTION ,`(quote ,x) _exception))))
+  `(if ,x :t 
+       ,`(throw ,`(list 'ASSERT_FAIL ,`(quote ,x)))))
 
 (defmacro asserteq (x y)
-  `(assert ,`(deepeq ,x ,y)))
+  (try
+   `(assert ,`(deepeq ,x ,y))
+   `(write ,`(list 'asserteq_failed ,x ,y))))
 
-(defcfun reverse (l) ;; used by quasiquote
+(defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)
-    (if l (helper (cdr l) (cons (car l) akku)) akku))
+    (if (consp l)
+	(if l 
+	    (helper (cdr l) (cons (car l) akku)) 
+	    akku)
+	(throw (cons "reverse takes a proper list" l))))
   (helper l ()))
 
-(defcfun undyn (x)   ;; recursive! no dynamic version! (of course...)
-  (cond ((and (consp x) x)  ;; cons and not empty
-	 (cons (undyn (car x)) (undyn (cdr x))))
-	(:t x)))
+(defun undyn (x)
+  (defun helper (x akku)
+    (cond ((not x) akku)
+	  ((consp x)
+	   (helper (cdr x) (cons (undyn (car x)) akku)))
+	  (:else (throw (cons "undyn takes a proper list" x)))))
+  (if (not (consp x))
+      x
+      (reverse (helper x ()))))
 
 (defcfun deepeq (x y)
   (cond ((and (consp x) x)  ;; cons and not empty
