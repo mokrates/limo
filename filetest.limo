@@ -2,7 +2,7 @@
 ;; filetest!
 
 (with-file-open "/etc/passwd" "r" f 
-		(writelist { %( $(string-split (string-strip x) ":") 
-				 for x 
-				 in $(file-readlines f) ); }))
+		(writelist { %( string-split(string-strip(x), ":")
+				for x	
+				in file-readlines(f) ); }))
 

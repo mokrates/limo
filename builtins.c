@@ -205,6 +205,9 @@ BUILTIN(builtin_write)
 
 BUILTIN(builtin_setf)
 {
+  if (list_length(arglist) != 3)
+    limo_error("(setf NAME VALUE)");
+
   limo_data *val=eval(SECOND_ARG, env);
   setf(env, FIRST_ARG, val);
   return val;
