@@ -1,19 +1,21 @@
+; -*- scheme -*-
+
 (setq anzahl_scheiben 16)
 
 (setq tuerme (list (range 1 (+ 1 anzahl_scheiben) 1) () ()))
 
-(defun set-nth (n l v)
+(defcfun set-nth (n l v)
   (if (eq n 0)
       (setcar l v)
       (set-nth (- n 1) (cdr l) v)))
 
-(defun hanoi (von temp nach scheibe)
-       (when (gtn scheibe 0)
-	     (hanoi von nach temp (- scheibe 1))
-	     (set-nth nach tuerme (cons (car (nth von tuerme)) (nth nach tuerme)))
-	     (set-nth von  tuerme (cdr (nth von tuerme)))	
-	     (write tuerme)
-	     (hanoi temp von nach (- scheibe 1))))
+(defcfun hanoi (von temp nach scheibe)
+  (when (gtn scheibe 0)
+	(hanoi von nach temp (- scheibe 1))
+	(set-nth nach tuerme (cons (car (nth von tuerme)) (nth nach tuerme)))
+	(set-nth von  tuerme (cdr (nth von tuerme)))	
+	(write tuerme)
+	(hanoi temp von nach (- scheibe 1))))
 
 (write tuerme)
 (hanoi 0 1 2 anzahl_scheiben)

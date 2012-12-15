@@ -13,18 +13,19 @@
 #define limo_TYPE_CONS    2
 #define limo_TYPE_LAMBDA  3
 #define limo_TYPE_MACRO   4
-#define limo_TYPE_BUILTIN 5
-#define limo_TYPE_GMPQ    6
-#define limo_TYPE_FLOAT   7
-#define limo_TYPE_STRING  8
+#define limo_TYPE_CONST   5
+#define limo_TYPE_BUILTIN 6
+#define limo_TYPE_GMPQ    7
+#define limo_TYPE_FLOAT   8
+#define limo_TYPE_STRING  9
 
-#define limo_TYPE_DICT    9
+#define limo_TYPE_DICT    10
 
-#define limo_TYPE_ENV     10
-#define limo_TYPE_EAGAIN  11  // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_ENV     11
+#define limo_TYPE_EAGAIN  12  // eval again (for tail-opt) (cons expt env)
 
-#define limo_TYPE_SPECIAL 12  // special: #<special: (typemarker . #<specialintern:pointer>)>
-#define limo_TYPE_SPECIAL_INTERN 13  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+#define limo_TYPE_SPECIAL 13  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 14  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -154,6 +155,7 @@ limo_data *dict_to_list(limo_data *dict);
 limo_data *var_lookup(limo_data *env, limo_data *name);
 void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
+void setconstq(limo_data *env, limo_data *name, limo_data *value);
 void unsetq(limo_data *env, limo_data *name);
 
 // for arglists
@@ -209,8 +211,11 @@ BUILTIN(builtin_dictp);
 BUILTIN(builtin_block);
 BUILTIN(builtin_return_from);
 
+BUILTIN(builtin_setconstq);
+
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);
+limo_data *ld_dup(limo_data *list);
 limo_data *list_dup(limo_data *list);
 limo_data *list_eval(limo_data *form, limo_data *env);
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args);
@@ -234,5 +239,8 @@ void *get_special(limo_data *expr, limo_data *type_symbol);
 void writer_special(limo_data *expr);
 void writer_special_intern(limo_data *expr);
 limo_data *get_special_type_symbol(limo_data *expr);
+
+limo_data *make_const(limo_data *name, limo_data *val);
+void writer_const(limo_data *c);
 
 #include "limpy.h"

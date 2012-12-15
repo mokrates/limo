@@ -54,8 +54,7 @@ limo_data *make_sym(char *name) // interned
   
   for (is=interned_symbols->data.d_env; 
        !is_nil(is) && strcmp(cp, CAR(is)->data.d_string); 
-       is=CDR(is))
-    ;
+       is=CDR(is));
 
   if (is_nil(is)) {
     ld = make_limo_data();
@@ -67,12 +66,10 @@ limo_data *make_sym(char *name) // interned
     
     interned_symbols->data.d_env = make_cons(ld, interned_symbols->data.d_env);
 
-    return ld;
+    return ld_dup(ld);
   }
   else {   // found interned symbol. return a copy
-    ld = make_limo_data();
-    memcpy(ld, CAR(is), sizeof *ld);
-    return ld;
+    return ld_dup(CAR(is));
   }
 }
 

@@ -8,7 +8,7 @@ BUILTIN(builtin_string_nth)
   limo_data *n, *str;
 
   if (list_length(arglist) != 3)
-    limo_error("(string-nth N STRING)");
+    limo_error("(string-nth N STRING) wrong number of arguments: given %i", list_length(arglist));
 
   n = eval(FIRST_ARG, env);
   str = eval(SECOND_ARG, env);

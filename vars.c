@@ -40,6 +40,10 @@ limo_data *var_lookup(limo_data *env, limo_data *name)
 
   place = var_lookup_place(env, name);
 
+#if STATIC_MACROEX
+  
+#endif
+
   if (*place)
     return *place;
   else
@@ -56,6 +60,11 @@ void setf(limo_data *env, limo_data *name, limo_data *value)
 void setq(limo_data *env, limo_data *name, limo_data *value)
 {
   dict_put(CDR(env->data.d_env), name, value);
+}
+
+void setconstq(limo_data *env, limo_data *name, limo_data *value)
+{
+  setq(env, name, make_const(name, value));
 }
 
 void unsetq(limo_data *env, limo_data *name)

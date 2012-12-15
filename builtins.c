@@ -96,15 +96,31 @@ BUILTIN(builtin_apply)
 
 BUILTIN(builtin_progn)
 {
-  limo_data *nil=make_nil();
-  while (list_length(arglist) > 2) {
-    eval(FIRST_ARG, env);
+  limo_data *orig_arglist = arglist;
+  arglist = CDR(arglist);
+
+  if (is_nil(arglist)) {
+#if STATIC_MACROEX
+    *orig_arglist = *make_nil();
+#endif // STATIC_MACROEX
+    return arglist;
+  }
+
+  if (arglist->type == limo_TYPE_CONS && is_nil(CDR(arglist))) {
+#if STATIC_MACROEX
+    *orig_arglist = *CAR(arglist);
+#endif
+    return make_eagain(CAR(arglist), env);
+  }   
+
+  while (arglist->type == limo_TYPE_CONS && !is_nil(CDR(arglist))) {
+    eval(CAR(arglist), env);
     arglist = CDR(arglist);
   }
-  if (list_length(arglist) == 2)
-    return make_eagain(FIRST_ARG, env);
+  if (arglist->type != limo_TYPE_CONS)
+    limo_error("(progn ...)");
 
-  return nil;
+  return make_eagain(CAR(arglist), env);
 }
 
 BUILTIN(builtin_if)
@@ -396,4 +412,15 @@ BUILTIN(builtin_get_annotation)
   
   limo_data *form = eval(FIRST_ARG, env);
   return get_annotation(form);
+}
+
+BUILTIN(builtin_setconstq)
+{
+  if (list_length(arglist) != 3)
+    limo_error("(setconstq NAME VALUE)");
+
+  limo_data *name = CAR(CDR(arglist));
+  limo_data *value = eval(CAR(CDR(CDR(arglist))), env);
+  setq(env, name, make_const(name, value));
+  return value;
 }

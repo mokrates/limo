@@ -73,6 +73,13 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
   return make_eagain(res, env);
 }
 
+limo_data *ld_dup(limo_data *ld)
+{
+  limo_data *res = make_limo_data();
+  memcpy(res, ld, sizeof (*ld));
+  return res;
+}
+
 limo_data *list_dup(limo_data *list)
 {
   limo_data *ld;  
@@ -81,12 +88,15 @@ limo_data *list_dup(limo_data *list)
     if (CAR(list)->type == limo_TYPE_CONS)
       (*el) = make_cons(list_dup(CAR(list)), NULL);
     else
-      (*el) = make_cons(CAR(list), NULL);
+      (*el) = make_cons(ld_dup(CAR(list)), NULL);
     el = &CDR(*el);
 
     list=CDR(list);
   }
-  (*el) = make_nil();
+  if (is_nil(list))
+    (*el) = make_nil();
+  else
+    (*el) = ld_dup(list);
   return ld;
 }
 
@@ -145,6 +155,8 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 
 limo_data *real_eval(limo_data *ld, limo_data *env)
 {
+  limo_data *res;
+
   switch (ld->type) {
   case limo_TYPE_CONS:
     if (is_nil(ld))
@@ -172,7 +184,18 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
     if (ld->data.d_string[0] == ':')
       return ld;
     else
-      return var_lookup(env, ld);
+      res=var_lookup(env, ld);
+    
+    if (res->type == limo_TYPE_CONST) {
+#if STATIC_MACROEX
+      *ld = *res;
+#endif
+      res=CDR(res);
+    }
+    return res;
+
+  case limo_TYPE_CONST:
+    return CDR(ld);
 
   default: 
     return ld;

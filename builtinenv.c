@@ -46,6 +46,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "DICTP", builtin_dictp },
   { "BLOCK", builtin_block},
   { "RETURN-FROM", builtin_return_from},
+  { "SETCONSTQ", builtin_setconstq },
 };
 
 limo_data *make_globalenv(int argc, char **argv)
@@ -56,7 +57,7 @@ limo_data *make_globalenv(int argc, char **argv)
   int i;
 
   for (i=0; i<(sizeof builtin_array)/(sizeof builtin_array[0]); ++i)
-    setq(env, make_sym(builtin_array[i].name), make_builtin(builtin_array[i].f));
+    setconstq(env, make_sym(builtin_array[i].name), make_builtin(builtin_array[i].f));
 
   for (i=1; i<argc; ++i) {
     (*args) = make_cons(make_string(argv[i]), NULL);
