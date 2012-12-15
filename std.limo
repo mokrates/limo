@@ -17,7 +17,7 @@
 
 (setconstq defcfun
 	   (macro (name args . body)
-	     (list 'setq name (list 'lambda args (cons 'progn body)))))
+	     (list 'setconstq name (list 'lambda args (cons 'progn body)))))
 
 ;; scheme style 'define'
 (defmacro define x
@@ -184,7 +184,7 @@
 
 (defmacro cond l   ;; used by quasiquote
   (if l
-      (list 'if (caar l) (car (cdar l))
+      (list 'if (caar l) (cons 'progn (apply list (cdar l)))
 	    (cons 'cond (cdr l)))
       ()))
 

@@ -212,6 +212,7 @@ BUILTIN(builtin_block);
 BUILTIN(builtin_return_from);
 
 BUILTIN(builtin_setconstq);
+BUILTIN(builtin_read_string);
 
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);

@@ -47,6 +47,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "BLOCK", builtin_block},
   { "RETURN-FROM", builtin_return_from},
   { "SETCONSTQ", builtin_setconstq },
+  { "READ-STRING", builtin_read_string },
 };
 
 limo_data *make_globalenv(int argc, char **argv)

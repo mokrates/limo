@@ -6,9 +6,22 @@
 (load (string-concat _limo-prefix "file.limo"))
 (load (string-concat _limo-prefix "limpy.limo"))
 
-(when argv
-      (progn (load (car argv))
-	     (exit)))
+(setq executelist '(progn))
+(while argv
+       (cond ((eq "-e" (car argv))
+	      (setf argv (cdr argv))
+	      (setf executelist (append executelist (list (read-string (car argv)))))
+	      (setf argv (cdr argv)))
+	     ((eq "-i" (car argv))
+	      (setf argv (cdr argv))
+	      (setf executelist (append executelist (list `(load ,(car argv)))))
+	      (setf argv (cdr argv)))
+	     (:else 
+	      (setf executelist (append executelist (list `(load ,(car argv)) '(exit))))
+	      (setf argv (cdr argv)))))
+
+(eval executelist)
+(unsetq executelist)
 
 (load (string-concat _limo-prefix "tests.limo"))
 

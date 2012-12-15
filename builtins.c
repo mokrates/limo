@@ -424,3 +424,17 @@ BUILTIN(builtin_setconstq)
   setq(env, name, make_const(name, value));
   return value;
 }
+
+BUILTIN(builtin_read_string)
+{
+  limo_data *str;
+  
+  if (list_length(arglist) != 2)
+    limo_error("(read-string STRING)");
+  
+  str = eval(FIRST_ARG, env);
+  if (str->type != limo_TYPE_STRING)
+    limo_error("given arg is no STRING");
+
+  return reader(limo_rs_from_string(str->data.d_string));
+}
