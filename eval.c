@@ -23,17 +23,27 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 
   // associating params with names
   param_env = make_env(lambda_env);
-  while (!is_nil(params) && params->type==limo_TYPE_CONS) {
-    if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
-      limo_error("eval funcall: too few arguments");
-
-    if (eval_args)
+  if (eval_args) {
+    while (!is_nil(params) && params->type==limo_TYPE_CONS) {
+      if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
+	limo_error("eval funcall: too few arguments");
+      
       setq(param_env, CAR(params), eval(CAR(arglist), env));
-    else
+
+      params = CDR(params);
+      arglist = CDR(arglist);
+    }
+  }
+  else { // don't eval args
+    while (!is_nil(params) && params->type==limo_TYPE_CONS) {
+      if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
+	limo_error("eval funcall: too few arguments");
+
       setq(param_env, CAR(params), CAR(arglist));
 
-    params = CDR(params);
-    arglist = CDR(arglist);
+      params = CDR(params);
+      arglist = CDR(arglist);
+    }
   }
   if (params->type==limo_TYPE_SYMBOL)
     if (eval_args)
