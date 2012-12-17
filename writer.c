@@ -82,6 +82,7 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_SPECIAL: writer_special(ld); break;
   case limo_TYPE_SPECIAL_INTERN: writer_special_intern(ld); break;
   case limo_TYPE_CONST: writer_const(ld); break;
+  case limo_TYPE_VCACHE: printf("<"); writer(CAR(ld->data.d_vcache)); printf(">"); break;
 
   default:
     printf("**BROKEN DATA(%i)**", ld->type);

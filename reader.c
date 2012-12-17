@@ -181,7 +181,7 @@ limo_data *read_list(reader_stream *f)
   ld->type = limo_TYPE_CONS;
 
   c=read_skip_space_comments(f);
-  while (!limo_eof(f)) {
+  while (1) {
     if (c == ')') { // ( for emacs
       (*ld_into)->data.d_cons = NULL;
       break;
@@ -241,7 +241,7 @@ limo_data *read_sym_num(reader_stream *f)
   char buf[BUFFER_SIZE];
   char c;
 
-  for (i=0; i<BUFFER_SIZE-1 && !limo_eof(f); ++i) {
+  for (i=0; i<BUFFER_SIZE-1; ++i) {
     c=limo_getc(f);
     if (strchr(")", c) || isspace(c)) {  // ( for emacs
       limo_ungetc(c, f);
@@ -264,7 +264,7 @@ limo_data *read_string(reader_stream *f)
   int i;
   char buf[BUFFER_SIZE];
   char c;
-  for (i=0; i<BUFFER_SIZE-1 && !limo_eof(f); ++i) {
+  for (i=0; i<BUFFER_SIZE-1; ++i) {
     c=limo_getc(f);
     if (c=='"')
       break;

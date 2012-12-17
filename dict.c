@@ -49,7 +49,7 @@ limo_dict *make_dict_size(int minused)
 
   d=(limo_dict *)GC_malloc(sizeof (limo_dict));
 
-  while (size < 2*minused)
+  while (size < 3*minused)
     size<<=1;
 
   d->store = (limo_data **)GC_malloc(size * sizeof (limo_data *));
@@ -68,25 +68,31 @@ void dict_resize(limo_data *dict)
   dict->data.d_dict = newdict;
   for (i=0; i<olddict->size; ++i)
     if (olddict->store[i] != NULL)
-      dict_put(dict, CAR(olddict->store[i]), CDR(olddict->store[i]));
+      dict_put_cons(dict, olddict->store[i]);
 }
 
-void dict_put(limo_data *dict, limo_data *key, limo_data *value)
+void dict_put_cons(limo_data *dict, limo_data *cons)
 {
   limo_data **ld_place;
 
   if (dict->type != limo_TYPE_DICT)
     limo_error("dict_put(): didn't get a dict.");
 
-
   if (3 * (dict->data.d_dict->used) > 2*dict->data.d_dict->size)
     dict_resize(dict);
 
-  ld_place = dict_get_place(dict, key);
-  if (*ld_place == NULL)
+  ld_place = dict_get_place(dict, CAR(cons));
+  if (*ld_place == NULL) {
     dict->data.d_dict->used++;
+    *ld_place = cons;
+  }
+  else   // reuse existing cons
+    CDR(*ld_place) = CDR(cons);
+}
 
-  *ld_place = make_cons(key, value);
+void dict_put(limo_data *dict, limo_data *key, limo_data *value)
+{
+  dict_put_cons(dict, make_cons(key, value));
 }
 
 limo_data **dict_get_place(limo_data *dict, limo_data *key)

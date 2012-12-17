@@ -129,7 +129,7 @@ void number_builtins(limo_data *env)
   for (i=0; 
        i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]); 
        ++i)
-    setconstq(env, make_sym(number_builtin_array[i].name), 
-	      make_builtin(number_builtin_array[i].f));
+    setq(env, make_sym(number_builtin_array[i].name), 
+	 make_builtin(number_builtin_array[i].f));
 }
 

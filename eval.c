@@ -118,7 +118,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
   int again=1;
   static int level=0;
-  int trace = !is_nil(var_lookup(env, sym_trace));
+  int trace = !is_nil(CDR(traceplace));
   limo_data *tmp_stacktrace = stacktrace;
 
   ++level;

@@ -8,7 +8,15 @@ limo_data *make_env(limo_data *up)
   return env;
 }
 
-limo_data **var_lookup_place(limo_data *env, limo_data *name)
+limo_data *make_vcache(limo_data *cons)
+{
+  limo_data *res=make_limo_data();
+  res->type = limo_TYPE_VCACHE;
+  res->data.d_vcache = cons;
+  return res;
+}
+
+limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons from the dict
 {
   if (!env->type == limo_TYPE_ENV)
     limo_error("var_lookup: given env is no env");
@@ -16,55 +24,69 @@ limo_data **var_lookup_place(limo_data *env, limo_data *name)
   limo_data *up = CAR(env->data.d_env);
   limo_data *dict = CDR(env->data.d_env);
   limo_data **place;
+  limo_data *cons;
 
   place=dict_get_place(dict, name);
-  while (*place==NULL && !is_nil(up)) {
-    env=up;
-    up=CAR(env->data.d_env);
-    dict=CDR(env->data.d_env);
-    place=dict_get_place(dict, name);
+  if (*place == NULL && !is_nil(up)) {
+    cons = var_lookup_place(up, name);
+    if (cons == NULL)
+      throw(make_cons(make_string("variable not bound"), name));
+  
+    setq(env, name, make_vcache(cons));
+    // printf("adding to cache - returning: "); writer(cons); printf("\n");
+    return cons;
+  }
+
+  if ((*place != NULL) && (CDR(*place) -> type) == limo_TYPE_VCACHE) {
+    //    printf("cached - returning: "); writer(CDR(*place)->data.d_vcache); printf("\n");
+    return CDR(*place) -> data.d_vcache;
   }
 
   if (*place==NULL)
     throw(make_cons(make_string("Variable not bound"), name));
 
-  return &CDR(*place);
+  //  printf("found locally - returning: "); writer(*place); printf("\n");
+  return *place;
 }
 
 limo_data *var_lookup(limo_data *env, limo_data *name)
 {
-  limo_data **place;
+  limo_data *place;
 
   if (limo_equals(name, sym_env))
     return env;
 
   place = var_lookup_place(env, name);
 
-#if STATIC_MACROEX
-  
-#endif
-
-  if (*place)
-    return *place;
+  if (place)
+    return CDR(place);
   else
     return NULL;
 }
 
 void setf(limo_data *env, limo_data *name, limo_data *value)
 {
-  limo_data **place = var_lookup_place(env, name);
+  limo_data *place = var_lookup_place(env, name);
   if (place) 
-    *place = value;
+    CDR(place) = value;
 }
 
 void setq(limo_data *env, limo_data *name, limo_data *value)
 {
+  limo_data **place;
+
+  place = dict_get_place(CDR(env->data.d_env), name);
+
+  if (*place != NULL)
+    if ((*place) -> type == limo_TYPE_VCACHE)
+      throw(make_cons(make_string("local variable referenced before assignment"), name));
+
   dict_put(CDR(env->data.d_env), name, value);
 }
 
 void setconstq(limo_data *env, limo_data *name, limo_data *value)
 {
-  setq(env, name, make_const(name, value));
+  setq(env, name, value);
 }
 
 void unsetq(limo_data *env, limo_data *name)

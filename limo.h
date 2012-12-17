@@ -24,8 +24,10 @@
 #define limo_TYPE_ENV     11
 #define limo_TYPE_EAGAIN  12  // eval again (for tail-opt) (cons expt env)
 
-#define limo_TYPE_SPECIAL 13  // special: #<special: (typemarker . #<specialintern:pointer>)>
-#define limo_TYPE_SPECIAL_INTERN 14  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+#define limo_TYPE_VCACHE  13
+
+#define limo_TYPE_SPECIAL 14  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 15  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -47,6 +49,7 @@ typedef struct limo_DATA {
 #define d_env d_lambda
 #define d_eagain d_lambda
 #define d_special d_lambda
+#define d_vcache d_lambda
   } data;
   unsigned int hash;  // for symbols and strings
   limo_annotation *annotation;
@@ -72,6 +75,8 @@ extern limo_data *sym_true;
 extern limo_data *sym_stacktrace;
 extern limo_data *sym_underscore;
 extern limo_data *sym_block;
+
+extern limo_data *traceplace;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -147,12 +152,14 @@ unsigned int hash_string(char *);
 limo_data *make_dict(void);
 limo_dict *make_dict_size(int minused);
 void dict_resize(limo_data *dict);
+void dict_put_cons(limo_data *dict, limo_data *cons);
 void dict_put(limo_data *dict, limo_data *key, limo_data *value);
 limo_data **dict_get_place(limo_data *dict, limo_data *key);
 void dict_remove(limo_data *dict, limo_data *key);
 limo_data *dict_to_list(limo_data *dict);
 
 limo_data *var_lookup(limo_data *env, limo_data *name);
+limo_data *var_lookup_place(limo_data *env, limo_data *name); // returns the cons from the dict
 void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
 void setconstq(limo_data *env, limo_data *name, limo_data *value);

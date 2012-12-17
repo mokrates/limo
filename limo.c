@@ -1,5 +1,6 @@
 #include "limo.h"
 #include <signal.h>
+#include <execinfo.h>
 
 limo_data *globalenv;
 
@@ -12,6 +13,8 @@ limo_data *sym_true;
 limo_data *sym_stacktrace;
 limo_data *sym_underscore;
 limo_data *sym_block;
+
+limo_data *traceplace;
 
 void init_syms()
 {
@@ -44,6 +47,19 @@ void limo_repl_sigint(int signum)
   limo_error("Keyboard Interrupt");
 }
 
+void sigsegv_handler(int sig) {
+  void *array[10];
+  size_t size;
+  
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 10);
+  
+  // print out all the frames to stderr
+  fprintf(stderr, "Interpreter Error: signal %d:\n", sig);
+  backtrace_symbols_fd(array, size, 2);
+  exit(1);
+}
+
 int main(int argc, char **argv)
 {
   limo_data *env;
@@ -59,6 +75,7 @@ int main(int argc, char **argv)
   globalenv = env;
 
   signal(SIGINT, limo_repl_sigint);
+  signal(SIGSEGV, sigsegv_handler);
 
   if (argc != 2 || strcmp(argv[1], "-n")) {
     rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");

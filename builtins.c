@@ -147,17 +147,13 @@ BUILTIN(builtin_list)
 
 BUILTIN(builtin_cons)
 {
-  if (list_length(arglist)!=3)
-    limo_error("(cons CAR CDR)");
-  return make_cons(eval(FIRST_ARG,env),
-		   eval(SECOND_ARG,env));
+  return make_cons(eval(CAR(CDR(arglist)),env),
+		   eval(CAR(CDR(CDR(arglist))), env));
 }
 
 BUILTIN(builtin_dcons)
 {
-  if (list_length(arglist)!=3)
-    limo_error("(cons CAR CDR)");
-  return make_dcons(eval(FIRST_ARG, env), SECOND_ARG, env);
+  return make_dcons(eval(CAR(CDR(arglist)), env), CAR(CDR(CDR(arglist))), env);
 }
 
 BUILTIN(builtin_consp)
@@ -175,7 +171,7 @@ BUILTIN(builtin_car)
 {
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
-    throw(make_cons(make_string("error: (car CONS!=nil)"), ld));
+    limo_error("error: (car CONS!=nil)");
   return CAR(ld);
 }
 
@@ -183,7 +179,7 @@ BUILTIN(builtin_cdr)
 {
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
-    throw(make_cons(make_string("error: (cdr CONS!=nil)"), ld));
+    limo_error("error: (cdr CONS!=nil)");
   return CDR(ld);
 
 }
@@ -205,9 +201,6 @@ BUILTIN(builtin_write)
 
 BUILTIN(builtin_setf)
 {
-  if (list_length(arglist) != 3)
-    limo_error("(setf NAME VALUE)");
-
   limo_data *val=eval(SECOND_ARG, env);
   setf(env, FIRST_ARG, val);
   return val;
