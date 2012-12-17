@@ -428,3 +428,29 @@ BUILTIN(builtin_read_string)
 
   return reader(limo_rs_from_string(str->data.d_string));
 }
+
+BUILTIN(builtin_symbolp)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(symbolp VALUE)");
+  
+  if (eval(FIRST_ARG, env)->type == limo_TYPE_SYMBOL)
+    return sym_true;
+  else
+    return make_nil();
+}
+
+BUILTIN(builtin_symbol_to_string)
+{
+  limo_data *ld;
+  
+  if (list_length(arglist) != 2)
+    limo_error("(symbol-to-string SYMBOL)");
+  
+  ld = eval(FIRST_ARG, env);
+
+  if (ld->type != limo_TYPE_SYMBOL)
+    limo_error("(symbol-to-string SYMBOL)");
+      
+  return make_string(ld->data.d_string);
+}

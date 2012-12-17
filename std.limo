@@ -403,6 +403,35 @@
 (setq true :t)
 (setq false ())
 
+(defun format (s . args)
+  (defun format-list (s args)
+    (cond ((not s) ())
+	  ((eq "~" (car s))
+	   (switch (cadr s)
+		   ("s" (dcons (car args) 
+			       (format-list (cddr s) (cdr args))))
+		   ("n" (dcons (reprn (car args))
+			       (format-list (cddr s) (cdr args))))
+		   ("r" (dcons (repr (car args))
+			       (format-list (cddr s) (cdr args))))))
+	  (:else (dcons (car s) (format-list (cdr s) args)))))
+  (reduce + (format-list (string-to-list s) args)))
+
+(defun repr (x)
+  (defun list-to-string (x)
+    (cond ((not x) x)
+	  ((not (cdr x)) 
+	   (string-concat (repr (car x)) ")"))
+	  ((not (consp (cdr x))) 
+	   (string-concat (repr (car x)) " . " (repr (cdr x)) ")"))
+	  (:else (string-concat (repr (car x)) " " 
+				(list-to-string (cdr x))))))
+
+  (cond ((numberp x) (reprn x))
+	((stringp x) (string-concat "\"" x "\""))
+	((symbolp x) (symbol-to-string x))
+	((consp x) (string-concat "(" (list-to-string x)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings

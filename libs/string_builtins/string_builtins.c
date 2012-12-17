@@ -34,8 +34,20 @@ BUILTIN(builtin_string_length)
   return make_number_from_long_long(strlen(str->data.d_string));
 }
 
+BUILTIN(builtin_stringp)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(stringp VALUE)");
+
+  if (eval(FIRST_ARG, env)->type == limo_TYPE_STRING)
+    return sym_true;
+  else
+    return make_nil();
+}
+
 void limo_dll_init(limo_data *env) 
 {
   INSBUILTIN(builtin_string_nth, "STRING-NTH");
   INSBUILTIN(builtin_string_length, "STRING-LENGTH");
+  INSBUILTIN(builtin_stringp, "STRINGP");
 }
