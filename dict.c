@@ -5,7 +5,7 @@
 
 #include "limo.h"
 
-unsigned int hash_string(char *str)
+inline unsigned int hash_string(char *str)
 {
   int len = strlen(str);
   int hash;
@@ -22,7 +22,7 @@ unsigned int hash_string(char *str)
   return hash;
 }
 
-unsigned hash(limo_data *ld)
+inline unsigned hash(limo_data *ld)
 {
   if (ld->type == limo_TYPE_SYMBOL || ld->type == limo_TYPE_STRING) {
     if (ld->hash != 0)
@@ -71,6 +71,12 @@ void dict_resize(limo_data *dict)
       dict_put_cons(dict, olddict->store[i]);
 }
 
+void dict_check_resize(limo_data *dict)
+{
+  if (3 * (dict->data.d_dict->used) > 2*dict->data.d_dict->size)
+    dict_resize(dict);
+}
+
 void dict_put_cons(limo_data *dict, limo_data *cons)
 {
   limo_data **ld_place;
@@ -78,13 +84,15 @@ void dict_put_cons(limo_data *dict, limo_data *cons)
   if (dict->type != limo_TYPE_DICT)
     limo_error("dict_put(): didn't get a dict.");
 
-  if (3 * (dict->data.d_dict->used) > 2*dict->data.d_dict->size)
-    dict_resize(dict);
+  dict_check_resize(dict);
 
   ld_place = dict_get_place(dict, CAR(cons));
   if (*ld_place == NULL) {
     dict->data.d_dict->used++;
     *ld_place = cons;
+  }
+  else if (CDR(*ld_place) -> type == limo_TYPE_VCACHE) {
+      throw(make_cons(make_string("local variable referenced before assignment"), CAR(cons)));
   }
   else   // reuse existing cons
     CDR(*ld_place) = CDR(cons);

@@ -46,7 +46,6 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "DICTP", builtin_dictp },
   { "BLOCK", builtin_block},
   { "RETURN-FROM", builtin_return_from},
-  { "SETCONSTQ", builtin_setconstq },
   { "READ-STRING", builtin_read_string },
 };
 

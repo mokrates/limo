@@ -8,7 +8,7 @@ inline int (is_nil)(limo_data *ld)
   return ld->type == limo_TYPE_CONS && !ld->data.d_cons;
 }
 
-int limo_equals(limo_data *a, limo_data *b)
+inline int limo_equals(limo_data *a, limo_data *b)
 {
   if (a==b)
     return 1;

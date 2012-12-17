@@ -185,17 +185,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
       return ld;
     else
       res=var_lookup(env, ld);
-    
-    if (res->type == limo_TYPE_CONST) {
-#if STATIC_MACROEX
-      *ld = *res;
-#endif
-      res=CDR(res);
-    }
     return res;
-
-  case limo_TYPE_CONST:
-    return CDR(ld);
 
   default: 
     return ld;

@@ -10,7 +10,7 @@
 ##
 ##enddoc
 
-(defcfun file-readline (f)
+(defun file-readline (f)
   (defun file-readline-list (f)
     (setq c (file-getc f))
     (cond ((eq c "\n") '("\n"))
@@ -28,7 +28,7 @@
 ## 
 ##enddoc
 
-(defcfun file-readlines (f)
+(defun file-readlines (f)
   (setq l (file-readline f))
   (if (eq l "")
       ()

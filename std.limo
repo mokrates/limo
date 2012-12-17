@@ -7,17 +7,13 @@
 
 ;; lisp style defmacro and defun (but with schemy param lists)
 
-(setconstq defmacro 
-	   (macro (name args . body)
-	     (list setconstq name (list 'macro args (cons 'progn body)))))
+(setq defmacro 
+      (macro (name args . body)
+	(list setq name (list 'macro args (cons 'progn body)))))
 
-(setconstq defun
-	   (macro (name args . body)
-	     (list 'setq name (list 'lambda args (cons 'progn body)))))
-
-(setconstq defcfun
-	   (macro (name args . body)
-	     (list 'setconstq name (list 'lambda args (cons 'progn body)))))
+(setq defun
+      (macro (name args . body)
+	 (list 'setq name (list 'lambda args (cons 'progn body)))))
 
 ;; scheme style 'define'
 (defmacro define x
@@ -53,7 +49,7 @@
       x
       (reverse (helper x ()))))
 
-(defcfun deepeq (x y)
+(defun deepeq (x y)
   (cond ((and (consp x) x)  ;; cons and not empty
 	 (and (consp y)
 	      y
@@ -62,7 +58,7 @@
 	(:t (eq x y))))
 
 (defmacro quasiquote (l) ; (not using callerenv)
-  (defcfun helper (l akku)
+  (defun helper (l akku)
     (cond ((not l) akku)
 	  ((and (consp (car l)) 
 		(car l)  ;; not nil
@@ -101,9 +97,9 @@
     ,`(recur ,@(cadr x))))
 
 (defmacro loop x
-  (defcfun lvals (args)
+  (defun lvals (args)
     (if args (cons (car args) (lvals (cddr args))) ()))
-  (defcfun rvals (args)
+  (defun rvals (args)
     (if args (cons (cadr args) (rvals (cddr args))) ()))
 
   `(progn
@@ -111,30 +107,30 @@
 	,@(cdr x))
     ,`(recur ,@(rvals (car x)))))
 
-(defcfun dmap (f a)
-  (defcfun helper (f a)
+(defun dmap (f a)
+  (defun helper (f a)
     (when a
 	  (dcons (f (car a)) (helper f (cdr a)))))
   (helper f a))
 
-(defcfun map (f a)
-  (defcfun helper (f a)
+(defun map (f a)
+  (defun helper (f a)
     (when a
 	  (cons (f (car a)) (helper f (cdr a)))))
   (helper f a))
 
-(defcfun curry (f . args)
+(defun curry (f . args)
   (lambda x
     (apply f (append args x))))
 
-(defcfun list-length (x)
+(defun list-length (x)
   (loop (x x l 0)
 	(if x (recur (cdr x) (+ 1 l)) l)))
 
-(defcfun identity (x) x)
-(defcfun list x x)
+(defun identity (x) x)
+(defun list x x)
 
-(defcfun comp fs
+(defun comp fs
   (cond ((not fs) identity)
 	((not (consp fs)) (throw "(comp {fun}*)"))
 	((not (cdr fs)) (car fs))
@@ -142,13 +138,13 @@
 					      (cdr fs))
 				       x))))))
 
-(defcfun dzipn x
+(defun dzipn x
   (when (and (apply andf (dmap consp x))
 	     (apply andf x))
 	(dcons (dmap car x)
 	       (apply dzipn (dmap cdr x)))))
 
-(defcfun dzip2 (a b)
+(defun dzip2 (a b)
   (when (and (consp a)
 	     (consp b)
 	     a b)
@@ -157,14 +153,14 @@
 	       (dzip2 (cdr a) 
 		      (cdr b)))))
 
-(defcfun not (x) 
+(defun not (x) 
   (if x () :t))
 
-(defcfun caar (l) (car (car l)))
-(defcfun cdar (l) (cdr (car l)))
-(defcfun cadr (l) (car (cdr l)))
-(defcfun cddr (l) (cdr (cdr l)))
-(defcfun cadar (l) (car (cdr (car l))))
+(defun caar (l) (car (car l)))
+(defun cdar (l) (cdr (car l)))
+(defun cadr (l) (car (cdr l)))
+(defun cddr (l) (cdr (cdr l)))
+(defun cadar (l) (car (cdr (car l))))
 
 (defmacro when (c . b)
   `(if ,c ,(cons 'progn b) ()))
@@ -183,7 +179,7 @@
 	    ())
       :t))
 
-(defcfun andf l  ;; and as a function. not shorting
+(defun andf l  ;; and as a function. not shorting
   (cond ((not l) :t)
 	((not (consp l))
 	 (error "ERROR: (andf foo bar)"))
@@ -203,86 +199,86 @@
 	     ,`(progn ,@(cdar items))
 	     ,`(switch ,s ,@(cdr items)))))
 
-(defcfun * os
+(defun * os
   (if os
       (reduce mpq_mul os)
       1))
 
-(defcfun + os
+(defun + os
   (if os
       (if (numberp (car os))
 	  (reduce mpq_add os)
 	  (apply string-concat os))
       0))
 
-(defcfun - (start . os)
+(defun - (start . os)
   (apply + (dcons start (dmap mpq_neg os))))
 
-(defcfun / (start . os)
+(defun / (start . os)
   (apply * (dcons start (dmap mpq_inv os))))
 
-(setconstq < ltn)
-(setconstq > gtn)
-(setconstq = eq)
-(defcfun <= (x y)
+(setq < ltn)
+(setq > gtn)
+(setq = eq)
+(defun <= (x y)
   (or (< x y) (= x y)))
-(defcfun >= (x y)
+(defun >= (x y)
   (or (< x y) (= x y)))
-(setconstq != (comp not eq))
+(setq != (comp not eq))
 
 
-(defcfun fak (n)
+(defun fak (n)
   (defun helper (n akku)
     (if (eq n 1) 
 	akku
 	(helper (mpq_sub n 1) (mpq_mul akku n))))
   (helper n 1))
 
-(defcfun nth (n l)
+(defun nth (n l)
   (cond ((eq n 0) (car l))
 	(:else (nth (mpq_sub n 1) (cdr l)))))
 
-(defcfun range (start end step)  ;; recursive! with generator: drange.
+(defun range (start end step)  ;; recursive! with generator: drange.
   (if (eq start end)
       ()
       (cons start (range (mpq_add start step) end step))))
 
-(defcfun drange (start end step)
+(defun drange (start end step)
   (if (eq start end)
       ()
       (dcons start (drange (mpq_add start step) end step))))
 
-(defcfun lreduce (f l)   ;; fold l with f from left
+(defun lreduce (f l)   ;; fold l with f from left
   (defun recur (akku l)
     (if l
 	(recur (f akku (car l)) (cdr l))
 	akku))
   (recur (car l) (cdr l)))
 
-(setconstq reduce lreduce)
+(setq reduce lreduce)
 
-(defcfun dfilter (p l)    ;; filter list with predicate p
+(defun dfilter (p l)    ;; filter list with predicate p
   (cond ((not l) l)
 	((p (car l)) (dcons (car l) (dfilter p (cdr l))))
 	(:else (dfilter p (cdr l)))))
 
-(defcfun filter (p l)    ;; recursive
+(defun filter (p l)    ;; recursive
   (cond ((not l) l)
 	((p (car l)) (cons (car l) (filter p (cdr l))))
 	(:else (filter p (cdr l)))))
 
-(defcfun append l
-  (defcfun helper (l1 l2)  ;; recursive: with generator: dappend
+(defun append l
+  (defun helper (l1 l2)  ;; recursive: with generator: dappend
     (if (not l1) l2
 	(cons (car l1) (helper (cdr l1) l2))))
   (reduce helper (cons () l)))
 
-
-
-
-(defcfun dappend (l1 l2)
+(defun dappend (l1 l2)
   (if (not l1) l2
       (dcons (car l1) (dappend (cdr l1) l2))))
+
+(defmacro scope x
+  `(,`(lambda () ,`(progn ,@x))))
 
 (defmacro for-each (x l . body)
   (setq it (gensym))
@@ -304,7 +300,7 @@
     ,`(recur ,l)))
 
 
-(defcfun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
+(defun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
   (defun ltx (x) (lt x (car l)))
   (if (not l)
       l
@@ -316,7 +312,7 @@
 
 
 
-(defcfun qsort (lt l) 
+(defun qsort (lt l) 
   (defun ltx (x) (lt x (car l)))
   (if (not l)
       l
@@ -325,11 +321,11 @@
 		    (list (car l))
 		    (qsort lt (filter (comp not ltx) (cdr l)))))))
 
-(defcfun make-symbol (s)
+(defun make-symbol (s)
   (make-sym (string-concat "#:" s)))
 
 (setq _ngensym 0)
-(defcfun gensym x
+(defun gensym x
   (setf _ngensym (+ 1 _ngensym))
   (if x 
       (make-symbol (string-concat (car x) (reprn _ngensym)))
@@ -366,24 +362,21 @@
     ,`(unsetq ,index)))
 
 
-(defcfun assoc (name l)
+(defun assoc (name l)
   (when l
 	(if (eq name (caar l)) 
 	    (car l)
 	    (assoc name (cdr l)))))
 
-(defcfun member (m l)
+(defun member (m l)
   (cond ((not l) ())
 	((eq (car l) m) l)
 	(:else (member m (cdr l)))))
 
-(defmacro scope x
-  `(,`(lambda () ,`(progn ,@x))))
-
 (defmacro set (k v)
   `(setq ,(eval k) ,v))
 
-(defcfun setnth (n l v)
+(defun setnth (n l v)
   (if (eq n 0)
       (setcar l v)
       (setnth (- n 1) (cdr l) v)))
@@ -397,18 +390,18 @@
 (defmacro setplace (k v)
   `(setplacef ,(eval k) ,v))
 
-(defcfun register-place-setter (g s)
+(defun register-place-setter (g s)
   (dict-set _place-setters g s))
 
 (register-place-setter 'car 'setcar)
 (register-place-setter 'cdr 'setcdr)
 (register-place-setter 'dict-getvalue 'dict-set)
 
-(defcfun dict-getvalue (d k)
+(defun dict-getvalue (d k)
   (cdr (dict-get d k)))
 
-(setconstq true :t)
-(setconstq false ())
+(setq true :t)
+(setq false ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

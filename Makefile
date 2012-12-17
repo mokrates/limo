@@ -2,13 +2,13 @@ INSTALL_PREFIX=/usr/local
 LIMO_PREFIX=$(INSTALL_PREFIX)/lib/limo/
 
 DEBUG=-g
-PROFILING= #-pg
+PROFILING=#-pg
 OPTIMIZE=-O3
 OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
 OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
-	dict.o special.o block.o const.o limpy.o
+	dict.o special.o block.o limpy.o
 HEADERS=limo.h config.h
 
 CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)

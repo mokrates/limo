@@ -13,7 +13,6 @@
 #define limo_TYPE_CONS    2
 #define limo_TYPE_LAMBDA  3
 #define limo_TYPE_MACRO   4
-#define limo_TYPE_CONST   5
 #define limo_TYPE_BUILTIN 6
 #define limo_TYPE_GMPQ    7
 #define limo_TYPE_FLOAT   8
@@ -148,9 +147,10 @@ int inter_symbol(limo_data *);
 
 unsigned int hash_string(char *);
 
-#define DICT_INIT_SIZE (1<<3)   // only powers of 2!
+#define DICT_INIT_SIZE (1<<4)   // only powers of 2!
 limo_data *make_dict(void);
 limo_dict *make_dict_size(int minused);
+void dict_check_resize(limo_data *dict);
 void dict_resize(limo_data *dict);
 void dict_put_cons(limo_data *dict, limo_data *cons);
 void dict_put(limo_data *dict, limo_data *key, limo_data *value);
@@ -218,7 +218,6 @@ BUILTIN(builtin_dictp);
 BUILTIN(builtin_block);
 BUILTIN(builtin_return_from);
 
-BUILTIN(builtin_setconstq);
 BUILTIN(builtin_read_string);
 
 limo_data *real_eval(limo_data *form, limo_data *env);

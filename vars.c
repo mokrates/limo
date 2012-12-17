@@ -32,7 +32,11 @@ limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons
     if (cons == NULL)
       throw(make_cons(make_string("variable not bound"), name));
   
-    setq(env, name, make_vcache(cons));
+    //setq(env, name, make_vcache(cons));
+
+    *place = make_cons(name, make_vcache(cons));
+    dict->data.d_dict->used++;
+    dict_check_resize(dict);
     // printf("adding to cache - returning: "); writer(cons); printf("\n");
     return cons;
   }
@@ -73,14 +77,6 @@ void setf(limo_data *env, limo_data *name, limo_data *value)
 
 void setq(limo_data *env, limo_data *name, limo_data *value)
 {
-  limo_data **place;
-
-  place = dict_get_place(CDR(env->data.d_env), name);
-
-  if (*place != NULL)
-    if ((*place) -> type == limo_TYPE_VCACHE)
-      throw(make_cons(make_string("local variable referenced before assignment"), name));
-
   dict_put(CDR(env->data.d_env), name, value);
 }
 

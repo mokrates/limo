@@ -4,12 +4,12 @@
 
 (setq tuerme (list (range 1 (+ 1 anzahl_scheiben) 1) () ()))
 
-(defcfun set-nth (n l v)
+(defun set-nth (n l v)
   (if (eq n 0)
       (setcar l v)
       (set-nth (- n 1) (cdr l) v)))
 
-(defcfun hanoi (von temp nach scheibe)
+(defun hanoi (von temp nach scheibe)
   (when (gtn scheibe 0)
 	(hanoi von nach temp (- scheibe 1))
 	(set-nth nach tuerme (cons (car (nth von tuerme)) (nth nach tuerme)))

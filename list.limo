@@ -1,20 +1,20 @@
 ; -*- scheme -*-
 
-(defcfun list-rslice (l p)  ; get list from p up
+(defun list-rslice (l p)  ; get list from p up
   (if (or (eq p 0) (not l))
       l
       (list-rslice (cdr l) (- p 1))))
 
-(defcfun list-lslice (l p)  ; get list up to p
+(defun list-lslice (l p)  ; get list up to p
   (if (or (not l) (eq p 0))
       ()
       (dcons (car l) (list-lslice (cdr l) (- p 1)))))
 
-(defcfun list-slice (li lo up)  ;; list, lower, upper
+(defun list-slice (li lo up)  ;; list, lower, upper
   (list-rslice (list-lslice li up) lo))
 
-(defcfun list-split (l d) ;; list, delimiter
-  (defcfun split-helper (l d inner outer)
+(defun list-split (l d) ;; list, delimiter
+  (defun split-helper (l d inner outer)
     (cond ((not l) (reverse (cons (reverse inner) outer)))
 	  ((eq (car l) d) (split-helper (cdr l) d () (cons (reverse inner) outer)))
 	  (:else (split-helper (cdr l) d (cons (car l) inner) outer))))

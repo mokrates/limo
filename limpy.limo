@@ -85,7 +85,7 @@
 					     ,`(limpy-assignq ,lval ,args)
 					     ,condition)) ,li))))
 
-(defcfun limpy-getindex (c i)
+(defun limpy-getindex (c i)
   (cond ((consp c)
 	 (nth i c))
 	((dictp c)
@@ -94,7 +94,7 @@
 	 (string-nth c i))
 	(:else (throw "LIMPY-GETINDEX: Don't know how to use this Type"))))
 
-(defcfun limpy-setindex (c i v)
+(defun limpy-setindex (c i v)
   (cond ((consp c)
 	 (setnth i c v))
 	((dictp c)

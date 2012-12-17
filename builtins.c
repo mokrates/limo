@@ -30,6 +30,7 @@ BUILTIN(builtin_unsetq)
 BUILTIN(builtin_lambda)
 {
   limo_data *lambda = make_nil();
+
   if (list_length(arglist) != 3)
     limo_error("lambda: too few arguments");
   lambda->type = limo_TYPE_LAMBDA;
@@ -412,17 +413,6 @@ BUILTIN(builtin_get_annotation)
   
   limo_data *form = eval(FIRST_ARG, env);
   return get_annotation(form);
-}
-
-BUILTIN(builtin_setconstq)
-{
-  if (list_length(arglist) != 3)
-    limo_error("(setconstq NAME VALUE)");
-
-  limo_data *name = CAR(CDR(arglist));
-  limo_data *value = eval(CAR(CDR(CDR(arglist))), env);
-  setq(env, name, make_const(name, value));
-  return value;
 }
 
 BUILTIN(builtin_read_string)
