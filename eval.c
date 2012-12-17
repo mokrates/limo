@@ -4,7 +4,7 @@
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args)
 {
   // (#<lambda:(env . (lambda (a b) body)) args...)
-  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *earglist, *param_env;
+  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env;
   lambda_env = CAR(f->data.d_lambda);
   //  printf("lambda_env: "); writer(lambda_env); printf("\n");
   lambda_list = CDR(f->data.d_lambda);
@@ -15,22 +15,31 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   //  printf("body: "); writer(body); printf("\n");
   arglist=CDR(call);
   //  printf("arglist: "); writer(arglist); printf("\n");
-  if (eval_args)
-    earglist = list_eval(arglist, env);
-  else
-    earglist = arglist;
+
+  /* if (eval_args) */
+  /*   earglist = list_eval(arglist, env); */
+  /* else */
+  /*   earglist = arglist; */
 
   // associating params with names
   param_env = make_env(lambda_env);
   while (!is_nil(params) && params->type==limo_TYPE_CONS) {
-    if (is_nil(earglist) || earglist->type!=limo_TYPE_CONS )
+    if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
       limo_error("eval funcall: too few arguments");
-    setq(param_env, CAR(params), CAR(earglist));
+
+    if (eval_args)
+      setq(param_env, CAR(params), eval(CAR(arglist), env));
+    else
+      setq(param_env, CAR(params), CAR(arglist));
+
     params = CDR(params);
-    earglist = CDR(earglist);
+    arglist = CDR(arglist);
   }
   if (params->type==limo_TYPE_SYMBOL)
-    setq(param_env, params, earglist);
+    if (eval_args)
+      setq(param_env, params, list_eval(arglist, env));
+    else
+      setq(param_env, params, arglist);
 
   //  printf("env: "); writer(param_env); printf("\n");
 
