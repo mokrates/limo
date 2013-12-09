@@ -55,12 +55,12 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->data.d_builtin); break;
   case limo_TYPE_DICT: printf("#<dict: "); writer(dict_to_list(ld)); printf(">"); break;
 
-  case limo_TYPE_EAGAIN:
+  case limo_TYPE_THUNK:
   case limo_TYPE_LAMBDA: 
   case limo_TYPE_MACRO:
     printf("#<%s:", (ld->type==limo_TYPE_LAMBDA?"lambda":
 		     (ld->type==limo_TYPE_MACRO?"macro":
-		      "eagain")));
+		      "thunk")));
     writer(CDR(ld->data.d_lambda));
     if (CAR(ld->data.d_lambda) != globalenv) {
       printf(", env: ");

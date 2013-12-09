@@ -90,12 +90,16 @@
 		       (cons (list 'quote (car l)) akku)))))
    (cons 'list (reverse (helper l ()))))
 
+; limo-loop/recur
+; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))
 (defmacro limo-loop x
   `(progn
     ,`(defun recur ,(car x)
 	,@(cddr x))
     ,`(recur ,@(cadr x))))
 
+; loop/recur
+; ex: (loop (a start-a b start-b ...) body: (if endp returnval (recur next-a next-b ...)))
 (defmacro loop x
   (defun lvals (args)
     (if args (cons (car args) (lvals (cddr args))) ()))
@@ -300,26 +304,12 @@
     ,`(recur ,l)))
 
 
-(defun dqsort (lt l)  ;; seems to be less good than qsort. slower and deeper recursion (!)
-  (defun ltx (x) (lt x (car l)))
-  (if (not l)
-      l
-      (reduce append 
-	      (list (dqsort lt (dfilter ltx (cdr l)))
-		    (list (car l)) 
-		    (dqsort lt (dfilter (comp not ltx) (cdr l)))))))
-
-
-
-
 (defun qsort (lt l) 
   (defun ltx (x) (lt x (car l)))
-  (if (not l)
-      l
-      (reduce append 
-	      (list (qsort lt (filter ltx (cdr l)))
-		    (list (car l))
-		    (qsort lt (filter (comp not ltx) (cdr l)))))))
+  (when l (append 
+	   (qsort lt (filter ltx (cdr l)))
+	   (list (car l))
+	   (qsort lt (filter (comp not ltx) (cdr l))))))
 
 (defun make-symbol (s)
   (make-sym (string-concat "#:" s)))
@@ -335,6 +325,8 @@
   `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
 	  ,@body))
 
+; unify
+; ex: (unify (a b c) '(1 2 3)) ; (a<-1, b<-2, c<-3)
 (defmacro unify (l v)       ; destructuring assignment.
   (setq index (gensym))
   `(progn

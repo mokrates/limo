@@ -58,10 +58,10 @@ BUILTIN(builtin_macroexpand_1)
   }
 
   res = real_eval(FIRST_ARG, env);
-  if (res->type == limo_TYPE_EAGAIN) {
-    return make_cons(CDR(res->data.d_eagain),
-		     env!=CAR(res->data.d_eagain)?
-		     CAR(res->data.d_eagain):make_sym(":hidden"));
+  if (res->type == limo_TYPE_THUNK) {
+    return make_cons(CDR(res->data.d_thunk),
+		     env!=CAR(res->data.d_thunk)?
+		     CAR(res->data.d_thunk):make_sym(":hidden"));
   }
   else
     return make_nil();
@@ -77,7 +77,7 @@ BUILTIN(builtin_eval)
   if (list_length(arglist) == 3)
     alt_env = eval(SECOND_ARG, env);
 
-  return make_eagain(eval(FIRST_ARG, env), alt_env);
+  return make_thunk(eval(FIRST_ARG, env), alt_env);
 }
 
 BUILTIN(builtin_apply)
@@ -111,7 +111,7 @@ BUILTIN(builtin_progn)
 #if STATIC_MACROEX
     *orig_arglist = *CAR(arglist);
 #endif
-    return make_eagain(CAR(arglist), env);
+    return make_thunk(CAR(arglist), env);
   }   
 
   while (arglist->type == limo_TYPE_CONS && !is_nil(CDR(arglist))) {
@@ -121,7 +121,7 @@ BUILTIN(builtin_progn)
   if (arglist->type != limo_TYPE_CONS)
     limo_error("(progn ...)");
 
-  return make_eagain(CAR(arglist), env);
+  return make_thunk(CAR(arglist), env);
 }
 
 BUILTIN(builtin_if)
@@ -136,9 +136,9 @@ BUILTIN(builtin_if)
   ldelse = CAR(CDR(CDR(CDR(arglist))));
 
   if (is_nil(eval(cond, env)))
-    return make_eagain(ldelse, env);
+    return make_thunk(ldelse, env);
   else
-    return make_eagain(ldthen, env);
+    return make_thunk(ldthen, env);
 }
 
 BUILTIN(builtin_list)
@@ -242,7 +242,7 @@ BUILTIN(builtin_try)
   if (!res) {
     env = make_env(env);
     setq(env, make_sym("_EXCEPTION"), exception?exception:make_nil());
-    return make_eagain(SECOND_ARG, make_env(env));
+    return make_thunk(SECOND_ARG, make_env(env));
   }
 }
 

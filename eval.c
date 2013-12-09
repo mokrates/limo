@@ -53,7 +53,7 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 
   //  printf("env: "); writer(param_env); printf("\n");
 
-  return make_eagain(body, param_env);
+  return make_thunk(body, param_env);
 }
 
 limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
@@ -89,7 +89,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 #if STATIC_MACROEX
   *call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
 #endif
-  return make_eagain(res, env);
+  return make_thunk(res, env);
 }
 
 limo_data *ld_dup(limo_data *ld)
@@ -155,12 +155,12 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     if (!form)
       limo_error("eval(): wtf!");
 
-    if (form->type == limo_TYPE_EAGAIN) {
+    if (form->type == limo_TYPE_THUNK) {
       limo_data *next_form;
-      //      printf("EAGAIN:"); writer(form); printf("\n");
+      //      printf("THUNK:"); writer(form); printf("\n");
       again=1;
-      next_form= CDR(form->data.d_eagain);
-      env      = CAR(form->data.d_eagain);
+      next_form= CDR(form->data.d_thunk);
+      env      = CAR(form->data.d_thunk);
       form     = next_form;
     }
     else

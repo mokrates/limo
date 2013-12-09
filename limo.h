@@ -21,7 +21,7 @@
 #define limo_TYPE_DICT    10
 
 #define limo_TYPE_ENV     11
-#define limo_TYPE_EAGAIN  12  // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_THUNK   12  // eval again (for tail-opt) (cons expt env)
 
 #define limo_TYPE_VCACHE  13
 
@@ -46,7 +46,7 @@ typedef struct limo_DATA {
     struct limo_DICT *d_dict;
     void *d_special_intern;
 #define d_env d_lambda
-#define d_eagain d_lambda
+#define d_thunk d_lambda
 #define d_special d_lambda
 #define d_vcache d_lambda
   } data;
@@ -122,7 +122,7 @@ limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *);
 limo_data *make_builtin(limo_builtin);
 limo_data *make_env(limo_data *up);
-limo_data *make_eagain(limo_data *expr, limo_data *env);
+limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
 limo_data *make_string(char *);
 

@@ -16,6 +16,28 @@ BUILTIN(builtin_reprn)
   return res;
 }
 
+BUILTIN(builtin_idivmod)
+{
+  limo_data *q = make_number();
+  limo_data *r = make_number();
+  limo_data *res = make_cons(q, make_cons(r, make_nil()));
+
+  if (list_length(arglist) != 3)
+    limo_error("idivmod needs 2 args");
+
+  limo_data *n = eval(FIRST_ARG, env);
+  limo_data *d = eval(SECOND_ARG, env);
+
+  if (!mpz_cmp_si(mpq_numref(LIMO_MPQ(d)), 0))
+    limo_error("integer division by zero");
+  
+  mpz_tdiv_qr(mpq_numref(LIMO_MPQ(q)),
+	      mpq_numref(LIMO_MPQ(r)),
+	      mpq_numref(LIMO_MPQ(n)),
+	      mpq_numref(LIMO_MPQ(d)));
+  return res;
+}
+
 #define CALC2_BUILTIN(fun) BUILTIN(builtin_##fun ) \
 { \
   limo_data *res = make_number(); \
@@ -58,7 +80,6 @@ BUILTIN(builtin_gtn)
   else
     return make_nil();
 }
-
 
 limo_data *make_number(void)
 {
@@ -105,6 +126,7 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_SUB", builtin_mpq_sub },
   { "MPQ_MUL", builtin_mpq_mul },
   { "MPQ_DIV", builtin_mpq_div },
+  { "IDIVMOD", builtin_idivmod },
 };
 
 // needed for gmp, because it uses a
