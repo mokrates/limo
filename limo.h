@@ -82,6 +82,9 @@ extern limo_data *traceplace;
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env)
 
+#define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
+#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
+
 #define LIMO_UNGETC_BUF 20
 typedef struct limo_READER_STREAM {
   union {

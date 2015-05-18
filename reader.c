@@ -1,13 +1,69 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "limo.h"
 
 #define BUFFER_SIZE 257
 
+extern char **environ;
+
 char *prompt=NULL;
+
+///// history file for readline
+
+// TODO: the two following functions stink
+// and i don't quite know, why read history
+// is called after every [return] on readline.
+
+void limo_history_write_history(char *rl)
+{
+  char *home;
+  char **env;
+  char history_file_name[256];
+  FILE *f;
+
+  env=environ;
+  while (*env != NULL && strncmp("HOME=", *env, 5))
+    env++;
+
+  if (*env != NULL) {
+    home = *env+5;
+    strncpy(history_file_name, home, 200);
+    strcat(history_file_name, "/.limo_history");
+
+    write_history(history_file_name);
+  }
+}
+
+void limo_history_read_history(void)
+{
+  char *home;
+  char **env;
+  static char history_file_name[256]="\0";
+  FILE *f;
+
+  if (history_file_name[0]!='\0')
+    return;
+
+  env=environ;
+  while (*env != NULL && strncmp("HOME=", *env, 5))
+    env++;
+
+  if (*env != NULL) {
+    home = *env+5;
+    strncpy(history_file_name, home, 200);
+    strcat(history_file_name, "/.limo_history");
+
+    clear_history();
+    read_history(history_file_name);
+  }
+}
+
+
+///// !history file for readline
 
 char *rl_completer_generator(const char *text, int state) 
 {
@@ -70,8 +126,10 @@ int limo_getc(reader_stream *rs)
       else {
 	rs->stream.readline = (char *)GC_malloc(strlen(rl)+2);
 	strcpy(rs->stream.readline, rl);
-	if (strlen(rl))
+	if (strlen(rl)) {
 	  add_history(rl);
+	  limo_history_write_history(rl);
+	}
 	rs->stream.readline[strlen(rs->stream.readline)]='\n';
 	free(rl);
 
@@ -97,6 +155,7 @@ reader_stream *limo_rs_make_readline(void)
   memset(rs, 0, sizeof *rs);
 
   rl_completion_entry_function = rl_completer_generator;
+  limo_history_read_history();
 
   rs->type = RS_READLINE;
   rs->stream.readline = (char *)GC_malloc(1);
@@ -182,7 +241,7 @@ limo_data *read_list(reader_stream *f)
 
   c=read_skip_space_comments(f);
   while (1) {
-    if (c == ')') { // ( for emacs
+    if (c == ')' || c==']') { // ( for emacs
       (*ld_into)->data.d_cons = NULL;
       break;
     }
@@ -243,7 +302,7 @@ limo_data *read_sym_num(reader_stream *f)
 
   for (i=0; i<BUFFER_SIZE-1; ++i) {
     c=limo_getc(f);
-    if (strchr(")", c) || isspace(c)) {  // ( for emacs
+    if (strchr(")]", c) || isspace(c)) {  // ( for emacs
       limo_ungetc(c, f);
       break;
     }
@@ -308,6 +367,9 @@ limo_data *reader(reader_stream *f)
 
   if (c=='(') { // list
     return annotate(read_list(f), la);
+  }
+  else if (c=='[') { // (BRACKET list...)
+    return annotate(make_cons(make_sym("BRACKET"), read_list(f)), la);
   }
   else if (c=='"') 
     return annotate(read_string(f), la);

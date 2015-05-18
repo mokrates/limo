@@ -148,12 +148,15 @@ BUILTIN(builtin_list)
 
 BUILTIN(builtin_cons)
 {
+  REQUIRE_ARGC("cons", 2);
+
   return make_cons(eval(CAR(CDR(arglist)),env),
 		   eval(CAR(CDR(CDR(arglist))), env));
 }
 
 BUILTIN(builtin_dcons)
 {
+  REQUIRE_ARGC("dcons", 2);
   return make_dcons(eval(CAR(CDR(arglist)), env), CAR(CDR(CDR(arglist))), env);
 }
 
@@ -178,6 +181,8 @@ BUILTIN(builtin_car)
 
 BUILTIN(builtin_cdr)
 {
+  REQUIRE_ARGC("cdr", 1);
+
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
     limo_error("error: (cdr CONS!=nil)");
@@ -187,6 +192,8 @@ BUILTIN(builtin_cdr)
 
 BUILTIN(builtin_eq)
 {
+  REQUIRE_ARGC("eq", 2);
+
   if (limo_equals(eval(FIRST_ARG, env), eval(SECOND_ARG, env)))
     return make_sym(":T");
     else return make_nil();
@@ -194,6 +201,8 @@ BUILTIN(builtin_eq)
 
 BUILTIN(builtin_write)
 {
+  REQUIRE_ARGC("write", 1);
+
   limo_data *ld = eval(FIRST_ARG, env);
   writer(ld);
   printf("\n");
@@ -202,6 +211,8 @@ BUILTIN(builtin_write)
 
 BUILTIN(builtin_setf)
 {
+  REQUIRE_ARGC("setf", 2);
+
   limo_data *val=eval(SECOND_ARG, env);
   setf(env, FIRST_ARG, val);
   return val;
@@ -209,6 +220,8 @@ BUILTIN(builtin_setf)
 
 BUILTIN(builtin_setcar)
 {
+  REQUIRE_ARGC("setcar", 2);
+
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
@@ -221,6 +234,8 @@ BUILTIN(builtin_setcar)
 
 BUILTIN(builtin_setcdr)
 {
+  REQUIRE_ARGC("setcdr", 2);
+
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 

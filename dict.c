@@ -176,7 +176,7 @@ BUILTIN(builtin_dict_get)
 
   key = eval(SECOND_ARG, env);
   res = dict_get_place(dict, key);
-  if (res == NULL)
+  if (*res == NULL)
     throw(make_cons(make_string("Could not find key"), key));
   return *res;
 }

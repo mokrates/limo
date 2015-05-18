@@ -43,6 +43,11 @@ BUILTIN(builtin_idivmod)
   limo_data *res = make_number(); \
   if (list_length(arglist) != 3) \
     limo_error(#fun " needs 2 args!"); \
+\
+  limo_data *first = eval(FIRST_ARG, env); \
+  limo_data *second = eval(SECOND_ARG, env); \
+  REQUIRE_TYPE(#fun, first, limo_TYPE_GMPQ); \
+  REQUIRE_TYPE(#fun, second, limo_TYPE_GMPQ); \
   fun(LIMO_MPQ(res), LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))); \
   return res; \
 }

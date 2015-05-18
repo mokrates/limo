@@ -13,7 +13,9 @@
 
 (setq defun
       (macro (name args . body)
-	 (list 'setq name (list 'lambda args (cons 'progn body)))))
+	(list 'setq name (list 'lambda args (cons 'progn body)))))
+
+
 
 ;; scheme style 'define'
 (defmacro define x
@@ -423,6 +425,25 @@
 	((stringp x) (string-concat "\"" x "\""))
 	((symbolp x) (symbol-to-string x))
 	((consp x) (string-concat "(" (list-to-string x)))))
+
+(defmacro bracket (o m)
+  `(dict-getvalue ,o ,`(quote ,m)))
+
+(defmacro bracket-set (d k v)
+  `(dict-set ,d ,`(quote ,k) ,v))
+
+(register-place-setter 'bracket 'bracket-set)
+
+(defun new (c . args)
+  (setq ret (make-dict))
+  (for-each methpair (dict-to-list c)
+	    (dict-set ret (car methpair) (curry (cdr methpair) ret)))
+  (apply [ret init] args)  ; call the constructor
+  ret)
+
+(defmacro defmethod (class name args . body)
+  `(dict-set ,class ,`(quote ,name)
+	     ,`(lambda ,args ,`(progn ,@body))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
