@@ -140,7 +140,7 @@ limo_data *stacktrace;
 limo_data *exception;
 sigjmp_buf *ljbuf;
 
-inline int is_nil(limo_data *);
+int is_nil(limo_data *);
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);

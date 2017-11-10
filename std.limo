@@ -229,7 +229,7 @@
 (defun <= (x y)
   (or (< x y) (= x y)))
 (defun >= (x y)
-  (or (< x y) (= x y)))
+  (or (> x y) (= x y)))
 (setq != (comp not eq))
 
 
@@ -245,12 +245,12 @@
 	(:else (nth (mpq_sub n 1) (cdr l)))))
 
 (defun range (start end step)  ;; recursive! with generator: drange.
-  (if (eq start end)
+  (if (>= start end)
       ()
       (cons start (range (mpq_add start step) end step))))
 
 (defun drange (start end step)
-  (if (eq start end)
+  (if (>= start end)
       ()
       (dcons start (drange (mpq_add start step) end step))))
 

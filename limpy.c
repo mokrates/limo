@@ -1,5 +1,6 @@
 #include "limo.h"
 #include <stdarg.h>
+#include <ctype.h>
 
 // chartokens: (, ), {, }, [, ], ',', ;, *, %, $
 #define limpy_TOKEN_EQUALS 1

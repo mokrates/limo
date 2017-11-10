@@ -2,6 +2,7 @@
 #include <gc/gc.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 limo_data *make_limo_data(void)
 {
@@ -13,7 +14,7 @@ limo_data *make_nil(void)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_CONS;
-  ld->data.d_cons = NULL;
+  assert(ld->data.d_cons == NULL);
   return ld;
 }
 
