@@ -1,0 +1,62 @@
+# -*- mode: scheme -*-
+
+# Diese Datei läd die cvector.so ein, welche die Basis der cvectors implementiert.
+#
+# Hier sind hoeherlevelige Funktionen und Tests definiert.
+
+(loaddll "/home/mmolle/Dropbox/bacc/limo/libs/cvector/cvector.so")
+
+; safe setting of cvector-values
+(define (cvector-ref cv index)
+  (if (or (< index 0) (>= index (cvector-length cv))
+	  (not (and (numberp index) (cvectorp cv))))
+      (throw "cvector-ref: out of bounds or wrong type")
+      (cvector-ref/unsafe cv index)))
+
+; safe getting of cvector-values
+(define (cvector-set cv index value)
+  (if (or (< index 0) (>= index (cvector-length cv))
+	  (not (and (numberp index) (numberp value) (cvectorp cv))))
+      (throw "cvector-set: out of bounds")
+      (cvector-set/unsafe cv index value)))
+
+; build a dynamic list from a cvector
+(define (cvector2dlist cv)
+  (define (helper cv from)
+    (if (= from (cvector-length cv))
+	()
+	(dcons (cvector-ref/unsafe cv from) (helper cv (+ 1 from)))))
+  (helper cv 0))
+
+;; register a placesetter
+(register-place-setter 'cvector-ref 'cvector-set)
+
+;; (write "Teste cvector")
+;; (setq cv (make-cvector _float 10))  # erstelle einen cvector
+;; (write cv)
+
+;; (write "Ist cv ein cvector?")
+;; (write (cvectorp cv))
+;; (assert (cvectorp cv))
+
+;; (write "ist 'blubb ein cvector?")
+;; (write (cvectorp 'blubb))
+;; (assert (not (cvectorp 'blubb)))
+
+;; (write "(cvector-length cv) -> 10")
+;; (write (cvector-length cv))
+;; (assert (= (cvector-length cv) 10))
+
+;; (write "(cvector-type cv) -> _FLOAT")
+;; (write (cvector-type cv))
+;; (assert (= (cvector-type cv) _FLOAT))
+
+;; (write "(cvector-set cv 5 (/ 1 2))")
+;; (write (cvector-set cv 5 (/ 1 2)))
+
+;; (write "(cvector-get cv 5)")
+;; (write (cvector-ref cv 5))
+;; ; (assert (= (cvector-get cv 5) (/ 1 2)))
+
+;; (write "(undyn (cvector2dlist cv))")
+;; (write (undyn (cvector2dlist cv)))

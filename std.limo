@@ -159,7 +159,7 @@
 	       (dzip2 (cdr a) 
 		      (cdr b)))))
 
-(defun not (x) 
+(defun not (x)
   (if x () :t))
 
 (defun caar (l) (car (car l)))
@@ -297,7 +297,6 @@
     ,`(recur ,l)))
 
 (defmacro for-list (x l . body)
-  (setq it (gensym))
   `(progn
     ,`(defun recur ,`(,x)
 	,`(when ,x 

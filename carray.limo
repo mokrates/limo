@@ -1,0 +1,37 @@
+; -*- mode: scheme -*-
+
+(define (make-carray type dimensions)
+  (cons 'carray (cons (make-cvector type (apply * dimensions)) dimensions)))
+
+(define (carray-type arr)
+  (cvector-type (cadr arr)))
+
+(define (carray-dimensions carray)
+  (cddr carray))
+
+(define (carray-index pos dimensions)
+  (define (helper pos dim dimakku)
+    (if (not pos)
+	0
+	(+ (* (car pos) dimakku)
+	   (helper (cdr pos)
+		   (cdr dim)
+		   (* dimakku (car dim))))))
+  (helper pos dimensions 1))
+
+;; TODO: does not yet check the shape of the array
+(define (carray-ref arr pos)
+  (cvector-ref (cadr arr) (carray-index pos (cddr arr))))
+
+(define (carray-ref/unsafe arr pos)
+  (cvector-ref/unsafe (cadr arr) (carray-index pos (cddr arr))))
+
+;; TODO: does noch yet check the shape of the array
+(define (carray-set arr pos val)
+  (cvector-set (cadr arr) (carray-index pos (cddr arr)) val))
+
+(define (carray-set/unsafe! arr pos val)
+  (cvector-set/unsafe (cadr arr) (carray-index pos (cddr arr)) val))
+
+;; TODO: copy-carray
+;; TODO: carray-map!, carray-map, carray-foldl, carray-foldr, carray2list, list2carray

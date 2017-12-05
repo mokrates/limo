@@ -119,6 +119,15 @@ limo_data *make_number_from_long_long(long long i)
   return res;
 }
 
+limo_data *make_number_from_double(double d)
+{
+  limo_data *res = make_number();
+
+  mpq_set_d(LIMO_MPQ(res), (double)d);
+  mpq_canonicalize(LIMO_MPQ(res));
+  return res;
+}
+
 struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "NUMBERP", builtin_numberp },
   { "REPRN", builtin_reprn },

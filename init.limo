@@ -7,6 +7,14 @@
 (load (string-concat _limo-prefix "file.limo"))
 (load (string-concat _limo-prefix "limpy.limo"))
 
+################################
+# CVectors / CArrays / VIGRA_C #
+################################
+
+(load (string-concat _limo-prefix "cvector.limo"))
+
+################################
+
 (setq executelist '(progn))
 (while argv
        (cond ((eq "-e" (car argv))
@@ -21,8 +29,9 @@
 		  (eq "-h" (car argv)) 
 		  (eq "--help" (car argv)))
 	      (write "limo")
-	      (write "usage: limo { -i <file> | -e <string> | -h } [ <file> ] }")
+	      (write "usage: limo [ -n ] { -i <file> | -e <string> | -h } [ <file> ] }")
 	      (write "")
+	      (write "    -n : doesn't execute init.limo. (you get the barebone)")
 	      (write "    -i file: execute file, resume execution of command line")
 	      (write "    -e string: execute string, resume execution of command line")
 	      (write "    -h, -?, --help : this help")

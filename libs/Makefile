@@ -1,4 +1,4 @@
-LIBS=file string_builtins
+LIBS=file string_builtins cvector vigra_limo mgr2sdl
 
 .PHONY: all clean realclean $(LIBS)
 
