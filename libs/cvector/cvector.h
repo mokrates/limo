@@ -1,6 +1,5 @@
 #define INSBUILTIN(f, name)    setq(env, make_sym(name), make_builtin(f))
 #define INSBUILTINVAR(v, name) setq(env, make_sym(name), v)
-#define GETINTFROMMPQ(mpq)     ((int)mpq_get_d(*(mpq)->data.d_mpq))
 #define GETCVTYPE(cv)          (((cvector *)(CDR((cv)->data.d_special) -> data.d_special_intern))->type)
 #define GETCVLENGTH(cv)        (((cvector *)(CDR((cv)->data.d_special) -> data.d_special_intern))->length)
 #define GETCVVECTOR(cv)        (((cvector *)(CDR((cv)->data.d_special) -> data.d_special_intern))->vector)

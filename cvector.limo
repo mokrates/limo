@@ -4,7 +4,7 @@
 #
 # Hier sind hoeherlevelige Funktionen und Tests definiert.
 
-(loaddll "/home/mmolle/Dropbox/bacc/limo/libs/cvector/cvector.so")
+(loaddll (string-concat _limo-prefix "cvector.so"))
 
 ; safe setting of cvector-values
 (define (cvector-ref cv index)
@@ -30,6 +30,15 @@
 
 ;; register a placesetter
 (register-place-setter 'cvector-ref 'cvector-set)
+
+;; cvector-map
+(define (cvector-map fun . cvs)
+  (setq newcv (make-cvector (cvector-type (car cvs)) (cvector-length (car cvs))))
+  (for-each i (drange 0 (cvector-length (car cvs)) 1)
+	    (cvector-set newcv i
+			 (apply fun (dmap (lambda (v) (cvector-ref/unsafe v i)) cvs))))
+  newcv)
+	    
 
 ;; (write "Teste cvector")
 ;; (setq cv (make-cvector _float 10))  # erstelle einen cvector

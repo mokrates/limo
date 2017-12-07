@@ -238,6 +238,8 @@ BUILTIN(builtin_read_string);
 BUILTIN(builtin_symbolp);
 BUILTIN(builtin_symbol_to_string);
 
+BUILTIN(builtin_system);
+
 limo_data *real_eval(limo_data *form, limo_data *env);
 limo_data *eval(limo_data *form, limo_data *env);
 limo_data *ld_dup(limo_data *list);

@@ -9,3 +9,10 @@
 	 (map (lambda () (make-carray _float (list width height))) '(1 2 3 4)))  ; create 4 carrays with same width/height
   (vigra-importrgbaimage-c (cadr r) (cadr g) (cadr b) (cadr a) width height filename)
   (list 'IMAGE r g b a))
+
+(define (vigra-exportrgbaimage img filename)
+  (unify (_ r g b a) img)
+  (vigra-exportrgbaimage-c (cadr r) (cadr g) (cadr b) (cadr a)
+			   (car (carray-dimensions r))
+			   (cadr (carray-dimensions r))
+			   filename ()))

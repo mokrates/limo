@@ -33,5 +33,10 @@
 (define (carray-set/unsafe! arr pos val)
   (cvector-set/unsafe (cadr arr) (carray-index pos (cddr arr)) val))
 
+(define (carray-map func . carrays)
+  (cons 'carray (cons (apply cvector-map
+			     (cons func (dmap cadr carrays)))
+		      (cddr (car carrays)))))
+
 ;; TODO: copy-carray
 ;; TODO: carray-map!, carray-map, carray-foldl, carray-foldr, carray2list, list2carray

@@ -75,22 +75,21 @@
 		      (cons (list 'list (list 'quote (car l))) akku)))))
   (cons 'append (reverse (helper l ()))))
 
-'(defmacro quasiquote (l) ; (using _callerenv)
-   (defun helper (l akku)
-     (cond ((not l) akku)
-	   ((and (consp (car l)) 
-		 (car l)  ;; not nil
-		 (eq (caar l) 'comma))
-	    (helper (cdr l) 
-		    (cons (car (cdar l)) akku)))
-	   ((and (consp (car l))
-		 (car l)
-		 (eq (caar l) 'splice))
-	    (helper (cdr l) 
-		    (helper (eval (car (cdar l)) _callerenv) akku)))
-	   (:t (helper (cdr l) 
-		       (cons (list 'quote (car l)) akku)))))
-   (cons 'list (reverse (helper l ()))))
+'(defmacro quasiquote (l)    ; dynamic version  (doesn't work yet. problems with thunk-eval in funcall-eval)
+  (defun helper (l)
+    (cond ((not l)         ; end of list
+	   ())
+	  ((and (consp (car l))  ; comma
+		(car l)
+		(eq (caar l) 'comma))
+	   (dcons (list 'list (cadar l)) (helper (cdr l))))  
+	  ((and (consp (car l))  ; splice
+		(car l)
+		(eq (caar l) 'splice))
+	   (dcons (cadar l) (helper (cdr l))))
+	  (:t (dcons (list 'list (list 'quote (car l)))  ; just a symbol to be quoted
+		     (helper (cdr l))))))
+  (dcons 'dappend (helper l)))
 
 ; limo-loop/recur
 ; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))
@@ -279,9 +278,11 @@
 	(cons (car l1) (helper (cdr l1) l2))))
   (reduce helper (cons () l)))
 
-(defun dappend (l1 l2)
-  (if (not l1) l2
-      (dcons (car l1) (dappend (cdr l1) l2))))
+(defun dappend l
+  (defun helper (l1 l2)
+    (if (not l1) l2
+	(dcons (car l1) (helper (cdr l1) l2))))
+  (reduce helper (dcons () l)))
 
 (defmacro scope x
   `(,`(lambda () ,`(progn ,@x))))

@@ -26,6 +26,9 @@ extern "C" {
     else
       limo_error("CVECTOR expected");
   }
+
+  /////////////////////////////////
+  // information about image-files
   
   BUILTIN(builtin_vigra_imagewidth_c)
   {
@@ -67,6 +70,9 @@ extern "C" {
     return make_number_from_long_long(vigra_imagenumextrabands_c(filename->data.d_string));
   }
 
+  ////////////////////////////////////////
+  // import image files
+
   BUILTIN(builtin_vigra_importrgbaimage_c)
   {
     limo_data *ld_r, *ld_g, *ld_b, *ld_a, *ld_width, *ld_height, *ld_filename;
@@ -80,7 +86,7 @@ extern "C" {
     ld_a = eval(CAR(arglist), env);        arglist=CDR(arglist);
     ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
     ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
-    ld_filename = eval(CAR(arglist), env); arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env);
 
     width = GETINTFROMMPQ(ld_width);
     height = GETINTFROMMPQ(ld_height);
@@ -90,8 +96,137 @@ extern "C" {
 				  width, height,
 				  ld_filename->data.d_string);
 
-    return make_nil(); //make_number_from_long_long(res);
+    return make_number_from_long_long(res);
   }
+
+  BUILTIN(builtin_vigra_importrgbimage_c)
+  {
+    limo_data *ld_r, *ld_g, *ld_b, *ld_width, *ld_height, *ld_filename;
+    int width, height, res;
+
+    REQUIRE_ARGC("vigra_importrgbimage_c", 6);
+    arglist=CDR(arglist);
+    ld_r = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_g = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_b = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env);
+
+    width = GETINTFROMMPQ(ld_width);
+    height = GETINTFROMMPQ(ld_height);
+
+    res = vigra_importrgbimage_c((float *)GETCVVECTOR(ld_r), (float *)GETCVVECTOR(ld_g),
+				  (float *)GETCVVECTOR(ld_b),
+				  width, height,
+				  ld_filename->data.d_string);
+
+    return make_number_from_long_long(res);
+  }
+
+  BUILTIN(builtin_vigra_importgrayimage_c)
+  {
+    limo_data *ld_pixel, *ld_width, *ld_height, *ld_filename;
+    int width, height, res;
+
+    REQUIRE_ARGC("vigra_importgrayimage_c", 4);
+    arglist=CDR(arglist);
+    ld_pixel = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env);
+
+    width = GETINTFROMMPQ(ld_width);
+    height = GETINTFROMMPQ(ld_height);
+
+    res = vigra_importgrayimage_c((float *)GETCVVECTOR(ld_pixel),
+				 width, height,
+				 ld_filename->data.d_string);
+
+    return make_number_from_long_long(res);
+  }
+
+  ////////////////////////////////////////////////////////
+  // export image files
+  BUILTIN(builtin_vigra_exportrgbaimage_c)
+  {
+    limo_data *ld_r, *ld_g, *ld_b, *ld_a, *ld_width, *ld_height, *ld_filename, *ld_rescalerange;
+    int width, height, res;
+
+    REQUIRE_ARGC("vigra_exportrgbaimage_c", 8);
+    arglist=CDR(arglist);
+    ld_r = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_g = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_b = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_a = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env); arglist=CDR(arglist);
+    ld_rescalerange = eval(CAR(arglist), env); 
+
+    width = GETINTFROMMPQ(ld_width);
+    height = GETINTFROMMPQ(ld_height);
+
+    res = vigra_exportrgbaimage_c((float *)GETCVVECTOR(ld_r), (float *)GETCVVECTOR(ld_g),
+				  (float *)GETCVVECTOR(ld_b), (float *)GETCVVECTOR(ld_a),
+				  width, height,
+				  ld_filename->data.d_string, !is_nil(ld_rescalerange));
+
+    return make_number_from_long_long(res);
+  }
+
+  BUILTIN(builtin_vigra_exportrgbimage_c)
+  {
+    limo_data *ld_r, *ld_g, *ld_b, *ld_width, *ld_height, *ld_filename, *ld_rescalerange;
+    int width, height, res;
+
+    REQUIRE_ARGC("vigra_exportrgbimage_c", 7);
+    arglist=CDR(arglist);
+    ld_r = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_g = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_b = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env); arglist=CDR(arglist);
+    ld_rescalerange = eval(CAR(arglist), env); 
+
+    width = GETINTFROMMPQ(ld_width);
+    height = GETINTFROMMPQ(ld_height);
+
+    res = vigra_exportrgbimage_c((float *)GETCVVECTOR(ld_r), (float *)GETCVVECTOR(ld_g),
+				  (float *)GETCVVECTOR(ld_b),
+				  width, height,
+				  ld_filename->data.d_string, !is_nil(ld_rescalerange));
+
+    return make_number_from_long_long(res);
+  }
+
+  BUILTIN(builtin_vigra_exportgrayimage_c)
+  {
+    limo_data *ld_pixel, *ld_width, *ld_height, *ld_filename, *ld_rescalerange;
+    int width, height, res;
+
+    REQUIRE_ARGC("vigra_exportgrayimage_c", 5);
+    arglist=CDR(arglist);
+    ld_pixel = eval(CAR(arglist), env);        arglist=CDR(arglist);
+    ld_width = eval(CAR(arglist), env);    arglist=CDR(arglist);
+    ld_height = eval(CAR(arglist), env);   arglist=CDR(arglist);
+    ld_filename = eval(CAR(arglist), env); arglist=CDR(arglist);
+    ld_rescalerange = eval(CAR(arglist), env); 
+
+    width = GETINTFROMMPQ(ld_width);
+    height = GETINTFROMMPQ(ld_height);
+
+    res = vigra_exportgrayimage_c((float *)GETCVVECTOR(ld_pixel),
+				  width, height,
+				  ld_filename->data.d_string, !is_nil(ld_rescalerange));
+
+    return make_number_from_long_long(res);
+  }
+
+  
+  ////////////////////////////////////////////////////////
+  // DLL-init
   
   void limo_dll_init(limo_data *env) 
   {
@@ -102,5 +237,10 @@ extern "C" {
     INSBUILTIN(builtin_vigra_imagenumbands_c, "VIGRA-IMAGENUMBANDS-C");
     INSBUILTIN(builtin_vigra_imagenumextrabands_c, "VIGRA-IMAGENUMEXTRABANDS-C");
     INSBUILTIN(builtin_vigra_importrgbaimage_c, "VIGRA-IMPORTRGBAIMAGE-C");
+    INSBUILTIN(builtin_vigra_importrgbimage_c, "VIGRA-IMPORTRGBIMAGE-C");
+    INSBUILTIN(builtin_vigra_importgrayimage_c, "VIGRA-IMPORTGRAYIMAGE-C");
+    INSBUILTIN(builtin_vigra_exportrgbaimage_c, "VIGRA-EXPORTRGBAIMAGE-C");
+    INSBUILTIN(builtin_vigra_exportrgbimage_c, "VIGRA-EXPORTRGBIMAGE-C");
+    INSBUILTIN(builtin_vigra_exportgrayimage_c, "VIGRA-EXPORTGRAYIMAGE-C");
   }
 }

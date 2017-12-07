@@ -13,7 +13,8 @@
 
 (load (string-concat _limo-prefix "cvector.limo"))
 (load (string-concat _limo-prefix "carray.limo"))
-
+(load (string-concat _limo-prefix "image.limo"))
+(load (string-concat _limo-prefix "vigra.limo"))
 
 ################################
 

@@ -8,7 +8,7 @@ OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
 OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
-	dict.o special.o block.o limpy.o
+	dict.o special.o block.o limpy.o system.o
 HEADERS=limo.h config.h
 
 CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
