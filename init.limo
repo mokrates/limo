@@ -12,6 +12,8 @@
 ################################
 
 (load (string-concat _limo-prefix "cvector.limo"))
+(load (string-concat _limo-prefix "carray.limo"))
+
 
 ################################
 

@@ -6,7 +6,15 @@
 #include <string.h>
 
 #include <gc/gc.h>   // boehm GC
+
+// seit vigra_c
+#ifdef __cplusplus
+#undef __cplusplus
 #include <gmp.h>     // gnu multiprecision lib
+#define __cplusplus
+#else
+#include <gmp.h>
+#endif
 
 #define limo_TYPE_EMPTY   0
 #define limo_TYPE_SYMBOL  1
@@ -246,6 +254,7 @@ void file_builtins(limo_data *env);
 ////////////////////////////////////
 // numbers
 #define LIMO_MPQ(x) (*((x)->data.d_mpq))
+#define GETINTFROMMPQ(mpq)     ((int)mpq_get_d(*(mpq)->data.d_mpq))
 char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);

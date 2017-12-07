@@ -1,0 +1,11 @@
+; -*- mode: scheme -*-
+
+(loaddll (string-concat _limo-prefix "vigra_limo.so"))
+
+(define (vigra-importrgbaimage filename)
+  (setq width (vigra-imagewidth-c filename))
+  (setq height (vigra-imageheight-c filename))
+  (unify (r g b a)
+	 (map (lambda () (make-carray _float (list width height))) '(1 2 3 4)))  ; create 4 carrays with same width/height
+  (vigra-importrgbaimage-c (cadr r) (cadr g) (cadr b) (cadr a) width height filename)
+  (list 'IMAGE r g b a))
