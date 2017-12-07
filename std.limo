@@ -457,11 +457,25 @@
   `(dict-set ,class ,`(quote ,name)
 	     ,`(lambda ,args ,`(progn ,@body))))
 
+
+
+(define (utime)
+  (setq t (time))
+  (+ (* 1000000 (car t)) (cadr t)))
+
+(defmacro timerun code
+  (setq t1 (gensym))
+  (setq t2 (gensym))
+  `(progn ,`(setq ,t1 (utime))
+	  ,@code
+	  ,`(setq ,t2 (utime))
+	  ,`(- ,t2 ,t1)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings
 
-'(gcsetmax (* 1024 128))  ;; max 128mb ram for limo.
+(gcsetmax (* 1024 128))  ;; max 128mb ram for limo.
 ;(* 1 2 3)
 
 
@@ -475,4 +489,3 @@
   (when x
 	(write (car x))
 	(writelist (cdr x))))
-
