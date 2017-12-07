@@ -7,7 +7,7 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env;
   lambda_env = CAR(f->data.d_lambda);
   //  printf("lambda_env: "); writer(lambda_env); printf("\n");
-  lambda_list = CDR(f->data.d_lambda);
+  lambda_list = TSCDR(f->data.d_lambda);
   //  printf("lambda_list: "); writer(lambda_list); printf("\n");
   params = CAR(CDR(lambda_list));
   //  printf("params: "); writer(params); printf("\n");

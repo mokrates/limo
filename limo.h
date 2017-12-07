@@ -89,6 +89,7 @@ extern limo_data *traceplace;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
+#define TSCDR(x) (thunk_safe_cdr(x))
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env)
 
@@ -179,6 +180,7 @@ void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
 void setconstq(limo_data *env, limo_data *name, limo_data *value);
 void unsetq(limo_data *env, limo_data *name);
+limo_data *thunk_safe_cdr(limo_data *x);
 
 // for arglists
 #define ZEROTH_ARG (CAR(arglist))

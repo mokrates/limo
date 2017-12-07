@@ -41,15 +41,27 @@
 	(throw (cons "reverse takes a proper list" l))))
   (helper l ()))
 
-(defun undyn (x)
-  (defun helper (x akku)
-    (cond ((not x) akku)
-	  ((consp x)
-	   (helper (cdr x) (cons (undyn (car x)) akku)))
-	  (:else (throw (cons "undyn takes a proper list" x)))))
-  (if (not (consp x))
-      x
-      (reverse (helper x ()))))
+;; '(defun undyn (x)
+;;   (defun helper (x akku)
+;;     (cond ((not x) akku)
+;; 	  ((consp x)
+;; 	   (helper (cdr x) (cons (undyn (car x)) akku)))
+;; 	  (:else (throw (cons "undyn takes a proper list" x)))))
+;;   (if (not (consp x))
+;;       x
+;;       (reverse (helper x ()))))
+
+(defun undyn (l)               ; this undyn doesn't reverse twice.
+  (defun helper (l last)
+    (if (not l)
+	(setcdr last ())
+	(progn (setcdr last (cons (car l) ()))
+	       (helper (cdr l) (cdr last)))))
+  (if (not l)
+      ()
+      (progn (setq start (cons (car l) ()))
+	     (helper (cdr l) start)
+	     start)))
 
 (defun deepeq (x y)
   (cond ((and (consp x) x)  ;; cons and not empty
@@ -59,23 +71,23 @@
 	      (deepeq (cdr x) (cdr y))))
 	(:t (eq x y))))
 
-(defmacro quasiquote (l) ; (not using callerenv)
-  (defun helper (l akku)
-    (cond ((not l) akku)
-	  ((and (consp (car l)) 
-		(car l)  ;; not nil
-		(eq (caar l) 'comma))
-	   (helper (cdr l) 
-		   (cons (list 'list (cadar l)) akku)))
-	  ((and (consp (car l))
-		(car l)
-		(eq (caar l) 'splice))
-	   (helper (cdr l) (cons (cadar l) akku)))
-	  (:t (helper (cdr l) 
-		      (cons (list 'list (list 'quote (car l))) akku)))))
-  (cons 'append (reverse (helper l ()))))
+;; '(defmacro quasiquote (l) ; (not using callerenv)
+;;   (defun helper (l akku)
+;;     (cond ((not l) akku)
+;; 	  ((and (consp (car l)) 
+;; 		(car l)  ;; not nil
+;; 		(eq (caar l) 'comma))
+;; 	   (helper (cdr l) 
+;; 		   (cons (list 'list (cadar l)) akku)))
+;; 	  ((and (consp (car l))
+;; 		(car l)
+;; 		(eq (caar l) 'splice))
+;; 	   (helper (cdr l) (cons (cadar l) akku)))
+;; 	  (:t (helper (cdr l) 
+;; 		      (cons (list 'list (list 'quote (car l))) akku)))))
+;;   (cons 'append (reverse (helper l ()))))
 
-'(defmacro quasiquote (l)    ; dynamic version  (doesn't work yet. problems with thunk-eval in funcall-eval)
+(defmacro quasiquote (l)    ; dynamic version  (doesn't work yet. problems with thunk-eval in funcall-eval)
   (defun helper (l)
     (cond ((not l)         ; end of list
 	   ())
@@ -89,7 +101,7 @@
 	   (dcons (cadar l) (helper (cdr l))))
 	  (:t (dcons (list 'list (list 'quote (car l)))  ; just a symbol to be quoted
 		     (helper (cdr l))))))
-  (dcons 'dappend (helper l)))
+  (undyn (cons append  (helper l))))
 
 ; limo-loop/recur
 ; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))
