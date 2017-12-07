@@ -16,11 +16,9 @@ BUILTIN(builtin_time)
 {
   limo_data *c;
   struct timeval tv;
-  c = make_cons();
-  if (-1 == gettimeofday(&tv))
+  if (-1 == gettimeofday(&tv, NULL))
     limo_error("could not gettimeofday()");
-  CAR(c) = make_number_from_long_long(tv.tv_sec);
-  CDR(c) = make_cons();
-  CAR(CDR(c)) = make_number_from_long_long(tv.tv_usec);
+  c = make_cons(make_number_from_long_long(tv.tv_sec),
+		make_cons(make_number_from_long_long(tv.tv_usec), make_nil()));
   return c;
 }
