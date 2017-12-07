@@ -1,0 +1,9 @@
+; -*- mode: scheme -*-
+
+(define (image-map func . imgs)
+  (define (band-map func bands)
+    (if (not (car bands))
+	()
+	(cons (apply carray-map (cons func (dmap car bands)))
+	      (band-map func (dmap cdr bands)))))
+  (cons 'image (band-map func (dmap cdr imgs))))
