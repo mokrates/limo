@@ -49,6 +49,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "READ-STRING", builtin_read_string },
   { "SYMBOLP", builtin_symbolp},
   { "SYMBOL-TO-STRING", builtin_symbol_to_string},
+  { "FREEZEQ", builtin_freezeq },
   { "SYSTEM", builtin_system},
   { "TIME", builtin_time}
 };

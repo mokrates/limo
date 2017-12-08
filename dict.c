@@ -4,6 +4,7 @@
 // shamelessly copied this: http://www.laurentluce.com/posts/python-dictionary-implementation/
 
 #include "limo.h"
+#include <assert.h>
 
 inline unsigned int hash_string(char *str)
 {
@@ -24,6 +25,10 @@ inline unsigned int hash_string(char *str)
 
 inline unsigned hash(limo_data *ld)
 {
+  if (ld->type == limo_TYPE_CONST)
+    //sigsegv_handler(0);
+    segfault();
+  
   if (ld->type == limo_TYPE_SYMBOL || ld->type == limo_TYPE_STRING) {
     if (ld->hash != 0)
       return ld->hash;
@@ -198,7 +203,7 @@ BUILTIN(builtin_dict_set)
   value = eval(THIRD_ARG, env);
 
   dict_put(dict, key, value);
-  return make_nil();
+  return nil;
 }
 
 
@@ -216,7 +221,7 @@ BUILTIN(builtin_dict_unset)
 
   key = eval(SECOND_ARG, env);
   dict_remove(dict, key);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_dict_has_key)
@@ -235,7 +240,7 @@ BUILTIN(builtin_dict_has_key)
   key = eval(SECOND_ARG, env);
   res = dict_get_place(dict, key);
   if (res == NULL)
-    return make_nil();
+    return nil;
   else
     return sym_true;
 }
@@ -263,7 +268,7 @@ BUILTIN(builtin_dictp)
 
   dict = eval(FIRST_ARG, env);
   if (dict->type != limo_TYPE_DICT)
-    return make_nil();
+    return nil;
   else
     return sym_true;
 }

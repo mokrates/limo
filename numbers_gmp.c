@@ -5,7 +5,7 @@ BUILTIN(builtin_numberp)
   if (eval(FIRST_ARG, env)->type == limo_TYPE_GMPQ)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_reprn)
@@ -20,7 +20,7 @@ BUILTIN(builtin_idivmod)
 {
   limo_data *q = make_number();
   limo_data *r = make_number();
-  limo_data *res = make_cons(q, make_cons(r, make_nil()));
+  limo_data *res = make_cons(q, make_cons(r, nil));
 
   if (list_length(arglist) != 3)
     limo_error("idivmod needs 2 args");
@@ -75,7 +75,7 @@ BUILTIN(builtin_ltn)
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) < 0)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_gtn)
@@ -83,7 +83,7 @@ BUILTIN(builtin_gtn)
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) > 0)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 limo_data *make_number(void)

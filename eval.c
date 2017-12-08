@@ -1,5 +1,6 @@
 #include <gc/gc.h>
 #include "limo.h"
+#include <assert.h>
 
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args)
 {
@@ -39,7 +40,12 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
       if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
 	limo_error("eval funcall: too few arguments");
 
-      setq(param_env, CAR(params), CAR(arglist));
+      if (CAR(arglist)->type == limo_TYPE_CONST) {  // TODO: das hier entfernen, wenn es nciht auftritt
+	setq(param_env, CAR(params), CAR(CAR(arglist)));
+	printf("DEBUG: eval_function_call wurde mit einem CONST aufgerufen\n");
+      }
+      else
+	setq(param_env, CAR(params), CAR(arglist));
 
       params = CDR(params);
       arglist = CDR(arglist);
@@ -95,7 +101,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 limo_data *ld_dup(limo_data *ld)
 {
   limo_data *res = make_limo_data();
-  memcpy(res, ld, sizeof (*ld));
+  *res = *ld;
   return res;
 }
 
@@ -155,6 +161,8 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     if (!form)
       limo_error("eval(): wtf!");
 
+    assert(form->type != limo_TYPE_CONST);
+
     if (form->type == limo_TYPE_THUNK) {
       limo_data *next_form;
       //      printf("THUNK:"); writer(form); printf("\n");
@@ -175,6 +183,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 limo_data *real_eval(limo_data *ld, limo_data *env)
 {
   limo_data *res;
+  int marked_constant;
 
   switch (ld->type) {
   case limo_TYPE_CONS:
@@ -202,9 +211,22 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
   case limo_TYPE_SYMBOL:
     if (ld->data.d_string[0] == ':')
       return ld;
-    else
-      res=var_lookup(env, ld);
-    return res;
+    else {
+      res=var_lookup(env, ld, &marked_constant);
+#if STATIC_CONSTEX_HARD
+      assert(res->type != limo_TYPE_CONST);
+      if (marked_constant)
+	(*ld) = *res;      
+#elif STATIC_CONSTEX
+      assert(res->type != limo_TYPE_CONST);
+      if (marked_constant)
+	(*ld) = *make_const(ld_dup(ld), res);
+#endif
+      return res;
+    }
+
+  case limo_TYPE_CONST:
+    return CAR(ld);
 
   default: 
     return ld;

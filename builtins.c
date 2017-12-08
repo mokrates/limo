@@ -24,7 +24,7 @@ BUILTIN(builtin_unsetq)
 
   limo_data *name = FIRST_ARG;
   unsetq(env, name);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_lambda)
@@ -64,7 +64,7 @@ BUILTIN(builtin_macroexpand_1)
 		     CAR(res->data.d_thunk):make_sym(":hidden"));
   }
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_eval)
@@ -93,6 +93,7 @@ BUILTIN(builtin_apply)
     al=make_nil();
 
   return eval_function_call(f, make_cons(f,al), env, 0);
+  //return make_thunk(make_cons(f, al), env);
 }
 
 BUILTIN(builtin_progn)
@@ -168,7 +169,7 @@ BUILTIN(builtin_consp)
   if (eval(FIRST_ARG, env)->type == limo_TYPE_CONS)
     return make_sym(":T");
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_car)
@@ -196,7 +197,7 @@ BUILTIN(builtin_eq)
 
   if (limo_equals(eval(FIRST_ARG, env), eval(SECOND_ARG, env)))
     return make_sym(":T");
-    else return make_nil();
+    else return nil;
 }
 
 BUILTIN(builtin_write)
@@ -256,7 +257,7 @@ BUILTIN(builtin_try)
   res = try_catch(FIRST_ARG, make_env(env));
   if (!res) {
     env = make_env(env);
-    setq(env, make_sym("_EXCEPTION"), exception?exception:make_nil());
+    setq(env, make_sym("_EXCEPTION"), exception?exception:nil);
     return make_thunk(SECOND_ARG, make_env(env));
   }
 }
@@ -300,7 +301,7 @@ BUILTIN(builtin_load)
     limo_error("load arg must be a string");
 
   load_limo_file(filename->data.d_string, env);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_loaddll)
@@ -325,25 +326,25 @@ BUILTIN(builtin_loaddll)
   if (!limo_dll_init)
     limo_error("dll start error: %s", dlerror());
   (*limo_dll_init)(env);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_gc_disable)
 {
   GC_disable();
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_gc_enable)
 {
   GC_enable();
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_gc_collect)
 {
   GC_gcollect();
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_gc_setmax)
@@ -356,7 +357,7 @@ BUILTIN(builtin_gc_setmax)
   if (ld->type == limo_TYPE_GMPQ) {
     double n=mpq_get_d(*ld->data.d_mpq);
     GC_set_max_heap_size(1024*n);
-    return make_nil();
+    return nil;
   }
   else
     limo_error("(gcsetmax KiloBytes) (2)");
@@ -387,7 +388,7 @@ BUILTIN(builtin_sleep)
   else
     limo_error("(sleep SECONDS) [2]");
 
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_string_concat)
@@ -452,7 +453,7 @@ BUILTIN(builtin_symbolp)
   if (eval(FIRST_ARG, env)->type == limo_TYPE_SYMBOL)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_symbol_to_string)
@@ -468,4 +469,10 @@ BUILTIN(builtin_symbol_to_string)
     limo_error("(symbol-to-string SYMBOL)");
       
   return make_string(ld->data.d_string);
+}
+
+BUILTIN(builtin_freezeq)
+{
+  REQUIRE_ARGC("freezeq", 1);
+  return freeze_var(env, FIRST_ARG);
 }

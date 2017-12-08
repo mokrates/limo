@@ -1,4 +1,4 @@
 ; -*- scheme -*-
 
-(defun idiv (n d) (car (idivmod n d)))
-(defun mod  (n d) (cadr (idivmod n d)))
+(defun idiv (n d) (car (idivmod n d)))   (freezeq idiv)
+(defun mod  (n d) (cadr (idivmod n d)))  (freezeq mod)

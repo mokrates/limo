@@ -66,3 +66,8 @@ void limo_error(char *msg, ...)
   //  printf("%s\n", buf);
   throw(make_string(buf));
 }
+
+void segfault()
+{
+  *((int *)NULL) = 123;
+}

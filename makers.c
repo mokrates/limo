@@ -133,3 +133,11 @@ limo_data *make_string(char *msg)
   strcpy(str->data.d_string, msg);
   return str;
 }
+
+limo_data *make_const(limo_data *name, limo_data *ld)
+{
+  limo_data *res;
+  res = make_cons(ld, name);
+  res->type = limo_TYPE_CONST;
+  return res;
+}

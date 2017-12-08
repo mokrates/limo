@@ -1,5 +1,6 @@
 ; -*- scheme -*-
 
+(load (string-concat _limo-prefix "freeze_builtins.limo"))
 (load (string-concat _limo-prefix "std.limo"))
 (load (string-concat _limo-prefix "wrappers.limo"))
 (load (string-concat _limo-prefix "list.limo"))

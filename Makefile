@@ -15,13 +15,16 @@ CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 
 .PHONY: all libs clean realclean install uninstall
 
-all: limo libs
+all: limo libs TAGS
 
 limo: $(OBJ)
 	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
 libs:
 	make -C libs
+
+TAGS:
+	etags *.c *.h libs/*/*.c libs/*/*.h
 
 $(OBJ): $(HEADERS) Makefile
 

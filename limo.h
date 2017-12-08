@@ -31,11 +31,12 @@
 
 #define limo_TYPE_ENV     12
 #define limo_TYPE_THUNK   13  // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_CONST   14  // wrapper for freeze'd constants.
 
-#define limo_TYPE_VCACHE  14
+#define limo_TYPE_VCACHE  15
 
-#define limo_TYPE_SPECIAL 15  // special: #<special: (typemarker . #<specialintern:pointer>)>
-#define limo_TYPE_SPECIAL_INTERN 16  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+#define limo_TYPE_SPECIAL 16  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 17  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -61,6 +62,7 @@ typedef struct limo_DATA {
 #define d_vcache d_lambda
   } data;
   unsigned int hash;  // for symbols and strings
+#define ld_marked_const hash
   limo_annotation *annotation;
 } limo_data;
 
@@ -84,6 +86,7 @@ extern limo_data *sym_true;
 extern limo_data *sym_stacktrace;
 extern limo_data *sym_underscore;
 extern limo_data *sym_block;
+extern limo_data *nil;
 
 extern limo_data *traceplace;
 
@@ -174,7 +177,7 @@ limo_data **dict_get_place(limo_data *dict, limo_data *key);
 void dict_remove(limo_data *dict, limo_data *key);
 limo_data *dict_to_list(limo_data *dict);
 
-limo_data *var_lookup(limo_data *env, limo_data *name);
+limo_data *var_lookup(limo_data *env, limo_data *name, int *marked_const);
 limo_data *var_lookup_place(limo_data *env, limo_data *name); // returns the cons from the dict
 void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
@@ -240,6 +243,8 @@ BUILTIN(builtin_read_string);
 BUILTIN(builtin_symbolp);
 BUILTIN(builtin_symbol_to_string);
 
+BUILTIN(builtin_freezeq);
+
 /////////////////////////////////
 // misc
 BUILTIN(builtin_system);
@@ -274,8 +279,11 @@ void writer_special(limo_data *expr);
 void writer_special_intern(limo_data *expr);
 limo_data *get_special_type_symbol(limo_data *expr);
 
+limo_data *freeze_var(limo_data *name, limo_data *env);
 limo_data *make_const(limo_data *name, limo_data *val);
 void writer_const(limo_data *c);
+
+void segfault(void);  // segfault to generate a stacktrace. selfmade debug stopping-point
 
 #include "limpy.h"
 
