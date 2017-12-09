@@ -7,3 +7,4 @@
 	(cons (apply carray-map (cons func (dmap car bands)))
 	      (band-map func (dmap cdr bands)))))
   (cons 'image (band-map func (dmap cdr imgs))))
+(freezeq image-map)

@@ -21,20 +21,25 @@
   (if (consp a)
       `(unify ,a ,b)
       `(setq ,a ,b)))
+(freezeq limpy-assignq)
 
 (defmacro limpy-unifyf (a b)
   `(unifyf ,a ,b))
+(freezeq limpy-unifyf)
 
 (defmacro limpy-assignf (a b)
   `(setplacef ,a ,b))
+(freezeq limpy-assignf)
 
 (defmacro limpy-defun (name params . body)
   `(setq ,name ,`(lambda ,params ,`(block _return ,`(progn ,@body)))))
+(freezeq limpy-defun)
 
 (defmacro return x
   (if x
       `(return-from _return ,(car x))
       `(return-from _return)))
+(freezeq return)
 
 (defmacro while (condition . body)
   (with-gensym (fun)
@@ -48,17 +53,19 @@
 					     ,`(,fun))
 				    ()))
 			  ,`(,fun)))))
+(freezeq while)
 
 (defmacro break x
   (if x
       `(return-from _break ,(car x))
       `(return-from _break)))
+(freezeq break)
 
 (defmacro continue x
   (if x
       `(return-from _continue ,(car x))
       `(return-from _continue)))
-
+(freezeq continue)
 
 ;; %[ x for y in z ] => limpy-parser sets thecons == cons
 ;; %( x for y in z ) => limpy-parser sets thecons == dcons
@@ -72,6 +79,7 @@
 			     ,`(,thecons ,compound 
 					 ,`(,f ,`(cdr ,args)))))
 		 ,`(,f ,li))))
+(freezeq limpy-gen)
 
 ;; %[ x for y in z if c ]
 ;; %( x for y in z if c )
@@ -84,6 +92,7 @@
 					  ,`(progn
 					     ,`(limpy-assignq ,lval ,args)
 					     ,condition)) ,li))))
+(freezeq limpy-gen-cond)
 
 (defun limpy-getindex (c i)
   (cond ((consp c)
@@ -93,6 +102,7 @@
 	((stringp c)
 	 (string-nth c i))
 	(:else (throw "LIMPY-GETINDEX: Don't know how to use this Type"))))
+(freezeq limpy-getindex)
 
 (defun limpy-setindex (c i v)
   (cond ((consp c)
@@ -100,6 +110,7 @@
 	((dictp c)
 	 (dict-set c i v))
 	(:else (throw "LIMPY-SETINDEX: Don't know how to use this Type"))))
+(freezeq limpy-setindex)
 
 (register-place-setter 'limpy-getindex 'limpy-setindex)
 
@@ -107,4 +118,4 @@
 
 (defmacro var (x)  ;; declare a variable
   `(setq ,x ()))
-
+(freezeq var)

@@ -6,12 +6,21 @@
 
 (loaddll (string-concat _limo-prefix "cvector.so"))
 
+(freezeq CTYPE-SIZEOF)
+(freezeq MAKE-CVECTOR)
+(freezeq CVECTORP)
+(freezeq CVECTOR-LENGTH)
+(freezeq CVECTOR-TYPE)
+(freezeq CVECTOR-REF/UNSAFE)
+(freezeq CVECTOR-SET/UNSAFE)
+
 ; safe setting of cvector-values
 (define (cvector-ref cv index)
   (if (or (< index 0) (>= index (cvector-length cv))
 	  (not (and (numberp index) (cvectorp cv))))
       (throw "cvector-ref: out of bounds or wrong type")
       (cvector-ref/unsafe cv index)))
+(freezeq cvector-ref)
 
 ; safe getting of cvector-values
 (define (cvector-set cv index value)
@@ -19,6 +28,7 @@
 	  (not (and (numberp index) (numberp value) (cvectorp cv))))
       (throw "cvector-set: out of bounds")
       (cvector-set/unsafe cv index value)))
+(freezeq cvector-set)
 
 ; build a dynamic list from a cvector
 (define (cvector2dlist cv)
@@ -27,6 +37,7 @@
 	()
 	(dcons (cvector-ref/unsafe cv from) (helper cv (+ 1 from)))))
   (helper cv 0))
+(freezeq cvector2dlist)
 
 ;; register a placesetter
 (register-place-setter 'cvector-ref 'cvector-set)
@@ -38,6 +49,7 @@
 	    (cvector-set newcv i
 			 (apply fun (dmap (lambda (v) (cvector-ref/unsafe v i)) cvs))))
   newcv)
+(freezeq cvector-map)
 	    
 
 ;; (write "Teste cvector")
