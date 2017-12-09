@@ -74,7 +74,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 
   // associating params with names
   param_env = make_env(macro_env);
-  setq(param_env, sym_callerenv, env);
+  //  setq(param_env, sym_callerenv, env);  // don't need that.
   while (!is_nil(params) && params->type==limo_TYPE_CONS) {
     if (is_nil(arglist))
       limo_error("too few arguments");
@@ -214,11 +214,12 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
     else {
       res=var_lookup(env, ld, &marked_constant);
 #if STATIC_CONSTEX_HARD
-      assert(res->type != limo_TYPE_CONST);
       if (marked_constant)
 	(*ld) = *res;      
 #elif STATIC_CONSTEX
-      assert(res->type != limo_TYPE_CONST);
+      if (res->type == limo_TYPE_CONST)  // this can happen to parameters of macros.
+	res=CAR(res);
+	  
       if (marked_constant)
 	(*ld) = *make_const(ld_dup(ld), res);
 #endif

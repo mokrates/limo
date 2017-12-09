@@ -100,7 +100,7 @@ limo_data *make_sym_uninterned(char *name)
 
 limo_data *make_builtin(limo_builtin f)
 {
-  limo_data *ld = make_nil();
+  limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_BUILTIN;
   ld->data.d_builtin=f;
 
@@ -127,10 +127,11 @@ limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env)
 
 limo_data *make_string(char *msg)
 {
-  limo_data *str = make_nil();
+  limo_data *str = make_limo_data();
   str->type = limo_TYPE_STRING;
-  str->data.d_string = (char *)GC_malloc(strlen(msg) + 1);
-  strcpy(str->data.d_string, msg);
+  //str->data.d_string = (char *)GC_malloc(strlen(msg) + 1);
+  //strcpy(str->data.d_string, msg);
+  str->data.d_string = GC_strdup(msg);
   return str;
 }
 

@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
   GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
   GC_init();
-  // GC_enable_incremental();   // segfaults :(
+  //GC_enable_incremental();   // segfaults :(
 
   init_syms();
   stacktrace = make_nil();
