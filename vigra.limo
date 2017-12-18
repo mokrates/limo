@@ -21,6 +21,21 @@
 			   (band-height r)
 			   filename ()))
 
+(define (vigra-importrgbimage filename)
+  (setq width (vigra-imagewidth-c filename))
+  (setq height (vigra-imageheight-c filename))
+  (unify (r g b) ; destructuring assignment
+	 (map (lambda () (make-carray _float (list width height))) '(1 2 3)))  ; create 3 carrays with same width/height
+  (vigra-importrgbimage-c (cadr r) (cadr g) (cadr b) width height filename)
+  (list r g b))
+
+(define (vigra-exportrgbimage img filename)
+  (unify (r g b) img)
+  (vigra-exportrgbimage-c (cadr r) (cadr g) (cadr b)
+			   (band-width r)
+			   (band-height r)
+			   filename ()))
+
 
 ;; structuretensor      (tensors)  (/?)
 ;; tensoreigenrepresentation  (tensors) (/?)

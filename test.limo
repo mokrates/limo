@@ -37,7 +37,10 @@
        (shock-image (vigra-upwindimage image d h)
 		   sigma rho h (- iter 1)))))
 
-(setq lenna (vigra-importrgbaimage "lenna_face.png"))
-(setq lenna1 (shock-image lenna 6 2 (/ 1 3) 20))
-(vigra-exportrgbaimage lenna1 "lenna1.png")
-(system "qiv lenna1.png")
+;; (setq lenna (vigra-importrgbimage "lenna_face.png"))
+;; (setq lenna1 (shock-image lenna 6 2 (/ 1 3) 20))
+;; (vigra-exportrgbimage lenna1 "lenna20.png")
+;; (system "qiv lenna1.png")
+(setq image-shocked (shock-image img 6 2 (/ 1 3) 5))
+(vigra-exportrgbaimage image-shocked "testout.png")
+
