@@ -152,9 +152,9 @@ void throw(limo_data *excp);
 void throw_after_finally(void);
 void limo_error(char *, ...);
 void print_stacktrace(limo_data *s); // prints stacktrace s
-limo_data *stacktrace;
-limo_data *exception;
-sigjmp_buf *ljbuf;
+extern limo_data *stacktrace;
+extern limo_data *exception;
+extern sigjmp_buf *ljbuf;
 
 int is_nil(limo_data *);
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
@@ -267,11 +267,13 @@ void file_builtins(limo_data *env);
 // numbers
 #define LIMO_MPQ(x) (*((x)->data.d_mpq))
 #define GETINTFROMMPQ(mpq)     ((int)mpq_get_d(*(mpq)->data.d_mpq))
+#define GETDOUBLEFROMMPQ(mpq)  (mpq_get_d(*(mpq)->data.d_mpq))
 char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);
 limo_data *make_number_from_long_long(long long i);
 limo_data *make_number_from_double(double d);
+double make_double_from_number(limo_data *n);
 
 limo_data *make_special(limo_data *type_symbol, void *content);
 void *get_special(limo_data *expr, limo_data *type_symbol);

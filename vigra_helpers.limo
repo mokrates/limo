@@ -1,0 +1,34 @@
+;; -*- mode: scheme -*-
+
+;; ruthlessly stolen from helpers.rkt by benjamin seppke
+;########################## General helpers ############################
+;pivoting of two-dimensional lists:
+; '((st_r_xx st_r_xy st_r_yy)           '((st_r_xx st_g_xx st_b_xx)
+;   (st_g_xx st_g_xy st_g_yy)    --->     (st_r_xy st_g_xy st_b_xy)
+;   (st_b_xx st_b_xy st_b_yy))            (st_r_yy st_g_yy st_b_yy)
+(define (pivot-list xs)
+  (if (not (car xs))
+      ()
+      (cons (map1 car xs)
+	    (pivot-list (map1 cdr xs)))))
+(freezeq pivot-list)
+
+(define first car)
+(define second cadr)
+(define (third x) (cadr (cdr x))) 
+
+(define (band-width band)
+  (car (carray-dimensions band)))
+(freezeq band-width)
+
+(define (band-height band)
+  (cadr (carray-dimensions band)))
+(freezeq band-height)
+
+(define (band-data band)
+  (carray-data band))
+
+(define (make-band width height)
+  (make-carray _float (list width height)))
+
+

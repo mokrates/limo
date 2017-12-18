@@ -47,7 +47,7 @@
   (setq newcv (make-cvector (cvector-type (car cvs)) (cvector-length (car cvs))))
   (for-each i (drange 0 (cvector-length (car cvs)) 1)
 	    (cvector-set newcv i
-			 (apply fun (dmap (lambda (v) (cvector-ref/unsafe v i)) cvs))))
+			 (apply fun (map (lambda (v) (cvector-ref/unsafe v i)) cvs))))
   newcv)
 (freezeq cvector-map)
 	    

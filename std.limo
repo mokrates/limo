@@ -7,8 +7,6 @@
 
 ;; lisp style defmacro and defun (but with schemy param lists)
 
-'(setq apply (lambda (f args) (eval (cons f args))))
-
 (setq defmacro 
       (macro (name args . body)
 	(list setq name (list 'macro args (cons 'progn body)))))
@@ -23,8 +21,8 @@
 ;; scheme style 'define'
 (defmacro define x
   (if (consp (car x)) ;; a function
-      (list 'setq (caar x) (list 'lambda (cdar x) (cons 'progn (cdr x))))
-      (list 'setq (car x) (cadr x))))
+      (list 'setq (car (car x)) (list 'lambda (cdr (car x)) (cons 'progn (cdr x))))
+      (list 'setq (car x) (car (cdr x)))))
 (freezeq define)
 
 (defmacro assert (x)
@@ -111,7 +109,7 @@
 	   (dcons (cadar l) (helper (cdr l))))
 	  (:t (dcons (list 'list (list 'quote (car l)))  ; just a symbol to be quoted
 		     (helper (cdr l))))))
-  (undyn (cons append  (helper l))))
+  (undyn (cons append (helper l))))
 (freezeq quasiquote)
 
 ; limo-loop/recur
@@ -145,11 +143,20 @@
   (helper f a))
 (freezeq dmap)
 
-(defun map (f a)
+(defun map1 (f a)
   (defun helper (f a)
     (when a
 	  (cons (f (car a)) (helper f (cdr a)))))
   (freezeq helper)
+  (helper f a))
+(freezeq map1)
+
+(define (map f . a)
+  (define (helper f a)
+    (if (and (car a) (consp (car a)))
+	(cons (apply f (map1 (lambda (x) (car x)) a))
+	      (helper f (map1 (lambda (x) (cdr x)) a)))
+	()))
   (helper f a))
 (freezeq map)
 
@@ -554,7 +561,7 @@
 ;;
 ;; settings
 
-(gcsetmax (* 1024 128))  ;; max 128mb ram for limo.
+(gcsetmax (* 1024 512))  ;; max 128mb ram for limo.
 ;(* 1 2 3)
 
 

@@ -1,0 +1,41 @@
+;; -*- mode: scheme -*-
+
+;; ruthlessly stolen from tensors.rkt by benjamin seppke.
+(define (vigra-structuretensor-band band inner_scale outer_scale)
+  (setq width  (band-width  band))
+  (setq height (band-height band))
+  (setq band_xx   (make-band width height))
+  (setq band_xy   (make-band width height))
+  (setq band_yy   (make-band width height))
+  (if (vigra-structuretensor-c (band-data band) (band-data band_xx)
+			       (band-data band_xy) (band-data band_yy)
+			       width height inner_scale outer_scale)
+      (list band_xx band_xy band_yy)
+      (throw "Error in structuretensor-band: Calculation of Gaussian Structure Tensor failed!")))
+(freezeq vigra-structuretensor-band)
+
+;; returns list of 3x3 bands (tensor)
+(define (vigra-structuretensor image inner_scale outer_scale)
+  (pivot-list (map (lambda (band) (vigra-structuretensor-band band inner_scale outer_scale)) image)))
+(freezeq vigra-structuretensor)
+
+
+(define (vigra-tensoreigenrepresentation-band bands)
+  (setq width  (band-width  (first bands)))
+  (setq height (band-height (first bands)))
+  (setq tensor_lEV_band   (make-band width height))
+  (setq tensor_sEV_band   (make-band width height))
+  (setq tensor_ang_band   (make-band width height))
+  (setq foo (vigra-tensoreigenrepresentation-c (band-data (first bands)) (band-data (second bands))
+						 (band-data (third bands)) (band-data tensor_lEV_band)
+						 (band-data tensor_sEV_band) (band-data tensor_ang_band)
+						 width height))
+  (if foo
+      (list tensor_lEV_band tensor_sEV_band tensor_ang_band)
+      (throw "Error in tensoreigenrepresentation-band: Calculation of the  Eigenvalue Representation of the Tensor failed!")))
+(freezeq vigra-tensoreigenrepresentation-band)
+
+;; takes list of 3x3 bands (tensor)
+(define (vigra-tensoreigenrepresentation image)
+  (pivot-list (map vigra-tensoreigenrepresentation-band (pivot-list image))))
+(freezeq vigra-tensoreigenrepresentation)

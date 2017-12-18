@@ -18,7 +18,7 @@ CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 all: limo libs TAGS
 
 limo: $(OBJ)
-	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
+	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -lm -ldl -lreadline -o limo
 
 libs:
 	make -C libs

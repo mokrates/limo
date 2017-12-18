@@ -87,13 +87,16 @@ BUILTIN(builtin_apply)
 
   limo_data *f = eval(FIRST_ARG, env);
   limo_data *al;
+
   if (list_length(arglist) ==3)
     al= eval(SECOND_ARG,env);
   else
     al=make_nil();
 
-  return eval_function_call(f, make_cons(f,al), env, 0);
-  //return make_thunk(make_cons(f, al), env);
+  if (f->type == limo_TYPE_LAMBDA)
+    return eval_function_call(f, make_cons(f,al), env, 0);
+  else if (f->type == limo_TYPE_BUILTIN)
+    limo_error("calling APPLY with builtins is unsupported, please wrap in a lambda");
 }
 
 BUILTIN(builtin_progn)

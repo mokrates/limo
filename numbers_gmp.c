@@ -1,3 +1,4 @@
+#include <math.h>
 #include "limo.h"
 
 BUILTIN(builtin_numberp)
@@ -86,6 +87,18 @@ BUILTIN(builtin_gtn)
     return nil;
 }
 
+BUILTIN(builtin_sin)
+{
+  REQUIRE_ARGC("SIN", 1);
+  return make_number_from_double(sin(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
+BUILTIN(builtin_cos)
+{
+  REQUIRE_ARGC("COS", 1);
+  return make_number_from_double(cos(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
 limo_data *make_number(void)
 {
   limo_data *res = make_nil();
@@ -128,6 +141,14 @@ limo_data *make_number_from_double(double d)
   return res;
 }
 
+double make_double_from_number(limo_data *n)
+{
+  double d;
+  d = mpq_get_d(LIMO_MPQ(n));
+
+  return d;
+}
+
 struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "NUMBERP", builtin_numberp },
   { "REPRN", builtin_reprn },
@@ -141,6 +162,8 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_MUL", builtin_mpq_mul },
   { "MPQ_DIV", builtin_mpq_div },
   { "IDIVMOD", builtin_idivmod },
+  { "SIN", builtin_sin },
+  { "COS", builtin_cos }
 };
 
 // needed for gmp, because it uses a

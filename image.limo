@@ -1,10 +1,24 @@
 ; -*- mode: scheme -*-
 
+;; image-map calls func with (list-length imgs) arguments, iterating over all bands.
+;; all images have to have the same number of bands and have to be of the same size.
+
 (define (image-map func . imgs)
   (define (band-map func bands)
     (if (not (car bands))
 	()
 	(cons (apply carray-map (cons func (dmap car bands)))
 	      (band-map func (dmap cdr bands)))))
-  (cons 'image (band-map func (dmap cdr imgs))))
+  (band-map func imgs))
 (freezeq image-map)
+
+;; these two are for usual 2d pictures
+(define (image-height img)
+  (car (carray-dimensions (car img))))
+(freezeq image-height)
+
+(define (image-width img)
+  (cadr (carray-dimensions (car img))))
+(freezeq image-width)
+
+;; subimage

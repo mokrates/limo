@@ -1,18 +1,63 @@
 ; -*- mode: scheme -*-
 
 (loaddll (string-concat _limo-prefix "vigra_limo.so"))
+(load (string-concat _limo-prefix "vigra_tensors.limo"))
+(load (string-concat _limo-prefix "vigra_filters.limo"))
+(load (string-concat _limo-prefix "vigra_morphology.limo"))
+(load (string-concat _limo-prefix "vigra_helpers.limo"))
 
 (define (vigra-importrgbaimage filename)
   (setq width (vigra-imagewidth-c filename))
   (setq height (vigra-imageheight-c filename))
-  (unify (r g b a)
+  (unify (r g b a) ; destructuring assignment
 	 (map (lambda () (make-carray _float (list width height))) '(1 2 3 4)))  ; create 4 carrays with same width/height
   (vigra-importrgbaimage-c (cadr r) (cadr g) (cadr b) (cadr a) width height filename)
-  (list 'IMAGE r g b a))
+  (list r g b a))
 
 (define (vigra-exportrgbaimage img filename)
-  (unify (_ r g b a) img)
+  (unify (r g b a) img)
   (vigra-exportrgbaimage-c (cadr r) (cadr g) (cadr b) (cadr a)
-			   (car (carray-dimensions r))
-			   (cadr (carray-dimensions r))
+			   (band-width r)
+			   (band-height r)
 			   filename ()))
+
+
+;; structuretensor      (tensors)  (/?)
+;; tensoreigenrepresentation  (tensors) (/?)
+
+;;;; fuer die ersten bilder im paper brauche ich folgende funktionen
+;; hessianmatrixofgaussian  (filter)
+;; upwindimage  (morphology)
+;; shockfilter (filter)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; fastcrosscorrelation
+;; fastnormalizedcrosscorrelation
+;; localmaxima
+;; localminima
+;; gsmooth
+
+;; regionimagetocrackedgeimage
+;; labelimage
+;; watersheds-uf
+;; ggradient
+;; resizeimage
+
+;; fouriertransform
+;; fouriertransforminverse
+;; reflectimage
+;; clipimage
+;; rotateimage
+
+;; clipimage
+;; affinewarpimage
+;; distancetransform
+;; cannyedgeimage
+
+;; differenceofexponentialedgeimage
+;; laplacianofgaussian
+;; gsharpening
+;; sharpening
+;; medianfilter
+;; nonlineardiffusion

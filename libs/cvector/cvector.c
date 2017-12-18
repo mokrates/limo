@@ -35,12 +35,6 @@ static void ensure_cvectorp(limo_data *cv)
     limo_error("CVECTOR expected");
 }
 
-static inline double make_double_from_number(limo_data *n)
-{
-  double d;
-  d = mpq_get_d(LIMO_MPQ(n));
-}
-
 BUILTIN(builtin_ctype_sizeof)
 {
   limo_data *n;

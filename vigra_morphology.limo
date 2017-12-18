@@ -1,0 +1,17 @@
+;; -*- mode: scheme -*-
+;; ruthlessly stolen from morphology.rkt by benjamin seppke
+
+(define (vigra-upwindimage-band band signum_band radius)
+  (setq width (band-width  band))
+  (setq height (band-height band))
+  (setq band2 (make-band width height))
+  (setq foo   (vigra-upwindimage-c (band-data band) (band-data signum_band) (band-data band2) width height radius))
+  (if foo
+      band2
+      (throw "Error in vigra-upwindimage-band: Upwinding of image failed!!")))
+(freezeq vigra-upwindimage-band)
+
+(define (vigra-upwindimage image signum_image radius)
+  (map (lambda (band signum_band) (vigra-upwindimage-band band signum_band radius))
+       image signum_image))
+(freezeq vigra-upwindimage)

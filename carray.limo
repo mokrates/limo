@@ -4,6 +4,10 @@
   (cons 'carray (cons (make-cvector type (apply * dimensions)) dimensions)))
 (freezeq make-carray)
 
+(define (carray-data arr)
+  (cadr arr))
+(freezeq carray-data)
+
 (define (carray-type arr)
   (cvector-type (cadr arr)))
 (freezeq carray-type)
@@ -37,15 +41,15 @@
   (cvector-set (cadr arr) (carray-index pos (cddr arr)) val))
 (freezeq carray-set)
 
-(define (carray-set/unsafe! arr pos val)
+(define (carray-set/unsafe arr pos val)
   (cvector-set/unsafe (cadr arr) (carray-index pos (cddr arr)) val))
-(freezeq carray-set/unsafe!)
+(freezeq carray-set/unsafe)
 
 (define (carray-map func . carrays)
   (cons 'carray (cons (apply cvector-map
-			     (cons func (dmap cadr carrays)))
+			     (cons func (map cadr carrays)))
 		      (cddr (car carrays)))))
 (freezeq carray-map)
 
 ;; TODO: copy-carray
-;; TODO: carray-map!, carray-map, carray-foldl, carray-foldr, carray2list, list2carray
+;; TODO: carray-map!, carray-foldl, carray-foldr, carray2list, list2carray

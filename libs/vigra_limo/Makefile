@@ -1,18 +1,18 @@
 LIBNAME=vigra_limo
-OBJ = $(LIBNAME).o libvigra_c.so
+OBJ = vigra_limo.o tensors.o filters.o morphology.o
 CFLAGS += -I../.. -I../../../vigra_c/vigra_c/src
 CC=g++ -Wno-write-strings $(CFLAGS)
 
-$(LIBNAME).so: $(OBJ) Makefile
+$(LIBNAME).so: $(OBJ) libvigra_c.so
 	$(CC) -L. -o $(LIBNAME).so -shared $(OBJ) -Wl,-rpath,/usr/local/lib/limo -l :libvigra_c.so
 
-vigra_limo.o: vigra_limo.c
-	$(CC) -fPIC -c vigra_limo.c
+$(OBJ): %.o: %.c
+	$(CC) -fPIC -c $<
 
 libvigra_c.so:
 	cp ../../../vigra_c/vigra_c/bin/libvigra_c.so .
 
-.PHONY: clean
+.PHONY: clean realclean
 clean :
 	rm -f *.[oa] *~
 

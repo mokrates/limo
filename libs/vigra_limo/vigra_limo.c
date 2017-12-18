@@ -1,23 +1,15 @@
-//// This preamble is a little ... spaghetti
-
-/// libgmp.h needs to not know we're using c++
+///// preamble
 #include <vigra_c.h>
 
 extern "C" {
 #include <limo.h>
+#include "vigra_limo.h"
 #include "../cvector/cvector.h"
   
   //////// End of Preamble
   
-  static limo_data *limo_true;
-  static limo_data *cvector_type_sym;
+  limo_data *cvector_type_sym;
   
-  static inline double make_double_from_number(limo_data *n)
-  {
-    double d;
-    d = mpq_get_d(LIMO_MPQ(n));
-  }
-
   static void ensure_cvectorp(limo_data *cv)
   {
     if (cv->type == limo_TYPE_SPECIAL &&
@@ -230,8 +222,8 @@ extern "C" {
   
   void limo_dll_init(limo_data *env) 
   {
+    // this file
     cvector_type_sym = make_sym("CVECTOR");
-    limo_true = make_sym(":T");
     INSBUILTIN(builtin_vigra_imagewidth_c, "VIGRA-IMAGEWIDTH-C");
     INSBUILTIN(builtin_vigra_imageheight_c, "VIGRA-IMAGEHEIGHT-C");
     INSBUILTIN(builtin_vigra_imagenumbands_c, "VIGRA-IMAGENUMBANDS-C");
@@ -242,5 +234,15 @@ extern "C" {
     INSBUILTIN(builtin_vigra_exportrgbaimage_c, "VIGRA-EXPORTRGBAIMAGE-C");
     INSBUILTIN(builtin_vigra_exportrgbimage_c, "VIGRA-EXPORTRGBIMAGE-C");
     INSBUILTIN(builtin_vigra_exportgrayimage_c, "VIGRA-EXPORTGRAYIMAGE-C");
+
+    // tensors
+    INSBUILTIN(builtin_vigra_structuretensor_c, "VIGRA-STRUCTURETENSOR-C");
+    INSBUILTIN(builtin_vigra_tensoreigenrepresentation_c, "VIGRA-TENSOREIGENREPRESENTATION-C");
+
+    //filter
+    INSBUILTIN(builtin_vigra_hessianmatrixofgaussian_c, "VIGRA-HESSIANMATRIXOFGAUSSIAN-C");
+
+    //morphology
+    INSBUILTIN(builtin_vigra_upwindimage_c, "VIGRA-UPWINDIMAGE-C");
   }
 }
