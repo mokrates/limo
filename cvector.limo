@@ -39,6 +39,10 @@
   (helper cv 0))
 (freezeq cvector2dlist)
 
+(define (cvector-reduce fun cv)
+  (reduce fun (cvector2dlist cv)))
+(freezeq cvector-reduce)
+
 ;; register a placesetter
 (register-place-setter 'cvector-ref 'cvector-set)
 

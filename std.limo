@@ -446,9 +446,9 @@
 	(:else (member m (cdr l)))))
 (freezeq member)
 
-(defmacro set (k v)
-  `(setq ,(eval k) ,v))
-(freezeq set)
+;;(defmacro set (k v)         ; TODO: this doesn't work yet.
+;;  `(setq ,`(eval ,k) ,v))
+;;(freezeq set)
 
 (defun setnth (n l v)
   (if (eq n 0)
@@ -464,7 +464,7 @@
 	(:else `(setf ,k ,v))))
 (freezeq setplacef)
 
-(defmacro setplace (k v)
+(defmacro setplace (k v)             ;; TODO: this doesn't work yet.
   `(setplacef ,(eval k) ,v))
 (freezeq setplace)
 
@@ -515,19 +515,50 @@
 	((consp x) (string-concat "(" (list-to-string x)))))
 (freezeq repr)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; objects...
+(defun dict-copy (d)
+  (setq nd (make-dict))
+  (for-each p (dict-to-list d)
+	    (dict-set nd (car p) (cdr p)))
+  nd)
+(freezeq dict-copy)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; objects and classes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; this is an easily understandable implementation
+;; which for lack of more support from the limo-core
+;; is SLOW and memory-consuming
+;; because of all the copying
+;; I don't think I will fix this as the ease of
+;; understanding is what I like about my limo
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; a class is a dict.
+;; (setq new-class (make-dict))
+;; (defmethod the-class init (args ...) body)
+;; defining init is required.
+
+;; getting a member from an object:
+;; [object member]
+;; limo-core translates [x y z] to (bracket x y z) but leaves 'bracket' undefined.
+;; so this is the definition:
 (defmacro bracket (o m)
   `(dict-getvalue ,o ,`(quote ,m)))
 (freezeq bracket)
 
+;; to be used with place-setter
+;; (setplace [object member] value)
 (defmacro bracket-set (d k v)
   `(dict-set ,d ,`(quote ,k) ,v))
 (freezeq bracket-set)
 
 (register-place-setter 'bracket 'bracket-set)
 
+;; create new object (dict) by copying the class-dict to the object-dict
+;; methods will be curried, and called with 'self' as first parameter (python-style)
+;; slow. obviously. there CANNOT be any non-method-members in the class because
+;; EVERY item is curried which makes no sense for not-lambdas.
+;; non-method-members HAVE to be created in the init-method.
 (defun new (c . args)
   (setq ret (make-dict))
   (for-each methpair (dict-to-list c)
@@ -536,12 +567,19 @@
   ret)
 (freezeq new)
 
+;; define a method in a class
+;; (defmethod classname methodname (arguments ...) body)
 (defmacro defmethod (class name args . body)
   `(dict-set ,class ,`(quote ,name)
 	     ,`(lambda ,args ,`(progn ,@body))))
 (freezeq defmethod)
 
+;; subclasses:
+;; copy the class-dict to a new dict and overwrite/amend the methods.
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; end of classes/objects
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (utime)
   (setq t (time))
