@@ -99,6 +99,19 @@ BUILTIN(builtin_cos)
   return make_number_from_double(cos(make_double_from_number(eval(FIRST_ARG, env))));
 }
 
+BUILTIN(builtin_power)
+{
+  REQUIRE_ARGC("POWER", 2);
+  return make_number_from_double(pow(make_double_from_number(eval(FIRST_ARG, env)),
+				     make_double_from_number(eval(SECOND_ARG, env))));
+}
+
+BUILTIN(builtin_int)
+{
+  REQUIRE_ARGC("INT", 1);
+  return make_number_from_double((double)(long long)(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
 limo_data *make_number(void)
 {
   limo_data *res = make_nil();
@@ -163,7 +176,9 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_DIV", builtin_mpq_div },
   { "IDIVMOD", builtin_idivmod },
   { "SIN", builtin_sin },
-  { "COS", builtin_cos }
+  { "COS", builtin_cos },
+  { "POWER", builtin_power },
+  { "INT", builtin_int }
 };
 
 // needed for gmp, because it uses a

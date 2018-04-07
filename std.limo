@@ -191,6 +191,8 @@
 	(dcons (dmap car x)
 	       (apply dzipn (dmap cdr x)))))
 (freezeq dzipn)
+(setq zip dzipn)  ;; this is the right zip
+(freezeq zip)
 
 (defun dzip2 (a b)
   (when (and (consp a)
@@ -359,22 +361,24 @@
 
 (defmacro for-each (x l . body)
   (setq it (gensym))
+  (setq recur (gensym))
   `(progn
-    ,`(defun recur ,`(,it)
+    ,`(defun ,recur ,`(,it)
 	,`(when ,it 
 		,`(setq ,x ,`(car ,it)) 
 		,@body
-		,`(recur ,`(cdr ,it))))
-    ,`(recur ,l)))
+		,`(,recur ,`(cdr ,it))))
+    ,`(,recur ,l)))
 (freezeq for-each)
 
 (defmacro for-list (x l . body)
+  (setq recur (gensym))
   `(progn
-    ,`(defun recur ,`(,x)
+    ,`(defun ,recur ,`(,x)
 	,`(when ,x 
 		,@body
-		,`(recur ,`(cdr ,x))))
-    ,`(recur ,l)))
+		,`(,recur ,`(cdr ,x))))
+    ,`(,recur ,l)))
 (freezeq for-list)
 
 
@@ -398,6 +402,8 @@
       (make-symbol (string-concat "G" (reprn _ngensym)))))
 (freezeq gensym)
 
+;; with-gensym
+;; (with-gensym (syma symb symc) body)
 (defmacro with-gensym (syms . body)
   `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
 	  ,@body))

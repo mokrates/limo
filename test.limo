@@ -1,46 +1,64 @@
 ;; -*- mode: scheme -*-
-(setq img (vigra-importrgbaimage "karinavatar.png"))
-(write (timerun (setq img2 (image-map (lambda (x) (+ 100 x)) img))))
+;;(setq img (vigra-importrgbaimage "karinavatar.png"))
+;;(write (timerun (setq img2 (image-map (lambda (x) (+ 100 x)) img))))
 ;; (write (timerun (setq img2 (image-map (lambda (x)
 ;; 					(if (> x 0) (/ 255 x) 0))
 ;; 				      img))))
-(vigra-exportrgbaimage img2 "testout.png")
+;;(vigra-exportrgbaimage img2 "testout.png")
 ;; (system "qiv testout.png")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; edges?
 
-(define (shock-image image sigma rho h iter)
-  (if (= iter 0)
-      image
-      (progn
-       (setq st (vigra-structuretensor image sigma rho))
-       (write "structuretensor")
-       (setq te (vigra-tensoreigenrepresentation st))
-       (write "tensoreigenrep")
-       (setq hm (vigra-hessianmatrixofgaussian image sigma))
-       (write "hessian")
-       (setq ev_x (image-map (lambda (x) (cos x)) (third te)))
-       (write "image-map1")
-       (setq ev_y (image-map (lambda (x) (sin x)) (third te)))
-       (write "imaage-map2")
-       (setq d (image-map (lambda (c s I_xx I_xy I_yy)
-			    (+ (* c c I_xx)
-			       (* 2 c s I_xy)
-			       (* s s I_yy)))
-			  ev_x
-			  ev_y
-			  (first hm)
-			  (second hm)
-			  (third hm)))
-       (write "image-map3")
-       (write (format "iter ~n" iter))
-       (write (format "image: ~n , d: ~n" (list-length image) (list-length d)))
-       (shock-image (vigra-upwindimage image d h)
-		   sigma rho h (- iter 1)))))
+(define (find-edges img)
+  (setq hm (vigra-hessianmatrixofgaussian img (/ 1 2)))
+  (list (second (first hm))))
 
-(setq lenna (vigra-importrgbimage "lenna_face.png"))
-(setq lenna1 (shock-image lenna (/ 6 10) 2 (/ 3 10) 20))
-(vigra-exportrgbimage lenna1 "lenna20-2.png")
+(setq img (vigra-importrgbimage "lenna_face.png"))
+(setq edges_xx (find-edges img))
+(vigra-exportgrayimage edges_xx "edges.png")
+(system "qiv edges.png")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; shocking lenna
+
+;; (define (shock-image image sigma rho h iter)
+;;   (if (= iter 0)
+;;       image
+;;       (progn
+;;        (setq st (vigra-structuretensor image sigma rho))
+;;        (write "structuretensor")
+;;        (setq te (vigra-tensoreigenrepresentation st))
+;;        (write "tensoreigenrep")
+;;        (setq hm (vigra-hessianmatrixofgaussian image sigma))
+;;        (write "hessian")
+;;        (setq ev_x (image-map (lambda (x) (cos x)) (third te)))
+;;        (write "image-map1")
+;;        (setq ev_y (image-map (lambda (x) (sin x)) (third te)))
+;;        (write "imaage-map2")
+;;        (setq d (image-map (lambda (c s I_xx I_xy I_yy)
+;; 			    (+ (* c c I_xx)
+;; 			       (* 2 c s I_xy)
+;; 			       (* s s I_yy)))
+;; 			  ev_x
+;; 			  ev_y
+;; 			  (first hm)
+;; 			  (second hm)
+;; 			  (third hm)))
+;;        (write "image-map3")
+;;        (write (format "iter ~n" iter))
+;;        (write (format "image: ~n , d: ~n" (list-length image) (list-length d)))
+;;        (shock-image (vigra-upwindimage image d h)
+;; 		   sigma rho h (- iter 1)))))
+
+;; (setq lenna (vigra-importrgbimage "lenna_face.png"))
+;; (setq lenna1 (shock-image lenna (/ 6 10) 2 (/ 3 10) 20))
+;; (vigra-exportrgbimage lenna1 "lenna20-2.png")
+
+
 ;; (system "qiv lenna1.png")
 ;; (setq image-shocked (shock-image img 6 2 (/ 1 3) 5))
 ;; (vigra-exportrgbaimage image-shocked "testout.png")
 
+;; shocking lenna
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

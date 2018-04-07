@@ -16,16 +16,16 @@
 
 ; safe setting of cvector-values
 (define (cvector-ref cv index)
-  (if (or (< index 0) (>= index (cvector-length cv))
-	  (not (and (numberp index) (cvectorp cv))))
+  (if (or (not (and (numberp index) (cvectorp cv)))
+	  (< index 0) (>= index (cvector-length cv)))
       (throw "cvector-ref: out of bounds or wrong type")
       (cvector-ref/unsafe cv index)))
 (freezeq cvector-ref)
 
 ; safe getting of cvector-values
 (define (cvector-set cv index value)
-  (if (or (< index 0) (>= index (cvector-length cv))
-	  (not (and (numberp index) (numberp value) (cvectorp cv))))
+  (if (or (not (and (numberp index) (numberp value) (cvectorp cv)))
+	  (< index 0) (>= index (cvector-length cv)))
       (throw "cvector-set: out of bounds")
       (cvector-set/unsafe cv index value)))
 (freezeq cvector-set)
@@ -54,7 +54,12 @@
 			 (apply fun (map (lambda (v) (cvector-ref/unsafe v i)) cvs))))
   newcv)
 (freezeq cvector-map)
-	    
+
+(define (cvector-from-list type l)
+  (setq cv (make-cvector type (list-length l)))
+  (for-each i (zip (drange 0 (cvector-length cv) 1) l)
+	    (cvector-set cv (car i) (cadr i)))
+  cv)
 
 ;; (write "Teste cvector")
 ;; (setq cv (make-cvector _float 10))  # erstelle einen cvector
