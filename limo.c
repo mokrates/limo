@@ -78,6 +78,18 @@ int main(int argc, char **argv)
   signal(SIGINT, limo_repl_sigint);
   signal(SIGSEGV, sigsegv_handler);
 
+#ifdef LIMO_MAKE_EXECUTABLE
+  rs = limo_rs_from_string(limo_program_cstr);
+  while (!limo_eof(rs)) {
+    if (NULL==try_catch(reader(rs), env)) {
+      print_stacktrace(var_lookup(globalenv, sym_stacktrace));
+      writer(exception);
+      printf("\n");
+      exit(1);
+    }
+  }
+#else
+
   if (argc != 2 || strcmp(argv[1], "-n")) {
     rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
     if (NULL==try_catch(reader(rs), env)) {
@@ -116,5 +128,7 @@ int main(int argc, char **argv)
     }
   }
 
+#endif
+  
   return 0;
 }

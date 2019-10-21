@@ -1,5 +1,5 @@
 ; -*- scheme -*-
-
+(load (string-concat _limo-prefix "init.limo"))
 (setq anzahl_scheiben 16)
 
 (setq tuerme (list (range 1 (+ 1 anzahl_scheiben) 1) () ()))

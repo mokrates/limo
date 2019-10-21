@@ -1,0 +1,36 @@
+#!/usr/local/bin/limo --
+# -*- scheme -*-
+
+(setq stdout (file-open "/dev/stdout" "w"))
+
+(defun print (s)
+  (file-print stdout s))
+
+(if (< (list-length argv) 2)
+    (progn
+     (print "Usage: limo2cstring infile outfile\n")
+     (exit))
+    ())
+
+(setq infile (file-open (car argv) "r"))
+(setq outfile (file-open (cadr argv) "w"))
+
+(file-print outfile "// limo2cstring output\n")
+(file-print outfile "// to be compiled with limo to make an standalone executable\n\n")
+(file-print outfile "char *limo_program_cstr=\n")
+(for-each line (file-readlines infile)
+	  (file-print outfile "\t\"")
+	  (for-each c (string-to-list line)
+		    (cond ((eq c "\"")
+			   (file-print outfile "\\\""))
+			  ((eq c "\n") ;; here ends the line (and the inner loop)
+			   (file-print outfile "\\n\"\n"))
+			  ((eq c "\\")
+			   (file-print outfile "\\\\"))
+			  (:t
+			   (file-print outfile c)))))
+(file-print outfile ";\n")
+
+(file-close infile)
+(file-close outfile)
+

@@ -257,3 +257,7 @@ limo_data *make_const(limo_data *name, limo_data *val);
 void writer_const(limo_data *c);
 
 #include "limpy.h"
+
+#ifdef LIMO_MAKE_EXECUTABLE
+extern char *limo_program_cstr;
+#endif

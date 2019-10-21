@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -x
+
+limo limo2cstring.limo -- $1 $1.c
+cc $1.c -L. -llimo -lgc -ldl -lreadline -lgmp -rdynamic -o $1.elf

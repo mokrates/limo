@@ -6,9 +6,12 @@ PROFILING=#-pg
 OPTIMIZE=-O3
 OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
-OBJ=limo.o writer.o reader.o error.o makers.o vars.o eval.o \
+BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
 	dict.o special.o block.o limpy.o
+OBJ=limo.o $(BASEOBJ)
+EXEOBJ=exelimo.o $(BASEOBJ)
+
 HEADERS=limo.h config.h
 
 CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
@@ -16,6 +19,11 @@ CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 .PHONY: all libs clean realclean install uninstall
 
 all: limo libs
+
+exelimo: $(EXEOBJ)
+	ar rcs liblimo.a $(EXEOBJ)
+exelimo.o: $(HEADERS) limo.c
+	$(CC) $(DEBUG) -c -DLIMO_MAKE_EXECUTABLE limo.c -o exelimo.o
 
 limo: $(OBJ)
 	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
