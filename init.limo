@@ -8,7 +8,8 @@
 (load (string-concat _limo-prefix "limpy.limo"))
 
 (setq executelist '(progn))
-(while argv
+(while (and argv ;; not empty
+	    (not (eq (car argv) "--")))
        (cond ((eq "-e" (car argv))
 	      (setf argv (cdr argv))
 	      (setf executelist (append executelist (list (read-string (car argv)))))
@@ -21,7 +22,7 @@
 		  (eq "-h" (car argv)) 
 		  (eq "--help" (car argv)))
 	      (write "limo")
-	      (write "usage: limo [ -n ] { -i <file> | -e <string> | -h } [ <file> ] }")
+	      (write "usage: limo [ -n ] { -i <file> | -e <string> | -h } [ <file> ] [ -- { rest_arguments} ]")
 	      (write "")
 	      (write "    -n : doesn't execute init.limo. (you get the barebone)")
 	      (write "    -i file: execute file, resume execution of command line")
@@ -33,6 +34,10 @@
 	     (:else 
 	      (setf executelist (append executelist (list `(load ,(car argv)) '(exit))))
 	      (setf argv (cdr argv)))))
+
+(if (and argv (eq (car argv) "--"))
+    (setf argv (cdr argv))
+    ())
 
 (eval executelist)
 (unsetq executelist)

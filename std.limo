@@ -288,22 +288,24 @@
 
 (defmacro for-each (x l . body)
   (setq it (gensym))
+  (setq recur (gensym))
   `(progn
-    ,`(defun recur ,`(,it)
+    ,`(defun ,recur ,`(,it)
 	,`(when ,it 
 		,`(setq ,x ,`(car ,it)) 
 		,@body
-		,`(recur ,`(cdr ,it))))
-    ,`(recur ,l)))
+		,`(,recur ,`(cdr ,it))))
+    ,`(,recur ,l)))
 
 (defmacro for-list (x l . body)
   (setq it (gensym))
+  (setq recur (gensym))
   `(progn
-    ,`(defun recur ,`(,x)
+    ,`(defun ,recur ,`(,x)
 	,`(when ,x 
 		,@body
-		,`(recur ,`(cdr ,x))))
-    ,`(recur ,l)))
+		,`(,recur ,`(cdr ,x))))
+    ,`(,recur ,l)))
 
 
 (defun qsort (lt l) 
