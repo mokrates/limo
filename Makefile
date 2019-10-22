@@ -20,6 +20,11 @@ all: limo libs
 limo: $(OBJ)
 	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
+limo-almost-static: $(OBJ)
+	$(CC) $(OBJ)  -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
+
+limo-wsl: limo-almost-static
+
 libs:
 	make -C libs
 
@@ -35,6 +40,7 @@ realclean: clean
 
 install:
 	mkdir -p $(LIMO_PREFIX)
+	rm -r $(LIMO_PREFIX)/*
 	cp *.limo $(LIMO_PREFIX)
 	cp libs/*/*.so $(LIMO_PREFIX)
 	cp limo $(INSTALL_PREFIX)/bin
