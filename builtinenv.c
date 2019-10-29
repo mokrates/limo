@@ -27,6 +27,8 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "THROW", builtin_throw },
   { "EXIT", builtin_exit },
   { "LOAD", builtin_load},
+  { "MOD-ISINLINE", builtin_mod_isinline },
+  { "MOD-LOADINLINE", builtin_mod_loadinline },
   { "LOADDLL", builtin_loaddll },
   { "GCENABLE", builtin_gc_enable },
   { "GCDISABLE", builtin_gc_disable },

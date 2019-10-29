@@ -1,6 +1,6 @@
 ; -*- scheme -*-
 
-(loaddll (string-concat _limo-prefix "string_builtins.so"))
+(mod-load "string_builtins")
 
 (setq string-concat
 	   (scope

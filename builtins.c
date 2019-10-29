@@ -303,6 +303,36 @@ BUILTIN(builtin_load)
   return make_nil();
 }
 
+BUILTIN(builtin_mod_isinline)
+{
+  limo_data *modname = eval(FIRST_ARG, env);
+  if (modname->type != limo_TYPE_STRING)
+    limo_error("mod-isinline arg must be string");
+
+  struct INLINE_MODLIST_ITEM *item;
+  for (item=inline_mod_funs; item->name != NULL; ++item)
+    if (!strcmp(item->name, modname->data.d_string))
+      return sym_true;
+
+  return make_nil();
+}
+
+BUILTIN(builtin_mod_loadinline)
+{
+  limo_data *modname = eval(FIRST_ARG, env);
+  if (modname->type != limo_TYPE_STRING)
+    limo_error("mod-loadinline arg must be string");
+
+  struct INLINE_MODLIST_ITEM *item;
+  for (item=inline_mod_funs; item->name != NULL; ++item)
+    if (!strcmp(item->name, modname->data.d_string)) {
+      (item->fun)(env);
+      return sym_true;
+    }
+
+  return make_nil();  
+}
+
 BUILTIN(builtin_loaddll)
 {
   void *handle;

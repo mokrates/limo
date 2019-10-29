@@ -8,7 +8,7 @@ OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
 BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
-	dict.o special.o block.o limpy.o
+	dict.o special.o block.o limpy.o inlined_mods.o
 OBJ=limo.o $(BASEOBJ)
 EXEOBJ=exelimo.o $(BASEOBJ)
 
@@ -18,18 +18,21 @@ CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 
 .PHONY: all libs clean realclean install uninstall
 
-all: limo libs
+all: libs limo
 
 exelimo: $(EXEOBJ)
 	ar rcs liblimo.a $(EXEOBJ)
 exelimo.o: $(HEADERS) limo.c
 	$(CC) $(DEBUG) -c -DLIMO_MAKE_EXECUTABLE limo.c -o exelimo.o
 
+inlined_mods.c: inlined.mods
+	./make-inlined_mods-c.sh
+
 limo: $(OBJ)
-	$(CC) $(OBJ) $(PROFILING) -rdynamic -lgc -lgmp -ldl -lreadline -o limo
+	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lgc -lgmp -ldl -lreadline -o limo
 
 limo-almost-static: $(OBJ)
-	$(CC) $(OBJ)  -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
+	$(CC) $(OBJ) `./inline-cfg.sh` -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
 
 limo-wsl: limo-almost-static
 
@@ -40,6 +43,7 @@ $(OBJ): $(HEADERS) Makefile
 
 clean:	
 	rm -f *.o *~
+	rm -f inlined_mods.c
 	make -C libs clean
 
 realclean: clean

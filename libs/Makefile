@@ -5,7 +5,8 @@ LIBS=file string_builtins
 all: $(LIBS)
 
 $(LIBS):
-	make -C $@
+	make -C $@ $@.so
+	make -C $@ $@.a
 
 clean:
 	$(foreach X,$(LIBS), make -C $X clean ; )

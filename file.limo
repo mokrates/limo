@@ -1,6 +1,6 @@
 ; -*- scheme -*-
 
-(loaddll (string-concat _limo-prefix "/file.so"))
+(mod-load "file")
 
 ##doc: file-readline
 ## TYPE: function@*

@@ -101,6 +101,9 @@ typedef struct limo_READER_STREAM {
   char *filename;
 } reader_stream;
 
+struct INLINE_MODLIST_ITEM { char *name; void (* fun)(limo_data *env); };
+extern struct INLINE_MODLIST_ITEM inline_mod_funs[];
+
 int limo_getc(reader_stream *);
 char limo_eof(reader_stream *);
 reader_stream *limo_rs_from_file(FILE *, char *filename);
@@ -200,6 +203,8 @@ BUILTIN(builtin_throw);
 BUILTIN(builtin_finally);
 BUILTIN(builtin_exit);
 BUILTIN(builtin_load);
+BUILTIN(builtin_mod_isinline);
+BUILTIN(builtin_mod_loadinline);
 BUILTIN(builtin_loaddll);
 BUILTIN(builtin_gc_enable);
 BUILTIN(builtin_gc_disable);

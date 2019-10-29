@@ -15,8 +15,6 @@
       (macro (name args . body)
 	(list 'setq name (list 'lambda args (cons 'progn body)))))
 
-
-
 ;; scheme style 'define'
 (defmacro define x
   (if (consp (car x)) ;; a function
@@ -31,6 +29,11 @@
   (try
    `(assert ,`(deepeq ,x ,y))
    `(write ,`(list 'asserteq_failed ,x ,y))))
+
+(defun mod-load (name)
+  (if (mod-isinline name)
+      (mod-loadinline name)
+      (loaddll (string-concat (string-concat _limo-prefix name) ".so"))))
 
 (defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)
