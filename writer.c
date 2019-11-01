@@ -63,6 +63,10 @@ void writer(limo_data *ld) // not threadsafe!
     }
     break;
 
+  case limo_TYPE_CONST:
+    printf("[%s]", CDR(ld)->data.d_string);
+    break;
+
   case limo_TYPE_THUNK:
   case limo_TYPE_LAMBDA: 
   case limo_TYPE_MACRO:

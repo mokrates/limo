@@ -1,4 +1,4 @@
-LIBS=file string_builtins
+LIBS=file string_builtins simplesdl
 
 .PHONY: all clean realclean $(LIBS)
 

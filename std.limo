@@ -10,30 +10,35 @@
 (setq defmacro 
       (macro (name args . body)
 	(list setq name (list 'macro args (cons 'progn body)))))
+(freezeq defmacro)
 
 (setq defun
       (macro (name args . body)
 	(list 'setq name (list 'lambda args (cons 'progn body)))))
+(freezeq defun)
 
 ;; scheme style 'define'
 (defmacro define x
   (if (consp (car x)) ;; a function
-      (list 'setq (caar x) (list 'lambda (cdar x) (cons 'progn (cdr x))))
-      (list 'setq (car x) (cadr x))))
+      (list 'setq (car (car x)) (list 'lambda (cdr (car x)) (cons 'progn (cdr x))))
+      (list 'setq (car x) (car (cdr x)))))
+(freezeq define)
 
 (defmacro assert (x)
   `(if ,x :t 
        ,`(throw ,`(list 'ASSERT_FAIL ,`(quote ,x)))))
+(freezeq assert)
 
 (defmacro asserteq (x y)
   (try
    `(assert ,`(deepeq ,x ,y))
    `(write ,`(list 'asserteq_failed ,x ,y))))
+(freezeq asserteq)
 
-(defun mod-load (name)
-  (if (mod-isinline name)
-      (mod-loadinline name)
-      (loaddll (string-concat (string-concat _limo-prefix name) ".so"))))
+(defmacro mod-load (name)
+  `(if ,`(mod-isinline ,name)
+       ,`(mod-loadinline ,name)
+       ,`(loaddll ,`(string-concat ,`(string-concat _limo-prefix ,name) ".so"))))
 
 (defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)
@@ -43,16 +48,31 @@
 	    akku)
 	(throw (cons "reverse takes a proper list" l))))
   (helper l ()))
+(freezeq reverse)
 
-(defun undyn (x)
-  (defun helper (x akku)
-    (cond ((not x) akku)
-	  ((consp x)
-	   (helper (cdr x) (cons (undyn (car x)) akku)))
-	  (:else (throw (cons "undyn takes a proper list" x)))))
-  (if (not (consp x))
-      x
-      (reverse (helper x ()))))
+
+;; '(defun undyn (x)
+;;   (defun helper (x akku)
+;;     (cond ((not x) akku)
+;; 	  ((consp x)
+;; 	   (helper (cdr x) (cons (undyn (car x)) akku)))
+;; 	  (:else (throw (cons "undyn takes a proper list" x)))))
+;;   (if (not (consp x))
+;;       x
+;;       (reverse (helper x ()))))
+
+(defun undyn (l)               ; this undyn doesn't reverse twice.
+  (defun helper (l last)
+    (if (not l)
+	(setcdr last ())
+	(progn (setcdr last (cons (car l) ()))
+	       (helper (cdr l) (cdr last)))))
+  (if (not l)
+      ()
+      (progn (setq start (cons (car l) ()))
+	     (helper (cdr l) start)
+	     start)))
+(freezeq undyn)
 
 (defun deepeq (x y)
   (cond ((and (consp x) x)  ;; cons and not empty
@@ -61,39 +81,40 @@
 	      (deepeq (car x) (car y))
 	      (deepeq (cdr x) (cdr y))))
 	(:t (eq x y))))
+(freezeq deepeq)
 
-(defmacro quasiquote (l) ; (not using callerenv)
-  (defun helper (l akku)
-    (cond ((not l) akku)
-	  ((and (consp (car l)) 
-		(car l)  ;; not nil
+;; '(defmacro quasiquote (l) ; (not using callerenv)
+;;   (defun helper (l akku)
+;;     (cond ((not l) akku)
+;; 	  ((and (consp (car l)) 
+;; 		(car l)  ;; not nil
+;; 		(eq (caar l) 'comma))
+;; 	   (helper (cdr l) 
+;; 		   (cons (list 'list (cadar l)) akku)))
+;; 	  ((and (consp (car l))
+;; 		(car l)
+;; 		(eq (caar l) 'splice))
+;; 	   (helper (cdr l) (cons (cadar l) akku)))
+;; 	  (:t (helper (cdr l) 
+;; 		      (cons (list 'list (list 'quote (car l))) akku)))))
+;;   (cons 'append (reverse (helper l ()))))
+
+(defmacro quasiquote (l)    ; dynamic version  (doesn't work yet. problems with thunk-eval in funcall-eval)
+  (defun helper (l)
+    (cond ((not l)         ; end of list
+	   ())
+	  ((and (consp (car l))  ; comma
+		(car l)
 		(eq (caar l) 'comma))
-	   (helper (cdr l) 
-		   (cons (list 'list (cadar l)) akku)))
-	  ((and (consp (car l))
+	   (dcons (list 'list (cadar l)) (helper (cdr l))))  
+	  ((and (consp (car l))  ; splice
 		(car l)
 		(eq (caar l) 'splice))
-	   (helper (cdr l) (cons (cadar l) akku)))
-	  (:t (helper (cdr l) 
-		      (cons (list 'list (list 'quote (car l))) akku)))))
-  (cons 'append (reverse (helper l ()))))
-
-'(defmacro quasiquote (l) ; (using _callerenv)
-   (defun helper (l akku)
-     (cond ((not l) akku)
-	   ((and (consp (car l)) 
-		 (car l)  ;; not nil
-		 (eq (caar l) 'comma))
-	    (helper (cdr l) 
-		    (cons (car (cdar l)) akku)))
-	   ((and (consp (car l))
-		 (car l)
-		 (eq (caar l) 'splice))
-	    (helper (cdr l) 
-		    (helper (eval (car (cdar l)) _callerenv) akku)))
-	   (:t (helper (cdr l) 
-		       (cons (list 'quote (car l)) akku)))))
-   (cons 'list (reverse (helper l ()))))
+	   (dcons (cadar l) (helper (cdr l))))
+	  (:t (dcons (list 'list (list 'quote (car l)))  ; just a symbol to be quoted
+		     (helper (cdr l))))))
+  (undyn (cons append (helper l))))
+(freezeq quasiquote)
 
 ; limo-loop/recur
 ; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))
@@ -102,6 +123,7 @@
     ,`(defun recur ,(car x)
 	,@(cddr x))
     ,`(recur ,@(cadr x))))
+(freezeq limo-loop)
 
 ; loop/recur
 ; ex: (loop (a start-a b start-b ...) body: (if endp returnval (recur next-a next-b ...)))
@@ -115,43 +137,66 @@
     ,`(defun recur ,(lvals (car x))
 	,@(cdr x))
     ,`(recur ,@(rvals (car x)))))
+(freezeq loop)
 
 (defun dmap (f a)
   (defun helper (f a)
     (when a
 	  (dcons (f (car a)) (helper f (cdr a)))))
+  (freezeq helper)
   (helper f a))
+(freezeq dmap)
 
-(defun map (f a)
+(defun map1 (f a)
   (defun helper (f a)
     (when a
 	  (cons (f (car a)) (helper f (cdr a)))))
+  (freezeq helper)
   (helper f a))
+(freezeq map1)
+
+(define (map f . a)
+  (define (helper f a)
+    (if (and (car a) (consp (car a)))
+	(cons (apply f (map1 (lambda (x) (car x)) a))
+	      (helper f (map1 (lambda (x) (cdr x)) a)))
+	()))
+  (helper f a))
+(freezeq map)
 
 (defun curry (f . args)
   (lambda x
     (apply f (append args x))))
+(freezeq curry)
 
 (defun list-length (x)
   (loop (x x l 0)
 	(if x (recur (cdr x) (+ 1 l)) l)))
+(freezeq list-length)
 
 (defun identity (x) x)
+(freezeq identity)
+
 (defun list x x)
+(freezeq list)
 
 (defun comp fs
   (cond ((not fs) identity)
-	((not (consp fs)) (throw "(comp {fun}*)"))
+	((not (consp fs)) (throw (cons "(comp {fun}*)" fs)))
 	((not (cdr fs)) (car fs))
 	(:t (lambda x ((car fs) (apply (apply comp 
 					      (cdr fs))
 				       x))))))
+(freezeq comp)
 
 (defun dzipn x
   (when (and (apply andf (dmap consp x))
 	     (apply andf x))
 	(dcons (dmap car x)
 	       (apply dzipn (dmap cdr x)))))
+(freezeq dzipn)
+(setq zip dzipn)  ;; this is the right zip
+(freezeq zip)
 
 (defun dzip2 (a b)
   (when (and (consp a)
@@ -161,18 +206,21 @@
 		     (car b))
 	       (dzip2 (cdr a) 
 		      (cdr b)))))
+(freezeq dzip2)
 
-(defun not (x) 
+(defun not (x)
   (if x () :t))
+(freezeq not)
 
-(defun caar (l) (car (car l)))
-(defun cdar (l) (cdr (car l)))
-(defun cadr (l) (car (cdr l)))
-(defun cddr (l) (cdr (cdr l)))
-(defun cadar (l) (car (cdr (car l))))
+(defun caar (l) (car (car l)))         (freezeq caar)
+(defun cdar (l) (cdr (car l)))         (freezeq cdar)
+(defun cadr (l) (car (cdr l)))         (freezeq cadr)
+(defun cddr (l) (cdr (cdr l)))         (freezeq cddr)
+(defun cadar (l) (car (cdr (car l))))  (freezeq cadar)
 
 (defmacro when (c . b)
   `(if ,c ,(cons 'progn b) ()))
+(freezeq when)
 
 (defmacro or l
   (if l 
@@ -180,6 +228,7 @@
 	    (car l) 
 	    (cons 'or (cdr l)))
       ()))
+(freezeq or)
 
 (defmacro and l
   (if l
@@ -187,6 +236,7 @@
 	    (cons 'and (cdr l))
 	    ())
       :t))
+(freezeq and)
 
 (defun andf l  ;; and as a function. not shorting
   (cond ((not l) :t)
@@ -195,23 +245,27 @@
 	((car l)
 	 (apply andf (cdr l)))
 	(:t ())))
+(freezeq andf)
 
 (defmacro cond l   ;; used by quasiquote
   (if l
       (list 'if (caar l) (cons 'progn (apply list (cdar l)))
 	    (cons 'cond (cdr l)))
       ()))
+(freezeq cond)
 
 (defmacro switch (s . items)
   (when items
 	`(if ,`(eq ,s ,(caar items)) 
 	     ,`(progn ,@(cdar items))
 	     ,`(switch ,s ,@(cdr items)))))
+(freezeq switch)
 
 (defun * os
   (if os
       (reduce mpq_mul os)
       1))
+(freezeq *)
 
 (defun + os
   (if os
@@ -219,21 +273,28 @@
 	  (reduce mpq_add os)
 	  (apply string-concat os))
       0))
+(freezeq +)
 
 (defun - (start . os)
   (apply + (dcons start (dmap mpq_neg os))))
+(freezeq -)
 
 (defun / (start . os)
   (apply * (dcons start (dmap mpq_inv os))))
+(freezeq /)
 
-(setq < ltn)
-(setq > gtn)
-(setq = eq)
-(defun <= (x y)
+(setq < ltn)   (freezeq <)
+(setq > gtn)   (freezeq >)
+(setq = eq)    (freezeq =)
+(defun <= (x y)  
   (or (< x y) (= x y)))
+(freezeq <=)
+
 (defun >= (x y)
   (or (> x y) (= x y)))
-(setq != (comp not eq))
+(freezeq >=)
+
+(setq != (comp not eq)) (freezeq !=)
 
 
 (defun fak (n)
@@ -242,20 +303,24 @@
 	akku
 	(helper (mpq_sub n 1) (mpq_mul akku n))))
   (helper n 1))
+(freezeq fak)
 
 (defun nth (n l)
   (cond ((eq n 0) (car l))
 	(:else (nth (mpq_sub n 1) (cdr l)))))
+(freezeq nth)
 
 (defun range (start end step)  ;; recursive! with generator: drange.
   (if (>= start end)
       ()
       (cons start (range (mpq_add start step) end step))))
+(freezeq range)
 
 (defun drange (start end step)
   (if (>= start end)
       ()
       (dcons start (drange (mpq_add start step) end step))))
+(freezeq drange)
 
 (defun lreduce (f l)   ;; fold l with f from left
   (defun recur (akku l)
@@ -263,31 +328,40 @@
 	(recur (f akku (car l)) (cdr l))
 	akku))
   (recur (car l) (cdr l)))
+(freezeq lreduce)
 
 (setq reduce lreduce)
+(freezeq reduce)
 
 (defun dfilter (p l)    ;; filter list with predicate p
   (cond ((not l) l)
 	((p (car l)) (dcons (car l) (dfilter p (cdr l))))
 	(:else (dfilter p (cdr l)))))
+(freezeq dfilter)
 
 (defun filter (p l)    ;; recursive
   (cond ((not l) l)
 	((p (car l)) (cons (car l) (filter p (cdr l))))
 	(:else (filter p (cdr l)))))
+(freezeq filter)
 
 (defun append l
   (defun helper (l1 l2)  ;; recursive: with generator: dappend
     (if (not l1) l2
 	(cons (car l1) (helper (cdr l1) l2))))
   (reduce helper (cons () l)))
+(freezeq append)
 
-(defun dappend (l1 l2)
-  (if (not l1) l2
-      (dcons (car l1) (dappend (cdr l1) l2))))
+(defun dappend l
+  (defun helper (l1 l2)
+    (if (not l1) l2
+	(dcons (car l1) (helper (cdr l1) l2))))
+  (reduce helper (dcons () l)))
+(freezeq dappend)
 
 (defmacro scope x
   `(,`(lambda () ,`(progn ,@x))))
+(freezeq scope)
 
 (defmacro for-each (x l . body)
   (setq it (gensym))
@@ -299,9 +373,9 @@
 		,@body
 		,`(,recur ,`(cdr ,it))))
     ,`(,recur ,l)))
+(freezeq for-each)
 
 (defmacro for-list (x l . body)
-  (setq it (gensym))
   (setq recur (gensym))
   `(progn
     ,`(defun ,recur ,`(,x)
@@ -309,7 +383,7 @@
 		,@body
 		,`(,recur ,`(cdr ,x))))
     ,`(,recur ,l)))
-
+(freezeq for-list)
 
 (defun qsort (lt l) 
   (defun ltx (x) (lt x (car l)))
@@ -317,9 +391,11 @@
 	   (qsort lt (filter ltx (cdr l)))
 	   (list (car l))
 	   (qsort lt (filter (comp not ltx) (cdr l))))))
+(freezeq qsort)
 
 (defun make-symbol (s)
   (make-sym (string-concat "#:" s)))
+(freezeq make-symbol)
 
 (setq _ngensym 0)
 (defun gensym x
@@ -327,10 +403,14 @@
   (if x 
       (make-symbol (string-concat (car x) (reprn _ngensym)))
       (make-symbol (string-concat "G" (reprn _ngensym)))))
+(freezeq gensym)
 
+;; with-gensym
+;; (with-gensym (syma symb symc) body)
 (defmacro with-gensym (syms . body)
   `(progn ,@(map (lambda (x) `(setq ,x (gensym))) syms)
 	  ,@body))
+(freezeq with-gensym)
 
 ; unify
 ; ex: (unify (a b c) '(1 2 3)) ; (a<-1, b<-2, c<-3)
@@ -346,6 +426,7 @@
 				 ,`(setq ,index ,`(cdr ,index)))))
 		akku))
     ,`(unsetq ,index)))
+(freezeq unify)
 
 (defmacro unifyf (l v)       ; destructuring assignment.
   (setq index (gensym))
@@ -359,38 +440,46 @@
 				 ,`(setf ,index ,`(cdr ,index)))))
 		akku))
     ,`(unsetq ,index)))
-
+(freezeq unifyf)
 
 (defun assoc (name l)
   (when l
 	(if (eq name (caar l)) 
 	    (car l)
 	    (assoc name (cdr l)))))
+(freezeq assoc)
 
 (defun member (m l)
   (cond ((not l) ())
 	((eq (car l) m) l)
 	(:else (member m (cdr l)))))
+(freezeq member)
 
-(defmacro set (k v)
-  `(setq ,(eval k) ,v))
+;;(defmacro set (k v)         ; TODO: this doesn't work yet.
+;;  `(setq ,`(eval ,k) ,v))
+;;(freezeq set)
 
 (defun setnth (n l v)
   (if (eq n 0)
       (setcar l v)
       (setnth (- n 1) (cdr l) v)))
+(freezeq setnth)
 
 (setq _place-setters (make-dict))
+(freezeq _place-setters)
 (defmacro setplacef (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
 	(:else `(setf ,k ,v))))
+(freezeq setplacef)
 
-(defmacro setplace (k v)
+(defmacro setplace (k v)             ;; TODO: this doesn't work yet.
   `(setplacef ,(eval k) ,v))
+(freezeq setplace)
 
 (defun register-place-setter (g s)
   (dict-set _place-setters g s))
+(freezeq register-place-setter)
 
 (register-place-setter 'car 'setcar)
 (register-place-setter 'cdr 'setcdr)
@@ -398,9 +487,11 @@
 
 (defun dict-getvalue (d k)
   (cdr (dict-get d k)))
+(freezeq dict-getvalue)
 
 (setq true :t)
 (setq false ())
+(freezeq false)
 
 (defun format (s . args)
   (defun format-list (s args)
@@ -415,6 +506,7 @@
 			       (format-list (cddr s) (cdr args))))))
 	  (:else (dcons (car s) (format-list (cdr s) args)))))
   (reduce + (format-list (string-to-list s) args)))
+(freezeq format)
 
 (defun repr (x)
   (defun list-to-string (x)
@@ -430,31 +522,93 @@
 	((stringp x) (string-concat "\"" x "\""))
 	((symbolp x) (symbol-to-string x))
 	((consp x) (string-concat "(" (list-to-string x)))))
+(freezeq repr)
 
+(defun dict-copy (d)
+  (setq nd (make-dict))
+  (for-each p (dict-to-list d)
+	    (dict-set nd (car p) (cdr p)))
+  nd)
+(freezeq dict-copy)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; objects and classes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; this is an easily understandable implementation
+;; which for lack of more support from the limo-core
+;; is SLOW and memory-consuming
+;; because of all the copying
+;; I don't think I will fix this as the ease of
+;; understanding is what I like about my limo
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; a class is a dict.
+;; (setq new-class (make-dict))
+;; (defmethod the-class init (args ...) body)
+;; defining init is required.
+
+;; getting a member from an object:
+;; [object member]
+;; limo-core translates [x y z] to (bracket x y z) but leaves 'bracket' undefined.
+;; so this is the definition:
 (defmacro bracket (o m)
   `(dict-getvalue ,o ,`(quote ,m)))
+(freezeq bracket)
 
+;; to be used with place-setter
+;; (setplace [object member] value)
 (defmacro bracket-set (d k v)
   `(dict-set ,d ,`(quote ,k) ,v))
+(freezeq bracket-set)
 
 (register-place-setter 'bracket 'bracket-set)
 
+;; create new object (dict) by copying the class-dict to the object-dict
+;; methods will be curried, and called with 'self' as first parameter (python-style)
+;; slow. obviously. there CANNOT be any non-method-members in the class because
+;; EVERY item is curried which makes no sense for not-lambdas.
+;; non-method-members HAVE to be created in the init-method.
 (defun new (c . args)
   (setq ret (make-dict))
   (for-each methpair (dict-to-list c)
 	    (dict-set ret (car methpair) (curry (cdr methpair) ret)))
   (apply [ret init] args)  ; call the constructor
   ret)
+(freezeq new)
 
+;; define a method in a class
+;; (defmethod classname methodname (arguments ...) body)
 (defmacro defmethod (class name args . body)
   `(dict-set ,class ,`(quote ,name)
 	     ,`(lambda ,args ,`(progn ,@body))))
+(freezeq defmethod)
+
+;; subclasses:
+;; copy the class-dict to a new dict and overwrite/amend the methods.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; end of classes/objects
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (utime)
+  (setq t (time))
+  (+ (* 1000000 (car t)) (cadr t)))
+(freezeq utime)
+
+(defmacro timerun code
+  (setq t1 (gensym))
+  (setq t2 (gensym))
+  `(progn ,`(setq ,t1 (utime))
+	  ,@code
+	  ,`(setq ,t2 (utime))
+	  ,`(- ,t2 ,t1)))
+(freezeq timerun)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; settings
 
-'(gcsetmax (* 1024 128))  ;; max 128mb ram for limo.
+(gcsetmax (* 1024 512))  ;; max 128mb ram for limo.
 ;(* 1 2 3)
 
 
@@ -468,4 +622,3 @@
   (when x
 	(write (car x))
 	(writelist (cdr x))))
-

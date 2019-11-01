@@ -1,11 +1,14 @@
 ; -*- scheme -*-
 
+(load (string-concat _limo-prefix "freeze_builtins.limo"))
 (load (string-concat _limo-prefix "std.limo"))
 (load (string-concat _limo-prefix "wrappers.limo"))
 (load (string-concat _limo-prefix "list.limo"))
 (load (string-concat _limo-prefix "string.limo"))
 (load (string-concat _limo-prefix "file.limo"))
 (load (string-concat _limo-prefix "limpy.limo"))
+
+################################
 
 (setq executelist '(progn))
 (while (and argv ;; not empty

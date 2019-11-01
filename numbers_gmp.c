@@ -1,3 +1,4 @@
+#include <math.h>
 #include "limo.h"
 
 BUILTIN(builtin_numberp)
@@ -5,7 +6,7 @@ BUILTIN(builtin_numberp)
   if (eval(FIRST_ARG, env)->type == limo_TYPE_GMPQ)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_reprn)
@@ -20,7 +21,7 @@ BUILTIN(builtin_idivmod)
 {
   limo_data *q = make_number();
   limo_data *r = make_number();
-  limo_data *res = make_cons(q, make_cons(r, make_nil()));
+  limo_data *res = make_cons(q, make_cons(r, nil));
 
   if (list_length(arglist) != 3)
     limo_error("idivmod needs 2 args");
@@ -75,7 +76,7 @@ BUILTIN(builtin_ltn)
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) < 0)
     return sym_true;
   else
-    return make_nil();
+    return nil;
 }
 
 BUILTIN(builtin_gtn)
@@ -83,7 +84,32 @@ BUILTIN(builtin_gtn)
   if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) > 0)
     return sym_true;
   else
-    return make_nil();
+    return nil;
+}
+
+BUILTIN(builtin_sin)
+{
+  REQUIRE_ARGC("SIN", 1);
+  return make_number_from_double(sin(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
+BUILTIN(builtin_cos)
+{
+  REQUIRE_ARGC("COS", 1);
+  return make_number_from_double(cos(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
+BUILTIN(builtin_power)
+{
+  REQUIRE_ARGC("POWER", 2);
+  return make_number_from_double(pow(make_double_from_number(eval(FIRST_ARG, env)),
+				     make_double_from_number(eval(SECOND_ARG, env))));
+}
+
+BUILTIN(builtin_int)
+{
+  REQUIRE_ARGC("INT", 1);
+  return make_number_from_double((double)(long long)(make_double_from_number(eval(FIRST_ARG, env))));
 }
 
 limo_data *make_number(void)
@@ -119,6 +145,23 @@ limo_data *make_number_from_long_long(long long i)
   return res;
 }
 
+limo_data *make_number_from_double(double d)
+{
+  limo_data *res = make_number();
+
+  mpq_set_d(LIMO_MPQ(res), (double)d);
+  mpq_canonicalize(LIMO_MPQ(res));
+  return res;
+}
+
+double make_double_from_number(limo_data *n)
+{
+  double d;
+  d = mpq_get_d(LIMO_MPQ(n));
+
+  return d;
+}
+
 struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "NUMBERP", builtin_numberp },
   { "REPRN", builtin_reprn },
@@ -132,6 +175,10 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_MUL", builtin_mpq_mul },
   { "MPQ_DIV", builtin_mpq_div },
   { "IDIVMOD", builtin_idivmod },
+  { "SIN", builtin_sin },
+  { "COS", builtin_cos },
+  { "POWER", builtin_power },
+  { "INT", builtin_int }
 };
 
 // needed for gmp, because it uses a
