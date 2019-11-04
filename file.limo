@@ -55,3 +55,11 @@
     ,`(setq ,f ,`(file-open ,filename ,mode))
     ,@body
     ,`(file-close ,f)))
+
+(setq stdin (file-open "/dev/stdin" "r"))
+(setq stdout (file-open "/dev/stdout" "w"))
+(defun print x
+  (cond ((cdr x) ; multiple parameters
+	 (file-print (car x) (cadr x)))
+	(:else
+	 (file-print stdout (car x)))))

@@ -496,8 +496,10 @@
 (defun format (s . args)
   (defun format-list (s args)
     (cond ((not s) ())
-	  ((eq "~" (car s))
+	  ((eq "%" (car s))
 	   (switch (cadr s)
+		   ("%" (dcons "%"
+			       (format-list (cddr s) (cdr args))))
 		   ("s" (dcons (car args) 
 			       (format-list (cddr s) (cdr args))))
 		   ("n" (dcons (reprn (car args))
