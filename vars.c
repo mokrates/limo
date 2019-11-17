@@ -19,7 +19,7 @@ limo_data *make_vcache(limo_data *cons)
 
 limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons from the dict
 {
-  if (!env->type == limo_TYPE_ENV)
+  if (env->type != limo_TYPE_ENV)
     limo_error("var_lookup: given env is no env");
 
   limo_data *up = CAR(env->data.d_env);
