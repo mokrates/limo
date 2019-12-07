@@ -342,20 +342,23 @@ BUILTIN(builtin_loaddll)
   void *handle;
   void (*limo_dll_init)(limo_data *env);
 
-  if (list_length(arglist) != 2)
-    limo_error("(loaddll FILENAME)");
+  if (list_length(arglist) != 3)
+    limo_error("(loaddll FILENAME INITFUNCTION)");
 
   limo_data *filename = eval(FIRST_ARG, env);
+  limo_data *initfunction = eval(SECOND_ARG, env);
 
   if (filename->type != limo_TYPE_STRING)
     limo_error("filename must be a string");
+  if (initfunction->type != limo_TYPE_STRING)
+    limo_error("initfunction must be a string");
 
   handle = dlopen(filename->data.d_string, RTLD_LAZY);
 
   if (!handle)
     limo_error("dll load error: %s", dlerror());
   
-  limo_dll_init = dlsym(handle, "limo_dll_init");
+  limo_dll_init = dlsym(handle, initfunction->data.d_string);
   if (!limo_dll_init)
     limo_error("dll start error: %s", dlerror());
   (*limo_dll_init)(env);

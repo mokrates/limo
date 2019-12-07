@@ -38,7 +38,8 @@
 (defmacro mod-load (name)
   `(if ,`(mod-isinline ,name)
        ,`(mod-loadinline ,name)
-       ,`(loaddll ,`(string-concat ,`(string-concat _limo-prefix ,name) ".so"))))
+       ,`(loaddll ,`(string-concat ,`(string-concat _limo-prefix ,name) ".so")
+		  ,`(string-concat "limo_init_" ,name))))
 
 (defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)

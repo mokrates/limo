@@ -69,7 +69,7 @@ BUILTIN(builtin_file_print)
   return make_nil();
 }
 
-void limo_inline_init_file(limo_data *env)
+void limo_init_file(limo_data *env)
 {
   sym_file = make_sym("FILE");
   INSBUILTIN(builtin_file_open, "FILE-OPEN");
@@ -78,9 +78,3 @@ void limo_inline_init_file(limo_data *env)
   INSBUILTIN(builtin_file_print, "FILE-PRINT");
 }
 
-#ifndef LIMO_MOD_INLINE
-void limo_dll_init(limo_data *env) 
-{
-  limo_inline_init_file(env);
-}
-#endif

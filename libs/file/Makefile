@@ -6,8 +6,7 @@ CC=gcc $(CFLAGS)
 $(LIBNAME).so: $(OBJ) Makefile
 	$(CC) -o $(LIBNAME).so -shared $(OBJ)
 
-$(LIBNAME).a: file.c Makefile
-	$(CC) -DLIMO_MOD_INLINE -c file.c
+$(LIBNAME).a: $(OBJ) Makefile
 	ar rcs file.a file.o
 
 file.o: file.c

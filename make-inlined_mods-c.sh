@@ -12,7 +12,7 @@ cat <<EOF
 
 EOF
 for mod in $(cat inlined.mods | grep -v '^#'); do
-    printf 'void limo_inline_init_%s(limo_data *);\n' "$mod"
+    printf 'void limo_init_%s(limo_data *);\n' "$mod"
 done
 
 cat <<EOF
@@ -20,7 +20,7 @@ cat <<EOF
 struct INLINE_MODLIST_ITEM inline_mod_funs[] = {
 EOF
 for mod in $(cat inlined.mods | grep -v '^#'); do
-    printf '{"%s", limo_inline_init_%s },\n' "$mod" "$mod"
+    printf '{"%s", limo_init_%s },\n' "$mod" "$mod"
 done
 printf '{NULL, NULL} };'
 

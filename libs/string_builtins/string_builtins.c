@@ -45,16 +45,9 @@ BUILTIN(builtin_stringp)
     return make_nil();
 }
 
-void limo_inline_init_string_builtins(limo_data *env)
+void limo_init_string_builtins(limo_data *env)
 {
   INSBUILTIN(builtin_string_nth, "STRING-NTH");
   INSBUILTIN(builtin_string_length, "STRING-LENGTH");
   INSBUILTIN(builtin_stringp, "STRINGP");
 }
-
-#ifndef LIMO_MOD_INLINE
-void limo_dll_init(limo_data *env) 
-{
-  limo_inline_init_string_builtins(env);
-}
-#endif

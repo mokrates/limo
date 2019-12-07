@@ -2,7 +2,6 @@ OBJ = simplesdl.o endisabl.o fpics.o geo.o line.o main.o pics.o plot.o event.o
 CC = gcc -g -fPIC `sdl-config --cflags` -I../..
 
 simplesdl.a : $(OBJ) Makefile
-	$(CC) -DLIMO_MOD_INLINE -c simplesdl.c
 	ar cr simplesdl.a $(OBJ)
 
 simplesdl.so: $(OBJ) Makefile

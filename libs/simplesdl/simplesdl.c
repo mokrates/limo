@@ -170,7 +170,7 @@ void ssdl_toggle_fullscreen(void);
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
 
-void limo_inline_init_simplesdl(limo_data *env) 
+void limo_init_simplesdl(limo_data *env) 
 {
   INSBUILTIN(builtin_ssdl_startgraphics, "SSDL-STARTGRAPHICS");
   INSBUILTIN(builtin_ssdl_starttext,     "SSDL-STARTTEXT");
@@ -182,10 +182,3 @@ void limo_inline_init_simplesdl(limo_data *env)
   INSBUILTIN(builtin_ssdl_hline,         "SSDL-HLINE");
   INSBUILTIN(builtin_ssdl_vline,         "SSDL-VLINE");
 }
-
-#ifndef LIMO_MOD_INLINE
-void limo_dll_init(limo_data *env) 
-{
-  limo_inline_init_simplesdl(env);
-}
-#endif
