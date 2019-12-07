@@ -239,7 +239,7 @@ BUILTIN(builtin_dict_has_key)
 
   key = eval(SECOND_ARG, env);
   res = dict_get_place(dict, key);
-  if (res == NULL)
+  if (*res == NULL)
     return nil;
   else
     return sym_true;
