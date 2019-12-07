@@ -1,0 +1,53 @@
+;;; the variable containing the help-strings
+
+(setq _help-dict (make-dict))
+
+;; use this to define a helpstring for your symbol
+(defmacro defhelp (sym helpstr)
+  `(dict-set _help-dict ,`(quote ,sym) ,helpstr))
+
+;; use this to ask for help
+(defmacro help sym
+  (if (not sym)
+      `(print "
+Help for limo
+-------------
+To request help for a particular symbol or function type
+(help <symbol>)
+for Example
+(help format)
+
+")
+    `(if ,`(dict-has-key _help-dict ,`(car ,`(quote ,sym)))
+	 ,`(print ,`(cdr ,`(dict-get _help-dict ,`(car ,`(quote ,sym)))))
+       ,`(print ,`(format "no help on %s, sorry\n" ,`(symbol-to-string ,`(car ,`(quote ,sym))))))))
+
+(defhelp mod-load
+  "MACRO (mod-load name)
+Loads a binary-module which can be compiled in (if (mod-isinline name) is true)
+or is loaded as an .so-file.
+The name has to be given without the .so-file-extension
+
+Example: (mod-load \"file\")
+")
+
+(defhelp format
+  "FUNCTION (format formatstring . args)
+format formats similar to sprintf in C. It returns a string in which
+placeholders get substituted with the args.
+At the moment there are only two placeholders:
+%s to insert a string
+%n to insert a number
+")
+
+(defhelp print
+  "FUNCTION (print [file] string)
+Prints <string> to <file> if <file> is given.
+If <file> is not given prints to STDOUT
+")
+
+(defhelp stdout
+  "VARIABLE stdout
+Contains a file-object pointing to the stdout filehandle.
+Is opened by (file-open \"/dev/stdout\"
+")

@@ -7,6 +7,7 @@
 (load (string-concat _limo-prefix "string.limo"))
 (load (string-concat _limo-prefix "file.limo"))
 (load (string-concat _limo-prefix "limpy.limo"))
+(load (string-concat _limo-prefix "help.limo"))
 
 ################################
 
