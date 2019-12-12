@@ -91,4 +91,3 @@ The <args> can be used like in a lambda (see lambda)
 Methods work similar to like they work in python.
 see defclass
 ")
-

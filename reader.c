@@ -323,9 +323,12 @@ limo_data *read_string(reader_stream *f)
 {
   limo_data *ld = make_limo_data();
   int i;
-  char buf[BUFFER_SIZE];
+  char *buf;
   char c;
-  for (i=0; i<BUFFER_SIZE-1; ++i) {
+  int cur_bufsiz = BUFFER_SIZE;
+
+  buf = (char *)GC_malloc(cur_bufsiz);
+  for (i=0;; ++i) {
     c=limo_getc(f);
     if (c=='"')
       break;
@@ -337,6 +340,10 @@ limo_data *read_string(reader_stream *f)
       case '\\':c='\\'; break;
       }
     buf[i]=c;
+    if (i>=cur_bufsiz-1) {
+      cur_bufsiz += BUFFER_SIZE;
+      buf = (char *)GC_realloc(buf, cur_bufsiz);
+    }
   }
   buf[i]='\0';
   ld->type = limo_TYPE_STRING;
