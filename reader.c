@@ -242,7 +242,7 @@ limo_data *read_list(reader_stream *f)
   c=read_skip_space_comments(f);
   while (1) {
     if (c == EOF)
-      limo_error("syntax error (read_list)");
+      limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
     if (c == ')' || c==']') { // ( for emacs
       (*ld_into)->data.d_cons = NULL;
       break;
@@ -257,8 +257,8 @@ limo_data *read_list(reader_stream *f)
     if (c=='.') { // pair
       (*ld_into)->data.d_cons->cdr = reader(f);
       c=read_skip_space_comments(f);
-      if (c != ')')
-	limo_error("syntax error (read_list)");
+      if (c != ')' && c != ']')
+	limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
       break;
     }
     else {

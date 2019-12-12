@@ -52,6 +52,10 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "SYMBOLP", builtin_symbolp},
   { "SYMBOL-TO-STRING", builtin_symbol_to_string},
   { "FREEZEQ", builtin_freezeq },
+  { "MAKE-ENV", builtin_make_env },
+  { "ENV-SETQ", builtin_env_setq },
+  { "ENV-SETF", builtin_env_setf },
+  { "ENV-GETQ", builtin_env_getq },
   { "SYSTEM", builtin_system},
   { "TIME", builtin_time}
 };

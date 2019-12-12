@@ -1,5 +1,3 @@
-; -*- scheme -*-
-
 ;; limo.init
 ;; do it in limo!
 
@@ -218,6 +216,8 @@
 (defun cadr (l) (car (cdr l)))         (freezeq cadr)
 (defun cddr (l) (cdr (cdr l)))         (freezeq cddr)
 (defun cadar (l) (car (cdr (car l))))  (freezeq cadar)
+(defun caddr (l) (car (cdr (cdr l))))  (freezeq caddr)
+(defun cdddr (l) (cdr (cdr (cdr l))))  (freezeq cdddr)
 
 (defmacro when (c . b)
   `(if ,c ,(cons 'progn b) ()))
@@ -468,14 +468,10 @@
 
 (setq _place-setters (make-dict))
 (freezeq _place-setters)
-(defmacro setplacef (k v)
+(defmacro setplace (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
 	(:else `(setf ,k ,v))))
-(freezeq setplacef)
-
-(defmacro setplace (k v)             ;; TODO: this doesn't work yet.
-  `(setplacef ,(eval k) ,v))
 (freezeq setplace)
 
 (defun register-place-setter (g s)
@@ -545,49 +541,55 @@
 ;; understanding is what I like about my limo
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; a class is a dict.
-;; (setq new-class (make-dict))
+;; a class is an env.
+;; (setq new-class (make-class parent-class))
 ;; (defmethod the-class init (args ...) body)
 ;; defining init is required.
 
+(defmacro class (parentclass . methods)
+  `(with-gensym classname
+       ,`(defclass ,classname ,parentclass . ,methods)
+     ,classname))
+
+(defmacro defclass (classname parentclass . methods)
+  `(progn
+    ,`(setq ,classname ,`(make-env ,parentclass))
+    ,@(map (lambda (method)
+	     (progn
+	      (if (and (consp method)
+		       (eq (car method) 'defmethod))
+		  `(env-setq ,classname ,(cadr method)
+			     ,`(lambda ,(caddr method) ,`(progn ,@(cdddr method))))
+		  (throw "method-definition must be (defmethod methodname (args) body)"))))
+	   methods)))
+
+;;; (set-member [object . member] value)
+;;; sadly doesn't work with setplace
+(defmacro set-member (br val)
+  `(env-setq ,(cadr br) ,(cddr br) ,val))
+
 ;; getting a member from an object:
-;; [object member]
+;; [object . member]
+;; call a method:
+;; [object method args...]
 ;; limo-core translates [x y z] to (bracket x y z) but leaves 'bracket' undefined.
 ;; so this is the definition:
-(defmacro bracket (o m)
-  `(dict-getvalue ,o ,`(quote ,m)))
+(defmacro bracket (o . args)
+  (if (consp args) ; method-call
+      `(,`(env-getq ,o ,(car args)) ,o ,@(cdr args))
+      `(env-getq ,o ,args)))
 (freezeq bracket)
 
-;; to be used with place-setter
-;; (setplace [object member] value)
-(defmacro bracket-set (d k v)
-  `(dict-set ,d ,`(quote ,k) ,v))
-(freezeq bracket-set)
-
-(register-place-setter 'bracket 'bracket-set)
-
-;; create new object (dict) by copying the class-dict to the object-dict
+;; create new object (env) by deriving a new env from the class-env
 ;; methods will be curried, and called with 'self' as first parameter (python-style)
 ;; slow. obviously. there CANNOT be any non-method-members in the class because
-;; EVERY item is curried which makes no sense for not-lambdas.
+;; EVERY item is curried which makes no sense for non-lambdas.
 ;; non-method-members HAVE to be created in the init-method.
 (defun new (c . args)
-  (setq ret (make-dict))
-  (for-each methpair (dict-to-list c)
-	    (dict-set ret (car methpair) (curry (cdr methpair) ret)))
-  (apply [ret init] args)  ; call the constructor
+  (setq ret (make-env c))
+  (apply [ret . init] (cons ret args))  ; call the constructor
   ret)
 (freezeq new)
-
-;; define a method in a class
-;; (defmethod classname methodname (arguments ...) body)
-(defmacro defmethod (class name args . body)
-  `(dict-set ,class ,`(quote ,name)
-	     ,`(lambda ,args ,`(progn ,@body))))
-(freezeq defmethod)
-
-;; subclasses:
-;; copy the class-dict to a new dict and overwrite/amend the methods.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; end of classes/objects
@@ -612,7 +614,7 @@
 ;; settings
 
 (gcsetmax (* 1024 512))  ;; max 128mb ram for limo.
-;(* 1 2 3)
+					;(* 1 2 3)
 
 
 
@@ -623,5 +625,5 @@
 
 (defun writelist (x)
   (when x
-	(write (car x))
-	(writelist (cdr x))))
+    (write (car x))
+    (writelist (cdr x))))

@@ -250,7 +250,7 @@ BUILTIN(builtin_setcdr)
   return cons;
 }
 
-BUILTIN(builtin_try)
+BUILTIN(builtin_try) // TODO whats with all those make_envs?
 {
   limo_data *res;
 
@@ -511,4 +511,67 @@ BUILTIN(builtin_freezeq)
 {
   REQUIRE_ARGC("freezeq", 1);
   return freeze_var(env, FIRST_ARG);
+}
+
+
+// Environment manipulation
+
+BUILTIN(builtin_make_env)
+{
+  limo_data *ld;
+  
+  REQUIRE_ARGC("make-env", 1);
+  ld = eval(FIRST_ARG, env); 
+  if (ld->type != limo_TYPE_ENV && !is_nil(ld))
+    limo_error("make-env argument needs to be an env");
+
+  return make_env(ld);
+}
+
+BUILTIN(builtin_env_setq)
+{
+  limo_data *value;
+  limo_data *name;
+  limo_data *the_env;
+  
+  REQUIRE_ARGC("env-setq", 3);
+  the_env = eval(FIRST_ARG, env);
+  name = SECOND_ARG;
+  value = eval(THIRD_ARG, env);
+  if (the_env->type != limo_TYPE_ENV)
+    limo_error("env-setq: first argument must be an env");
+
+  setq(the_env, name, value);
+  return value;
+}
+
+BUILTIN(builtin_env_setf)
+{
+  limo_data *value;
+  limo_data *name;
+  limo_data *the_env;
+  
+  REQUIRE_ARGC("env-setf", 3);
+  the_env = eval(FIRST_ARG, env);
+  name = SECOND_ARG;
+  value = eval(THIRD_ARG, env);
+  if (the_env->type != limo_TYPE_ENV)
+    limo_error("env-setf: first argument must be an env");
+
+  setf(the_env, name, value);
+  return value;
+}
+
+BUILTIN(builtin_env_getq)
+{
+  int marked_constant; // we will ignore the value here
+  limo_data *the_env;
+  limo_data *name;
+  limo_data *result;
+  
+  REQUIRE_ARGC("env-getq", 2);
+  name = SECOND_ARG;
+  the_env = eval(FIRST_ARG, env);
+  result = var_lookup(the_env, name, &marked_constant);
+  return result;
 }

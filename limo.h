@@ -250,6 +250,13 @@ BUILTIN(builtin_symbol_to_string);
 
 BUILTIN(builtin_freezeq);
 
+// Environment manipulation
+
+BUILTIN(builtin_make_env);
+BUILTIN(builtin_env_setq);
+BUILTIN(builtin_env_setf);
+BUILTIN(builtin_env_getq);
+
 /////////////////////////////////
 // misc
 BUILTIN(builtin_system);
