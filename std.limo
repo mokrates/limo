@@ -15,6 +15,9 @@
 	(list 'setq name (list 'lambda args (cons 'progn body)))))
 (freezeq defun)
 
+(setq nil ())
+(freezeq nil)
+
 ;; scheme style 'define'
 (defmacro define x
   (if (consp (car x)) ;; a function
@@ -547,7 +550,7 @@
 ;; defining init is required.
 
 (defmacro class (parentclass . methods)
-  `(with-gensym classname
+  `(with-gensym (classname)
        ,`(defclass ,classname ,parentclass . ,methods)
      ,classname))
 

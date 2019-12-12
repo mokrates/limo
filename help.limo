@@ -35,9 +35,10 @@ Example: (mod-load \"file\")
   "FUNCTION (format formatstring . args)
 format formats similar to sprintf in C. It returns a string in which
 placeholders get substituted with the args.
-At the moment there are only two placeholders:
+At the moment there are only three placeholders:
 %s to insert a string
 %n to insert a number
+%r to insert the representation of data
 ")
 
 (defhelp print
@@ -51,3 +52,43 @@ If <file> is not given prints to STDOUT
 Contains a file-object pointing to the stdout filehandle.
 Is opened by (file-open \"/dev/stdout\"
 ")
+
+(defhelp with-gensym
+  "MACRO with-gensym
+(with-gensym (sym1 sym2 ...)
+  body)
+generates unique symbols with (gensym) and assigns the variables <sym1>, <sym2>... to them
+")
+
+(defhelp gensym
+  "FUNCTION gensym
+generates unique symbols for use in macros
+")
+
+(defhelp defclass
+  "MACRO defclass
+(defclass <classname> <parentclass-or-nil>
+  methods...)
+defines a class <classname> with <parentclass>. Classes are of Type ENV
+see defmethod
+
+example:
+(defclass foo ()                 ; defining class
+  (defmethod init (self) ())     ; must exist to instantiate
+  (defmethod print-something (self) (print \"foo\\n\")))  ; example-method
+(setq bar (new foo))             ; instantiate
+[foo print-something]            ; method-call
+(set-member [foo . bar] \"baz\") ; setting a member
+[foo . bar] -> \"baz\"           ; reading a member
+
+see defmethod.
+")
+
+(defhelp defmethod
+  "SYMBOL defmethod
+(defmethod (args...) body)
+The <args> can be used like in a lambda (see lambda)
+Methods work similar to like they work in python.
+see defclass
+")
+
