@@ -155,6 +155,7 @@ reader_stream *limo_rs_make_readline(void)
   memset(rs, 0, sizeof *rs);
 
   rl_completion_entry_function = rl_completer_generator;
+  rl_basic_word_break_characters = " \t\n\"\\'`@{([";
   limo_history_read_history();
 
   rs->type = RS_READLINE;
