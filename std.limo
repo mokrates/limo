@@ -553,6 +553,7 @@
   `(with-gensym (classname)
        ,`(defclass ,classname ,parentclass . ,methods)
      ,classname))
+(freezeq class)
 
 (defmacro defclass (classname parentclass . methods)
   `(progn
@@ -565,11 +566,13 @@
 			     ,`(lambda ,(caddr method) ,`(progn ,@(cdddr method))))
 		  (throw "method-definition must be (defmethod methodname (args) body)"))))
 	   methods)))
+(freezeq defclass)
 
 ;;; (set-member [object . member] value)
 ;;; sadly doesn't work with setplace
 (defmacro set-member (br val)
   `(env-setq ,(cadr br) ,(cddr br) ,val))
+(freezeq set-member)
 
 ;; getting a member from an object:
 ;; [object . member]
