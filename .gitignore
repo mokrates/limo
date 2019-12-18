@@ -2,3 +2,5 @@
 *.so
 *~
 limo
+*.a
+inlined_mods.c

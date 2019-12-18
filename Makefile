@@ -1,3 +1,4 @@
+# -*- makefile -*-
 INSTALL_PREFIX=/usr/local
 LIMO_PREFIX=$(INSTALL_PREFIX)/lib/limo/
 
@@ -30,7 +31,7 @@ inlined_mods.c: inlined.mods
 limo: $(OBJ)
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lgc -lgmp -ldl -lreadline -lm -o limo
 
-limo-almost-static: $(OBJ)
+limo-almost-static: $(OBJ) libs
 	$(CC) $(OBJ) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
 
 limo-wsl: limo-almost-static
@@ -54,10 +55,9 @@ realclean: clean
 
 install:
 	mkdir -p $(LIMO_PREFIX)
-	rm -r $(LIMO_PREFIX)/*
-	cp *.limo $(LIMO_PREFIX)
-	cp libs/*/*.so $(LIMO_PREFIX)
-	cp limo $(INSTALL_PREFIX)/bin
+	cp -f *.limo $(LIMO_PREFIX)
+	cp -f libs/*/*.so $(LIMO_PREFIX)
+	cp -f limo $(INSTALL_PREFIX)/bin
 
 uninstall:
 	rm -rf $(LIMO_PREFIX)
