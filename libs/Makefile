@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl
+LIBS=file string_builtins simplesdl threading
 
 .PHONY: all clean realclean $(LIBS)
 
