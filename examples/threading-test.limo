@@ -1,0 +1,25 @@
+(mod-load "threading")
+
+(gcdisable)
+
+(print "threading loaded\n")
+
+(defun testfun (prefix n)
+    (for-each x (drange 1 n 1)
+      (print (format "%s%n\n" prefix x))
+      (sleep 1)))
+
+(print "testfun defined\n")
+
+(testfun "vorlauf " 3)
+
+(defun create-threads (n)
+  (if (> n 0)
+      (progn
+       (setq th ([_threading . thread-create] (curry testfun (format "fun(%n)" n) (- 10 n))))
+       (sleep 1)
+       (cons th (create-threads (- n 1))))
+      ()))
+
+(for-each th (create-threads 9) ([_threading . thread-join] th))
+      
