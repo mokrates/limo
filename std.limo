@@ -36,6 +36,18 @@
    `(write ,`(list 'asserteq_failed ,x ,y))))
 (freezeq asserteq)
 
+(setq _import_path (string-concat ".:" _limo-prefix))
+
+(defmacro _import (name pathlist)
+  (if pathlist
+      `(try
+	,`(load ,`(string-concat ,(car pathlist) ,`(string-concat "/" ,name)))
+	,`(,_import ,name ,(cdr pathlist)))
+      `(throw _exception)))
+
+(defmacro import (name)
+  `(,_import ,name ,(string-split _import_path ":")))
+
 (defmacro mod-load (name)
   `(if ,`(mod-isinline ,name)
        ,`(mod-loadinline ,name)

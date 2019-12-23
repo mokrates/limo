@@ -1,7 +1,7 @@
 LIBNAME=threading
-OBJ = $(LIBNAME).o 
-CFLAGS += -I../.. -fPIC
-CC=gcc $(CFLAGS)
+OBJ = $(LIBNAME).o
+CFLAGS += -g -I../.. -fPIC
+CC=gcc
 
 $(LIBNAME).so: $(OBJ) Makefile
 	$(CC) -o $(LIBNAME).so -shared $(OBJ) -lpthread

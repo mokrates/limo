@@ -229,7 +229,7 @@ BUILTIN(builtin_setcar)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS)
+  if (cons->type != limo_TYPE_CONS || cons->data.d_cons == NULL)
     limo_error("ERROR: (setcar CONS value)");
 
   CAR(cons) = value;
@@ -243,25 +243,25 @@ BUILTIN(builtin_setcdr)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS)
+  if (cons->type != limo_TYPE_CONS || cons->data.d_cons == NULL)
     limo_error("ERROR: (setcdr CONS value)");
 
   CDR(cons) = value;
   return cons;
 }
 
-BUILTIN(builtin_try) // TODO whats with all those make_envs?
+BUILTIN(builtin_try)
 {
   limo_data *res;
 
   if (list_length(arglist) != 3)
     limo_error("(try <TRY> <CATCH>)");
   
-  res = try_catch(FIRST_ARG, make_env(env));
+  res = try_catch(FIRST_ARG, env);
   if (!res) {
     env = make_env(env);
     setq(env, make_sym("_EXCEPTION"), exception?exception:nil);
-    return make_thunk(SECOND_ARG, make_env(env));
+    return make_thunk(SECOND_ARG, env);
   }
 }
 
@@ -272,7 +272,7 @@ BUILTIN(builtin_finally)
   if (list_length(arglist) != 3)
     limo_error("(finally <TRY> <FINALLY>)");
   
-  res = try_catch(FIRST_ARG, make_env(env));
+  res = try_catch(FIRST_ARG, env);
   eval(SECOND_ARG, env);
   if (!res)
     throw_after_finally();
