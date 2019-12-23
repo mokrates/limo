@@ -1,25 +1,73 @@
+;;;;;;;;; barebones threading-test -- no classes
+
 (mod-load "threading")
 
-(gcdisable)
+;;;; threading-test
 
-(print "threading loaded\n")
+;; (defun testfun (prefix n)
+;;     (for-each x (drange 1 n 1)
+;;       (print (format "%s%n\n" prefix x))
+;;       (sleep 1)))
 
-(defun testfun (prefix n)
-    (for-each x (drange 1 n 1)
-      (print (format "%s%n\n" prefix x))
-      (sleep 1)))
+;; (print "testfun defined\n")
 
-(print "testfun defined\n")
+;; (testfun "vorlauf " 3)
 
-(testfun "vorlauf " 3)
+;; (defun create-threads (n)
+;;   (if (> n 0)
+;;       (progn
+;;        (setq th ([_threading . thread-create] (curry testfun (format "fun(%n)" n) (- 10 n))))
+;;        (sleep 1)
+;;        (cons th (create-threads (- n 1))))
+;;       ()))
 
-(defun create-threads (n)
-  (if (> n 0)
-      (progn
-       (setq th ([_threading . thread-create] (curry testfun (format "fun(%n)" n) (- 10 n))))
-       (sleep 1)
-       (cons th (create-threads (- n 1))))
-      ()))
-
-(for-each th (create-threads 9) ([_threading . thread-join] th))
+;; (for-each th (create-threads 9) ([_threading . thread-join] th))
       
+;;;; mutex-test
+
+;; (setq mutex ([_threading . mutex-create]))
+;; (defun enter-and-leave (name n)
+;;   (print (format "   %s aquiring\n" name))
+;;   ([_threading . mutex-lock] mutex)
+;;   (print (format "%s entered (%n)\n" name n))
+;;   (sleep 1)
+;;   (print (format "%s left (%n)\n" name n))
+;;   ([_threading . mutex-unlock] mutex)
+;;   (print (format "   %s freed\n" name))
+;;   (when (> n 0)
+;;     (enter-and-leave name (- n 1))))
+
+;; (setq t1 ([_threading . thread-create] (curry enter-and-leave "foo" 10)))
+;; (setq t2 ([_threading . thread-create] (curry enter-and-leave "bar" 10)))
+;; ([_threading . thread-join] t1)
+;; ([_threading . thread-join] t2)
+
+;;;;;; condition-test
+(setq mutex ([_threading . mutex-create]))
+(setq container '(() . ())) ; car: full? cdr: contents
+(setq condition ([_threading . cond-create]))
+(setq n 0)
+(defun producer ()
+  ([_threading . mutex-lock] mutex)
+  (when (not (car container))
+    (setcar container :T)
+    (setcdr container n)
+    (print (format "produced a %n\n" n))
+    (setf n (+ n 1)))
+  ([_threading . mutex-unlock] mutex)
+  ([_threading . cond-signal] condition)
+  (producer))
+
+(defun consumer ()
+  ([_threading . mutex-lock] mutex)
+  ([_threading . cond-wait] condition mutex)
+  (when (car container)
+    (print (format "consumed a %n\n" (cdr container)))
+    (setcar container nil))
+  ([_threading . mutex-unlock] mutex)
+  (consumer))
+
+(setq t1 ([_threading . thread-create] producer))
+(setq t2 ([_threading . thread-create] consumer))
+([_threading . thread-join] t1)
+([_threading . thread-join] t2)

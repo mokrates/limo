@@ -9,6 +9,7 @@
 
 static limo_data *sym_thread;
 static limo_data *sym_mutex;
+static limo_data *sym_cond;
 
 static limo_data *sym_mutex_attr_fast;
 static limo_data *sym_mutex_attr_rec;
@@ -22,10 +23,18 @@ typedef struct LIMO_THREADING_MUTEX {
   pthread_mutex_t mutex;
 } limo_threading_mutex;
 
+typedef struct LIMO_THREADING_COND {
+  pthread_cond_t cond;
+} limo_threading_cond;
+
 static void *limo_threading_entry_function(void *thread_fun)
 {
-  eval(make_cons((limo_data *)thread_fun, nil), make_env(nil));
-  // TODO return value
+  int marked_const;
+  if (NULL==try_catch(make_cons((limo_data *)thread_fun, nil), make_env(nil))) {
+    print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
+    writer(exception);
+    printf("\n");
+  }
 }
 
 BUILTIN(builtin_thread_create)
@@ -107,7 +116,7 @@ BUILTIN(builtin_mutex_trylock)
   limo_threading_mutex *ltm;
   int ret;
 
-  REQUIRE_ARGC("MUTEX-LOCK", 1);
+  REQUIRE_ARGC("MUTEX-TRYLOCK", 1);
   ld_mutex = eval(FIRST_ARG, env);
   ltm = get_special(ld_mutex, sym_mutex);
 
@@ -115,7 +124,6 @@ BUILTIN(builtin_mutex_trylock)
     return nil;     // not successful
 
   return ld_mutex;  // not nil value
-  
 }
 
 BUILTIN(builtin_mutex_unlock)
@@ -123,21 +131,75 @@ BUILTIN(builtin_mutex_unlock)
   limo_data *ld_mutex;
   limo_threading_mutex *ltm;
 
-  REQUIRE_ARGC("MUTEX-LOCK", 1);
+  REQUIRE_ARGC("MUTEX-UNLOCK", 1);
   ld_mutex = eval(FIRST_ARG, env);
   ltm = get_special(ld_mutex, sym_mutex);
 
-  if (pthread_mutex_trylock(&ltm->mutex))
+  if (pthread_mutex_unlock(&ltm->mutex))
     return nil;     // not successful
 
   return ld_mutex;  // not nil value  
 }
 
+BUILTIN(builtin_cond_create)
+{
+  limo_threading_cond *lt_cond;
+
+  lt_cond = (limo_threading_cond *)GC_malloc(sizeof (limo_threading_cond));
+  pthread_cond_init(&lt_cond->cond, NULL);
+
+  return make_special(sym_cond, lt_cond);
+}
+
+BUILTIN(builtin_cond_signal)
+{
+  limo_data *ld_cond;
+  limo_threading_cond *ltc;
+
+  REQUIRE_ARGC("COND-SIGNAL", 1);
+  ld_cond = eval(FIRST_ARG, env);
+  ltc = get_special(ld_cond, sym_cond);
+
+  pthread_cond_signal(&ltc->cond);
+  return nil;    
+}
+
+BUILTIN(builtin_cond_broadcast)
+{
+  limo_data *ld_cond;
+  limo_threading_cond *ltc;
+
+  REQUIRE_ARGC("COND-BROADCAST", 1);
+  ld_cond = eval(FIRST_ARG, env);
+  ltc = get_special(ld_cond, sym_cond);
+
+  pthread_cond_broadcast(&ltc->cond);
+  return nil;    
+}
+
+BUILTIN(builtin_cond_wait)
+{
+  limo_data *ld_cond;
+  limo_data *ld_mutex;
+  limo_threading_cond *ltc;
+  limo_threading_mutex *ltm;
+
+  REQUIRE_ARGC("COND-WAIT", 2);
+  ld_cond = eval(FIRST_ARG, env);
+  ld_mutex = eval(SECOND_ARG, env);
+  ltc = get_special(ld_cond, sym_cond);
+  ltm = get_special(ld_mutex, sym_mutex);
+
+  pthread_cond_wait(&ltc->cond, &ltm->mutex);
+  return nil;
+}
+
 void limo_init_threading(limo_data *env)
 {
   limo_data *threading_env;
-  sym_thread = make_sym("THREAD");
-  sym_mutex  = make_sym("MUTEX");
+  sym_thread = make_sym("_THREADING-THREAD");
+  sym_mutex  = make_sym("_THREADING-MUTEX");
+  sym_cond   = make_sym("_THREADING-CONDITION");
 
   sym_mutex_attr_fast   = make_sym(":FAST");
   sym_mutex_attr_rec    = make_sym(":RECURSIVE");
@@ -151,6 +213,11 @@ void limo_init_threading(limo_data *env)
   INS_THREADING_BUILTIN(builtin_mutex_lock, "MUTEX-LOCK");
   INS_THREADING_BUILTIN(builtin_mutex_unlock, "MUTEX-UNLOCK");
   INS_THREADING_BUILTIN(builtin_mutex_trylock, "MUTEX-TRYLOCK");
+
+  INS_THREADING_BUILTIN(builtin_cond_create, "COND-CREATE");
+  INS_THREADING_BUILTIN(builtin_cond_signal, "COND-SIGNAL");
+  INS_THREADING_BUILTIN(builtin_cond_broadcast, "COND-BROADCAST");
+  INS_THREADING_BUILTIN(builtin_cond_wait, "COND-WAIT");
   
   setq(env, make_sym("_THREADING"), threading_env);
 }
