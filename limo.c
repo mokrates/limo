@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   rs = limo_rs_from_string(limo_program_cstr);
   while (!limo_eof(rs)) {
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(var_lookup(globalenv, sym_stacktrace));
+      print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
       writer(exception);
       printf("\n");
       exit(1);

@@ -30,7 +30,7 @@ limo_data *make_cons(limo_data *car, limo_data *cdr)
 unsigned int next_symbol_identity=1;
 limo_data *interned_symbols = NULL;
 
-limo_data *make_sym(char *name) // interned
+limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
 {
   limo_data *ld;
   limo_data *is;

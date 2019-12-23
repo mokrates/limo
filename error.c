@@ -17,7 +17,7 @@ void print_stacktrace(limo_data *s)
   }
 }
 
-limo_data *try_catch(limo_data *try, limo_data *env)
+limo_data *try_catch(limo_data *try, limo_data *env) /// TODO thread-safe!
 {
   jmp_buf *ljstacksafe;  // here the bufs get stacked
   limo_data *res;
