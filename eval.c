@@ -144,7 +144,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   int again=1;
   static int level=0;
   int trace = !is_nil(CDR(traceplace));
-  limo_data *tmp_stacktrace = stacktrace;
+  limo_data *tmp_stacktrace = pk_stacktrace_get();
 
   ++level;
 
@@ -155,7 +155,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
       printf("\n");
     }
 
-    stacktrace = make_cons(form, tmp_stacktrace);
+    pk_stacktrace_set(make_cons(form, tmp_stacktrace));
 
     form=real_eval(form, env);
     if (!form)
@@ -175,7 +175,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
       again=0;
   }
 
-  stacktrace = tmp_stacktrace;
+  pk_stacktrace_set(tmp_stacktrace);
   --level;
   return form;
 }

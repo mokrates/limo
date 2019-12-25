@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <gc/gc.h>   // boehm GC
 
@@ -155,9 +156,17 @@ void throw(limo_data *excp);
 void throw_after_finally(void);
 void limo_error(char *, ...);
 void print_stacktrace(limo_data *s); // prints stacktrace s
-extern limo_data *stacktrace;
-extern limo_data *exception;
-extern sigjmp_buf *ljbuf;
+
+extern pthread_key_t pk_stacktrace_key;
+extern pthread_key_t pk_exception_key;
+extern pthread_key_t pk_ljbuf_key;
+
+#define pk_ljbuf_set(VAL)      (pthread_setspecific(pk_ljbuf_key, (void *)(VAL)))
+#define pk_ljbuf_get()         ((sigjmp_buf *)pthread_getspecific(pk_ljbuf_key))
+#define pk_stacktrace_set(VAL) (pthread_setspecific(pk_stacktrace_key, (void *)(VAL)))
+#define pk_stacktrace_get()    ((limo_data *)pthread_getspecific(pk_stacktrace_key))
+#define pk_exception_set(VAL)  (pthread_setspecific(pk_exception_key, (void *)(VAL)))
+#define pk_exception_get()     ((limo_data *)pthread_getspecific(pk_exception_key))
 
 int is_nil(limo_data *);
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)

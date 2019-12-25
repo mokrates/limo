@@ -1,10 +1,9 @@
 #include "limo.h"
 #include <signal.h>
 #include <execinfo.h>
+#include <pthread.h>
 
 limo_data *globalenv;
-
-limo_data *stacktrace;
 
 limo_data *sym_env;
 limo_data *sym_callerenv;
@@ -17,7 +16,18 @@ limo_data *nil;
 
 limo_data *traceplace;
 
-void init_syms()
+pthread_key_t pk_stacktrace_key;
+pthread_key_t pk_exception_key;
+pthread_key_t pk_ljbuf_key;
+
+static void init_pthread_keys(void)
+{
+  pthread_key_create(&pk_ljbuf_key, NULL);
+  pthread_key_create(&pk_stacktrace_key, NULL);
+  pthread_key_create(&pk_exception_key, NULL);
+}
+
+static void init_syms()
 {
   sym_env        = make_sym("_ENV");
   sym_callerenv  = make_sym("_CALLERENV");
@@ -67,13 +77,26 @@ int main(int argc, char **argv)
   limo_data *env;
   reader_stream *rs;
   int marked_const;
+  sigset_t sigset;
 
+  ////// initializing GC
   GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
+
+  sigemptyset(&sigset);
+  sigaddset(&sigset, SIGINT);
+  pthread_sigmask(SIG_BLOCK, &sigset, NULL);
+
+  // hopefully, the GC-thread gets spawned here
+  // and inherits the NO SIGINT
   GC_init();
-  //GC_enable_incremental();   // segfaults :(
+  
+  pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
+  /////////////////////
 
   init_syms();
-  stacktrace = make_nil();
+  init_pthread_keys();
+  pk_stacktrace_set(nil);
+  pk_exception_set(nil);
 
   env = make_globalenv(argc, argv);
   globalenv = env;
@@ -85,8 +108,8 @@ int main(int argc, char **argv)
   rs = limo_rs_from_string(limo_program_cstr);
   while (!limo_eof(rs)) {
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
-      writer(exception);
+      print_stacktrace(pk_stacktrace_get());
+      writer(pk_exception_get());
       printf("\n");
       exit(1);
     }
@@ -96,30 +119,28 @@ int main(int argc, char **argv)
   if (argc != 2 || strcmp(argv[1], "-n")) {
     rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
-      writer(exception);
+      print_stacktrace(pk_stacktrace_get());
+      writer(pk_exception_get());
       printf("\n");
       exit(1);
     }
   }
   
   rs = limo_rs_make_readline();
-
+  
   while (!limo_eof(rs)) { // REPL
-    //    jmp_buf jb;
     limo_data *ld;
-    ljbuf = (sigjmp_buf *)GC_malloc(sizeof (sigjmp_buf));
-    if (sigsetjmp(*ljbuf, 1)) {
+    sigjmp_buf ljbuf;
+    pk_ljbuf_set(&ljbuf);
+    if (sigsetjmp(*pk_ljbuf_get(), 1)) {
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
-      if (exception) {
-	rs = limo_rs_make_readline();
-	print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
-	stacktrace = make_nil();
-	writer(exception);
-	printf("\n");
+      if (pk_exception_get()) {
+    	rs = limo_rs_make_readline();
+    	print_stacktrace(pk_stacktrace_get());
+    	pk_stacktrace_set(nil);
+    	writer(pk_exception_get());
+    	printf("\n");
       }
-      signal(SIGINT, limo_repl_sigint);
-      exception=NULL;
     }
     else {
       ld=reader(rs);
@@ -129,9 +150,8 @@ int main(int argc, char **argv)
       printf("\n");
       setq(globalenv, sym_underscore, ld);
     }
-  }
-
+    
 #endif
-  
+  } 
   return 0;
 }

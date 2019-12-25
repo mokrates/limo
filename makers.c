@@ -14,7 +14,6 @@ limo_data *make_nil(void)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_CONS;
-  assert(ld->data.d_cons == NULL);
   return ld;
 }
 
@@ -42,7 +41,7 @@ limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
     (interned_symbols->data.d_env) = make_nil();
   }
 
-  cp = (char *)GC_malloc(strlen(name) +1);
+  cp = (char *)GC_malloc_atomic(strlen(name) +1);
   strcpy(cp, name);
 
   if ((*cp) != '|') {
@@ -79,7 +78,7 @@ limo_data *make_sym_uninterned(char *name)
   limo_data *ld;
   char *cp, *cpi;
   
-  cp = (char *)GC_malloc(strlen(name) +1);
+  cp = (char *)GC_malloc_atomic(strlen(name) +1);
   strcpy(cp, name);
 
   if ((*cp) != '|') {

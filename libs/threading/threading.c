@@ -30,9 +30,11 @@ typedef struct LIMO_THREADING_COND {
 static void *limo_threading_entry_function(void *thread_fun)
 {
   int marked_const;
+  pk_stacktrace_set(nil);
+  pk_exception_set(nil);
   if (NULL==try_catch(make_cons((limo_data *)thread_fun, nil), make_env(nil))) {
-    print_stacktrace(var_lookup(globalenv, sym_stacktrace, &marked_const));
-    writer(exception);
+    print_stacktrace(pk_stacktrace_get());
+    writer(pk_exception_get());
     printf("\n");
   }
 }

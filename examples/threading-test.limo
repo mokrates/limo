@@ -64,8 +64,11 @@
   (when (car container)
     (print (format "consumed a %n\n" (cdr container)))
     (setcar container nil))
-  ([_threading . mutex-unlock] mutex)
-  (consumer))
+  (if (eq (car container) :ende)
+      ()
+      (progn
+       ([_threading . mutex-unlock] mutex)
+       (consumer))))
 
 (setq t1 ([_threading . thread-create] producer))
 (setq t2 ([_threading . thread-create] consumer))

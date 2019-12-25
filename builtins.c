@@ -259,6 +259,7 @@ BUILTIN(builtin_try)
   
   res = try_catch(FIRST_ARG, env);
   if (!res) {
+    limo_data *exception = pk_exception_get();
     env = make_env(env);
     setq(env, make_sym("_EXCEPTION"), exception?exception:nil);
     return make_thunk(SECOND_ARG, env);

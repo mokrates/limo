@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include "limo.h"
-
-sigjmp_buf *ljbuf=NULL;
-limo_data *exception=NULL;
 
 void print_stacktrace(limo_data *s)
 {
@@ -19,47 +17,55 @@ void print_stacktrace(limo_data *s)
 
 limo_data *try_catch(limo_data *try, limo_data *env) /// TODO thread-safe!
 {
-  jmp_buf *ljstacksafe;  // here the bufs get stacked
+  sigjmp_buf *ljstacksafe;  // here the bufs get stacked
+  sigjmp_buf ljbuf;
   limo_data *res;
   
-  ljstacksafe = ljbuf;
-  ljbuf = (sigjmp_buf *)GC_malloc(sizeof (sigjmp_buf));
-  if (sigsetjmp(*ljbuf, 1)) { // if true; exception was thrown.
-    ljbuf = ljstacksafe;
+  ljstacksafe = pk_ljbuf_get();
+  pk_ljbuf_set(&ljbuf);
+  if (sigsetjmp(ljbuf, 1)) { // if true; exception was thrown.
+    pk_ljbuf_set(ljstacksafe);
     return NULL;
   }
 
   res = eval(try, env);
-  ljbuf = ljstacksafe;
+  pk_ljbuf_set(ljstacksafe);
   return res;
 }
 
 void throw(limo_data *excp)
 {
-  if (!ljbuf) {
+  if (!pk_ljbuf_get()) {
     if (excp)
       writer(excp);
     exit(1);
   }
-  exception = excp;
-  setq(globalenv, sym_stacktrace, stacktrace);
-  siglongjmp(*ljbuf, 1);
+
+  pk_exception_set(excp);
+  setq(globalenv, sym_stacktrace, pk_stacktrace_get());
+
+  siglongjmp(*pk_ljbuf_get(), 1);
 }
 
 void throw_after_finally(void)
 {
-  if (!ljbuf) {
-    if (exception)
-      writer(exception);
+  if (!pk_ljbuf_get()) {
+    if (pk_exception_get())
+      writer(pk_exception_get());
     exit(1);
   }
-  siglongjmp(*ljbuf, 1);
+  siglongjmp(*pk_ljbuf_get(), 1);
 }
 
 void limo_error(char *msg, ...)
 {
   va_list ap;
   char buf[257];
+
+  if (!pk_ljbuf_get()) {
+    printf("Ctrl-C inside Garbage-Collector - Doing nothing\n");
+    return;
+  }
 
   va_start(ap, msg);
   vsnprintf(buf, 256, msg, ap);
