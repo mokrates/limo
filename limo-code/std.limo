@@ -179,6 +179,22 @@
   (helper f a))
 (freezeq map)
 
+(defun map-list (f a)
+  (defun helper (f a)
+    (when a
+	  (cons (f a) (helper f (cdr a)))))
+  (freezeq helper)
+  (helper f a))
+(freezeq map-list)
+
+(defun map-list (f a)
+  (defun helper (f a)
+    (when a
+	  (dcons (f a) (helper f (cdr a)))))
+  (freezeq helper)
+  (helper f a))
+(freezeq dmap-list)
+
 (defun curry (f . args)
   (lambda x
     (apply f (append args x))))

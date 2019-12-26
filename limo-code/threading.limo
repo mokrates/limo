@@ -5,10 +5,10 @@
 
 (defclass thread ()
   (defmethod init (self fun)
-    (setmember [self . _fun] fun)
-    self)
+    (setmember [self . _fun] fun))
   (defmethod run (self)
-    (setmember [self . _thread] ([_threading . thread-create] [self . _fun])))
+    (setmember [self . _thread] ([_threading . thread-create] [self . _fun]))
+    self)
   (defmethod join (self)
     ([_threading . thread-join] [self . _thread])))
 
@@ -42,7 +42,21 @@
     (setmember [self . _cond] (new condition-lock))
     (setmember [self . _queue] (cons () ()))
     (setmember [self . _getnext] [self . _queue])
-    (setmember [self . _putnext] [self . _queue]))
+    (setmember [self . _putnext] [self . _queue])
+    (setmember [self . _finish] nil))
+  (defmethod finish (self)
+    (synchronized [self . _mutex]
+      (setmember [self . _finish] :t)
+      [[self . _cond] broadcast]))
+  (defmethod has-next (self)
+    (synchronized [self . _mutex]
+      (while
+       (and (eq [self . _putnext] [self . _getnext])
+	    (not [self . _finish]))
+       [[self . _cond] wait [self . _mutex]])
+      (if (eq [self . _putnext] [self . _getnext])
+	  (not [self . _finish])
+	  :t)))
   (defmethod put (self item)
     (synchronized [self . _mutex]
       (setcar [self . _putnext] item)
@@ -86,4 +100,29 @@ example:
 2
 3
 -> ()
+")
+
+(defun pmap (nworker fun xs)
+  (setq queue (new queue-lock))
+  (defun wfun ()
+    (when [queue has-next]
+      (progn
+       (setq package [queue get])  ; ( fn . cons-to-put-result)
+       (setcar package ((car package)))
+       (wfun))))
+  (setq workers (map1 (lambda (x) [(new thread wfun) run]) (drange 0 nworker 1)))
+  (setq packages (map1 (lambda (x) (lambda () (fun x))) xs))
+  (for-list p packages
+    [queue put p])
+  [queue finish]
+  (for-each w workers
+    [w join])
+  packages)
+
+(defhelp pmap "
+  FUNCTION pmap
+(pmap nworker fun xs)
+Like map1, applies <fun> to <xs> and returns new list.
+Unlike map1, pmap spreads the work to <nworker> threads.
+Because of this, <fun> has to be threadsafe
 ")

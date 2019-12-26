@@ -13,6 +13,7 @@
   (put 'with-gensym 'scheme-indent-function 2)
   (put 'defmacro 'scheme-indent-function 2)
   (put 'for-each 'scheme-indent-function 2)
+  (put 'for-list 'scheme-indent-function 2)
   (put 'synchronized 'scheme-indent-function 1)
   (define-key limo-mode-map (kbd "C-c h") 'limo-help))
 
