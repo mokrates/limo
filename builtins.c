@@ -135,11 +135,11 @@ BUILTIN(builtin_if)
   if (list_length(arglist) != 4)
     limo_error("builtin_if: (if cond then else)");
   
-  cond = CAR(CDR(arglist));
+  cond = eval(CAR(CDR(arglist)), env);
   ldthen = CAR(CDR(CDR(arglist)));
   ldelse = CAR(CDR(CDR(CDR(arglist))));
 
-  if (is_nil(eval(cond, env)))
+  if (is_nil(cond))
     return make_thunk(ldelse, env);
   else
     return make_thunk(ldthen, env);

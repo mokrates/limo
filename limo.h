@@ -169,6 +169,7 @@ extern pthread_key_t pk_ljbuf_key;
 #define pk_exception_get()     ((limo_data *)pthread_getspecific(pk_exception_key))
 
 int is_nil(limo_data *);
+// don't call is_nil with side-effects (i.e. eval() !)
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);

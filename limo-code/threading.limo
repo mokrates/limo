@@ -36,6 +36,12 @@
 (defmacro synchronized (mut . body)
   `(finally ,`(progn ,`[,mut lock] ,@body) ,`[,mut unlock]))
 
+;;;; queue-lock
+;; a FIFO for thread-communication
+;; attention: you can get race-conditions if you use HAS-NEXT and GET
+;; use your own end-marker, or if that doesn't work GET-OR-END with a marker
+
+
 (defclass queue-lock ()
   (defmethod init (self)
     (setmember [self . _mutex] (new mutex))
@@ -63,6 +69,19 @@
       (setcdr [self . _putnext] (cons () ()))
       (setmember [self . _putnext] (cdr [self . _putnext]))
       [[self . _cond] broadcast]))
+  (defmethod get-or-end (self end-marker)
+    (synchronized [self . _mutex]
+      (while
+       (and (eq [self . _putnext] [self . _getnext])
+	    (not [self . _finish]))
+       [[self . _cond] wait [self . _mutex]])
+      (if (and (eq [self . _putnext] [self . _getnext])
+	       [self . _finish])
+	  end-marker
+	  (progn
+	   (setq ret (car [self . _getnext]))
+	   (setmember [self . _getnext] (cdr [self . _getnext]))
+	   ret))))
   (defmethod get (self)
     (synchronized [self . _mutex]
       (while (eq [self . _putnext] [self . _getnext])
@@ -105,12 +124,10 @@ example:
 (defun pmap (nworker fun xs)
   (setq queue (new queue-lock))
   (defun wfun ()
-    (when [queue has-next]
-      (progn
-       (setq package [queue get])  ; ( fn . cons-to-put-result)
-       (setcar package ((car package)))
-       (wfun))))
-  (setq workers (map1 (lambda (x) [(new thread wfun) run]) (drange 0 nworker 1)))
+    (when (setq package [queue get-or-end ()])
+      (setcar package ((car package)))
+      (wfun)))
+  (setq workers (map1 (lambda (x) [(new thread wfun x) run]) (drange 0 nworker 1)))
   (setq packages (map1 (lambda (x) (lambda () (fun x))) xs))
   (for-list p packages
     [queue put p])
