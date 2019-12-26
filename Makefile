@@ -57,6 +57,7 @@ install:
 	mkdir -p $(LIMO_PREFIX)
 	cp -f *.limo $(LIMO_PREFIX)
 	cp -f libs/*/*.so $(LIMO_PREFIX)
+	cp -rf limo-code/* $(LIMO_PREFIX)
 	cp -f limo $(INSTALL_PREFIX)/bin
 
 uninstall:

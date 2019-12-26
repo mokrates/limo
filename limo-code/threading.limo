@@ -1,0 +1,89 @@
+;;;;;;;;; threading ;;;;;;;;;
+;; classes interface ;;;;
+
+(mod-load "threading")
+
+(defclass thread ()
+  (defmethod init (self fun)
+    (setmember [self . _fun] fun)
+    self)
+  (defmethod run (self)
+    (setmember [self . _thread] ([_threading . thread-create] [self . _fun])))
+  (defmethod join (self)
+    ([_threading . thread-join] [self . _thread])))
+
+(defclass mutex ()
+  (defmethod init (self)
+    (setmember [self . _mutex] ([_threading . mutex-create])))
+  (defmethod lock (self)
+    ([_threading . mutex-lock] [self . _mutex]))
+  (defmethod unlock (self)
+    ([_threading . mutex-unlock] [self . _mutex]))
+  (defmethod trylock (self)
+    ([_threading . mutex-trylock] [self . _mutex])))
+
+(defclass condition-lock ()
+  (defmethod init (self)
+    (setmember [self . _cond] ([_threading . cond-create])))
+  (defmethod wait (self mutex)
+    ([_threading . cond-wait] [self . _cond] [mutex . _mutex]))
+  (defmethod signal (self)
+    ([_threading . cond-signal] [self . _cond]))
+  (defmethod broadcast (self)
+    ([_threading . cond-broadcast] [self . _cond])))
+
+;;;;;;; cool stuff ;;;;;;;
+(defmacro synchronized (mut . body)
+  `(finally ,`(progn ,`[,mut lock] ,@body) ,`[,mut unlock]))
+
+(defclass queue-lock ()
+  (defmethod init (self)
+    (setmember [self . _mutex] (new mutex))
+    (setmember [self . _cond] (new condition-lock))
+    (setmember [self . _queue] (cons () ()))
+    (setmember [self . _getnext] [self . _queue])
+    (setmember [self . _putnext] [self . _queue]))
+  (defmethod put (self item)
+    (synchronized [self . _mutex]
+      (setcar [self . _putnext] item)
+      (setcdr [self . _putnext] (cons () ()))
+      (setmember [self . _putnext] (cdr [self . _putnext]))
+      [[self . _cond] broadcast]))
+  (defmethod get (self)
+    (synchronized [self . _mutex]
+      (while (eq [self . _putnext] [self . _getnext])
+	     [[self . _cond] wait [self . _mutex]])
+      (setq ret (car [self . _getnext]))
+      (setmember [self . _getnext] (cdr [self . _getnext]))
+      ret)))
+
+(defun parallel-iterator (fun)
+  (setq end-marker (gensym))
+  (setq queue (new queue-lock))
+  (defun writer-fun ()
+    (for-each item (fun)
+      [queue put item])
+    [queue put end-marker])
+  (setq writer-thread (new thread writer-fun))
+  (defun reader-fun ()
+    (setq res [queue get])
+    (if (eq res end-marker)
+	(progn
+	 [writer-thread join]
+	 ())
+	(dcons res (reader-fun))))
+  [writer-thread run]
+  (reader-fun))
+
+(defhelp parallel-iterator "
+  FUNCTION parallel-iterator
+(parallel-iterator fun)
+-> <dynamic list>
+
+example:
+(for-each x (PARALLEL-ITERATOR (lambda () (drange 1 4 1))) (write x))
+1
+2
+3
+-> ()
+")

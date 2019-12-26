@@ -41,10 +41,12 @@
 (defmacro import (name)
   (defmacro _import (name pathlist)
     (if pathlist
-	`(try
-	  ,`(load ,`(string-concat ,(car pathlist) ,`(string-concat "/" ,name)))
-	  ,`(,_import ,name ,(cdr pathlist)))
-	`(throw _exception)))
+	`(if ,`(try
+		,`(load ,`(string-concat ,(car pathlist) ,`(string-concat "/" ,name)))
+		:failed)
+	     ,`(,_import ,name ,(cdr pathlist))
+	     ,`())
+	`(throw ,`(format "could not import %s" ,name))))
   `(,_import ,name ,(string-split _import_path ":")))
 
 (defmacro mod-load (name)
@@ -579,11 +581,11 @@
 	   methods)))
 (freezeq defclass)
 
-;;; (set-member [object . member] value)
+;;; (setmember [object . member] value)
 ;;; sadly doesn't work with setplace
-(defmacro set-member (br val)
+(defmacro setmember (br val)
   `(env-setq ,(cadr br) ,(cddr br) ,val))
-(freezeq set-member)
+(freezeq setmember)
 
 ;; getting a member from an object:
 ;; [object . member]
