@@ -187,7 +187,7 @@
   (helper f a))
 (freezeq map-list)
 
-(defun map-list (f a)
+(defun dmap-list (f a)
   (defun helper (f a)
     (when a
 	  (dcons (f a) (helper f (cdr a)))))
