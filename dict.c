@@ -36,7 +36,7 @@ inline unsigned hash(limo_data *ld)
   }
   // don't store the hash in ld->hash because we use that for the string-length
   else if (ld->type == limo_TYPE_STRING)
-    return (ld->hash = hash_string(ld->data.d_string));
+    return hash_string(ld->data.d_string);
   else
     throw(make_cons(make_string("data is not hashable"), ld));
 }
