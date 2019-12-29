@@ -128,9 +128,8 @@ limo_data *make_string(char *msg)
 {
   limo_data *str = make_limo_data();
   str->type = limo_TYPE_STRING;
-  //str->data.d_string = (char *)GC_malloc(strlen(msg) + 1);
-  //strcpy(str->data.d_string, msg);
   str->data.d_string = GC_strdup(msg);
+  str->hash = strlen(msg);
   return str;
 }
 

@@ -14,6 +14,7 @@ BUILTIN(builtin_reprn)
   limo_data *res=make_nil();
   res->type = limo_TYPE_STRING;
   res->data.d_string = repr_number(eval(FIRST_ARG, env));
+  res->hash = strlen(res->data.d_string);
   return res;
 }
 

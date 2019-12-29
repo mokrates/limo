@@ -25,12 +25,16 @@ void cons_writer(limo_data *ld)
 void string_writer(limo_data *ld)
 {
   char *s = ld->data.d_string;
+  int i;
   printf("\"");
-  while (*s) {
+  for (i=0; i<ld->hash; ++i) {
     switch (*s) {
+    case '\r': printf("\\r"); break;
+    case '\t': printf("\\t"); break;
     case '\n': printf("\\n"); break;
     case '\\': printf("\\"); break;
-    case '"': printf("\""); break;
+    case '\0': printf("\\0"); break;
+    case '"': printf("\\\""); break;
     default: printf("%c", *s);
     }
     s++;

@@ -3,7 +3,7 @@
 ;; debugging
 ;(setf _trace :t)
 
-'(progn
+(progn
  (assert :t)  ;; asserting assert()
  (asserteq '(a b . c) '(a b . c)) ;; deepeq
  (asserteq (reverse '(a b c)) '(c b a)) ;; reverse

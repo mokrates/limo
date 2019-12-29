@@ -41,6 +41,7 @@ BUILTIN(builtin_file_getc)
 {
   FILE *f;
   char buf[3]="\0\0";
+  limo_data *ld;
 
   if (list_length(arglist)<2)
     limo_error("file_getc FILE");
@@ -49,7 +50,9 @@ BUILTIN(builtin_file_getc)
   *buf = fgetc(f);
   if (feof(f))
     return make_string("");
-  return make_string(buf);
+  ld = make_string(buf);
+  ld->hash=1;
+  return ld;
 }
 
 BUILTIN(builtin_file_print)

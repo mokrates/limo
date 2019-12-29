@@ -78,7 +78,7 @@ char *rl_completer_generator(const char *text, int state)
   
   while (!is_nil(lookup_pos)) {
     if (!strncasecmp(CAR(CAR(lookup_pos))->data.d_string, text, textlen)) {
-      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string)+1);
+      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string)+1); // yes, malloc
       strcpy(res, CAR(CAR(lookup_pos))->data.d_string);
       lookup_pos= CDR(lookup_pos);
       return res;
@@ -320,6 +320,9 @@ limo_data *read_sym_num(reader_stream *f)
     return make_sym(buf);
 }
 
+// strings (ld->data.d_string) has a buffer which is stringlen+1 bytes long
+// and is zero-terminated. BUT in ld->hash, the stringlength is saved and
+// strings can contain \0
 limo_data *read_string(reader_stream *f)
 {
   limo_data *ld = make_limo_data();
@@ -339,6 +342,8 @@ limo_data *read_string(reader_stream *f)
       case 't': c='\t'; break;
       case '"': c='"'; break;
       case '\\':c='\\'; break;
+      case 'r': c='\r'; break;
+      case '0': c='\0'; break;
       }
     buf[i]=c;
     if (i>=cur_bufsiz-1) {
@@ -348,8 +353,9 @@ limo_data *read_string(reader_stream *f)
   }
   buf[i]='\0';
   ld->type = limo_TYPE_STRING;
-  ld->data.d_string = (char *)GC_malloc(strlen(buf) + 1);
-  strcpy(ld->data.d_string, buf);
+  ld->hash = i;
+  ld->data.d_string = (char *)GC_malloc(i + 1);
+  memcpy(ld->data.d_string, buf, i+1);
   return ld;
 }
 

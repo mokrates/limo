@@ -24,7 +24,10 @@ inline int limo_equals(limo_data *a, limo_data *b)
       return a->hash == b->hash;
 
   case limo_TYPE_STRING:
-    return !strcmp(a->data.d_string, b->data.d_string);
+    if (a->hash != b->hash)
+      return 0;
+    else
+      return !strncmp(a->data.d_string, b->data.d_string, a->hash);
     
   case limo_TYPE_CONS:
     return a->data.d_cons == b->data.d_cons;

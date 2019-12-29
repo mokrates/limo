@@ -441,9 +441,10 @@ BUILTIN(builtin_string_concat)
 
   limo_data *res = make_limo_data();
   res->type = limo_TYPE_STRING;
-  res->data.d_string = (char *)GC_malloc(strlen(str1->data.d_string) + strlen(str2->data.d_string) + 1);
-  strcpy(res->data.d_string, str1->data.d_string);
-  strcat(res->data.d_string, str2->data.d_string);
+  res->data.d_string = (char *)GC_malloc(str1->hash + str2->hash + 1);
+  memcpy(res->data.d_string, str1->data.d_string, str1->hash);
+  memcpy(res->data.d_string + str1->hash, str2->data.d_string, str2->hash);
+  res->hash = str1->hash + str2->hash;
   return res;
 }
 

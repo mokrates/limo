@@ -6,7 +6,7 @@
 #include "limo.h"
 #include <assert.h>
 
-inline unsigned int hash_string(char *str)
+static inline unsigned int hash_string(char *str)
 {
   int len = strlen(str);
   int hash;
@@ -26,15 +26,17 @@ inline unsigned int hash_string(char *str)
 inline unsigned hash(limo_data *ld)
 {
   if (ld->type == limo_TYPE_CONST)
-    //sigsegv_handler(0);
-    segfault();
+    limo_error("this should not happen (hash())");
   
-  if (ld->type == limo_TYPE_SYMBOL || ld->type == limo_TYPE_STRING) {
+  if (ld->type == limo_TYPE_SYMBOL) {
     if (ld->hash != 0)
       return ld->hash;
     else
       return (ld->hash = hash_string(ld->data.d_string));
   }
+  // don't store the hash in ld->hash because we use that for the string-length
+  else if (ld->type == limo_TYPE_STRING)
+    return (ld->hash = hash_string(ld->data.d_string));
   else
     throw(make_cons(make_string("data is not hashable"), ld));
 }

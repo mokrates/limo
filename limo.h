@@ -177,7 +177,7 @@ char *limo_strdup(char *str);
 
 int inter_symbol(limo_data *);
 
-unsigned int hash_string(char *);
+//unsigned int hash_string(char *);
 
 #define DICT_INIT_SIZE (1<<4)   // only powers of 2!
 limo_data *make_dict(void);

@@ -28,7 +28,7 @@
 (freezeq limpy-unifyf)
 
 (defmacro limpy-assignf (a b)
-  `(setplacef ,a ,b))
+  `(setplace ,a ,b))
 (freezeq limpy-assignf)
 
 (defmacro limpy-defun (name params . body)
