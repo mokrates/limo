@@ -32,6 +32,7 @@ static void regex_error(int errcode, regex_t *preg)
   errlen = regerror(errcode, preg, NULL, 0);
   errmsg = (char *)GC_malloc(errlen + 1);
   regerror(errcode, preg, errmsg, errlen+1);
+  regfree(preg);
   throw(make_cons(regex_error_sym, make_string(errmsg)));
 }
 		
@@ -66,7 +67,7 @@ BUILTIN(builtin_regex_match)
   if (ret = regcomp(&preg, ldpattern->data.d_string, cflags))
     regex_error(ret, &preg);
   if (ret = regexec(&preg, ldstring->data.d_string, 10, pmatch, eflags))
-    return nil;
+    result = nil;
   else {
     int i;
     limo_data **cursor;
@@ -84,6 +85,8 @@ BUILTIN(builtin_regex_match)
     }
     (*cursor) = make_nil();
   }
+
+  regfree(&preg);
   
   return result;
 }
