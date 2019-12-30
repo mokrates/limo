@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl threading
+LIBS=file string_builtins simplesdl threading regex
 
 .PHONY: all clean realclean $(LIBS)
 
