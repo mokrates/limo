@@ -36,14 +36,6 @@
    `(write ,`(list 'asserteq_failed ,x ,y))))
 (freezeq asserteq)
 
-(setq warn-once
-      (progn
-       (setq already-warned (make-dict))
-       (lambda (msg)
-	 (when (not (dict-has-key already-warned msg))
-	   (dict-set already-warned msg :t)
-	   (print (string-concat msg "\n"))))))
-
 (setq _import_path (string-concat ".:" _limo-prefix))
 
 (defmacro import (name)
@@ -403,6 +395,14 @@
 (defmacro scope x
   `(,`(lambda () ,`(progn ,@x))))
 (freezeq scope)
+
+(setq warn-once
+      (scope
+       (setq already-warned (make-dict))
+       (lambda (msg)
+	 (when (not (dict-has-key already-warned msg))
+	   (dict-set already-warned msg :t)
+	   (print (string-concat msg "\n"))))))
 
 (defmacro for-each (x l . body)
   (setq it (gensym))

@@ -62,7 +62,10 @@ typedef struct limo_DATA {
 #define d_special d_lambda
 #define d_vcache d_lambda
   } data;
-  unsigned int hash;  // for symbols and strings
+  union {
+    unsigned int hash;  // for symbols
+    unsigned int string_length;
+  };
 #define ld_marked_const hash
   limo_annotation *annotation;
 } limo_data;
@@ -238,7 +241,7 @@ BUILTIN(builtin_gc_enable);
 BUILTIN(builtin_gc_disable);
 BUILTIN(builtin_gc_collect);
 BUILTIN(builtin_gc_setmax);
-BUILTIN(builtin_extract_env);
+BUILTIN(builtin_env_extract);
 BUILTIN(builtin_sleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);
@@ -260,6 +263,7 @@ BUILTIN(builtin_symbolp);
 BUILTIN(builtin_symbol_to_string);
 
 BUILTIN(builtin_freezeq);
+BUILTIN(builtin_address_of);
 
 // Environment manipulation
 

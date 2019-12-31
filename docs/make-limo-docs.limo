@@ -39,12 +39,12 @@
   limo-docs-list = [];
 
   with-file-open("/dev/stdin", "r", f) {
-    print = comp($(lambda (s) {file-print(indoc, s);}), string-concat);
+    print = comp($(lambda (s) {file-write(indoc, s);}), string-concat);
     indoc = false;
     var(docname);
 
     for-each(l, %(string-strip(x) for x in file-readlines(f))) {
-        file-print(stdout, string-concat(l, "\n"));
+        file-write(stdout, string-concat(l, "\n"));
         if (string-starts-with(l, "##doc:")) {
             docname := string-strip(string-slice(l, string-length("##doc:"), string-length(l)));
             indoc := file-open(string-concat(docname, ".texinfo"), "w");
@@ -63,17 +63,17 @@
     };
   };
 
-  file-print(limo-docs, "@menu\n");
+  file-write(limo-docs, "@menu\n");
   for-each(d, limo-docs-list) {
-     file-print(limo-docs, string-concat("* ", d, "::\n"));
+     file-write(limo-docs, string-concat("* ", d, "::\n"));
   };
-  file-print(limo-docs, "@end menu\n");
+  file-write(limo-docs, "@end menu\n");
   
-  file-print(limo-docs, "@lowersections\n");
+  file-write(limo-docs, "@lowersections\n");
   for-each(d, limo-docs-list) {
-    file-print(limo-docs, string-concat("@include ", d, ".texinfo\n"));
+    file-write(limo-docs, string-concat("@include ", d, ".texinfo\n"));
   };
-  file-print(limo-docs, "@raisesections\n");
+  file-write(limo-docs, "@raisesections\n");
 
   file-close(limo-docs);
 }

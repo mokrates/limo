@@ -400,17 +400,12 @@ BUILTIN(builtin_gc_setmax)
     limo_error("(gcsetmax KiloBytes) (2)");
 }
 
-BUILTIN(builtin_extract_env)
+BUILTIN(builtin_env_extract)
 {
-  if (list_length(arglist)!=2)
-    limo_error("(extract-env ENV) (1)");
-
+  REQUIRE_ARGC("ENV-EXTRACT", 1);
   limo_data *ld = eval(FIRST_ARG, env);
-
-  if (ld->type == limo_TYPE_ENV)
-    return ld->data.d_env;
-  else
-    limo_error("(extract-env ENV) (2)");
+  REQUIRE_TYPE("ENV-EXTRACT", ld, limo_TYPE_ENV);
+  return ld->data.d_env;
 }
 
 BUILTIN(builtin_sleep)
@@ -515,6 +510,11 @@ BUILTIN(builtin_freezeq)
   return freeze_var(env, FIRST_ARG);
 }
 
+BUILTIN(builtin_address_of)
+{
+  REQUIRE_ARGC("ADDRESS-OF", 1);
+  return make_number_from_long_long((long long) eval(FIRST_ARG, env));
+}
 
 // Environment manipulation
 

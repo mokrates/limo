@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cat ../*.limo make-limo-docs.limo | ./make-limo-docs.limo
+cat ../limo-code/*.limo make-limo-docs.limo | ./make-limo-docs.limo

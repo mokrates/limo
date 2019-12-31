@@ -2,14 +2,6 @@
 
 (mod-load "file")
 
-##doc: file-readline
-## TYPE: function@*
-## SYNTAX: @code{(file-readline FILE)}@*
-##
-## reads and returns one line out of FILE
-##
-##enddoc
-
 (defun file-readline (f)
   (defun file-readline-list (f)
     (setq c (file-getc f))
@@ -19,14 +11,9 @@
 
   (reduce string-concat (file-readline-list f)))
 
-
-##doc: file-readlines
-## TYPE: function @*
-## SYNTAX: @code{(file-readlines FILE)} @*
-##
-## returns the complete file in a (dynamic) list of lines.
-## 
-##enddoc
+(defhelp file-readline
+  "FUNCTION (file-readline file)
+reads and returns one line out of <file>")
 
 (defun file-readlines (f)
   (setq l (file-readline f))
@@ -34,32 +21,33 @@
       ()
       (dcons l (file-readlines f))))
 
-##doc: with-file-open
-## TYPE: macro @*
-## SYNTAX: @code{(with-file-open STRING STRING SYMBOL ...)} @*
-## USAGE: @code{(with-file-open FILENAME MODE FILEHANDLE BODY...)} @*
-##
-## Opens a file @code{FILENAME} in mode @code{MODE} and sets @code{FILEHANDLE} 
-## to be the filehandle. At the end of the execution of body, @code{FILEHANDLE} will 
-## be closed
-##
-## @example
-## (with-file-open "textfile" "r" f
-##   (write (undyn f)))
-## @end example
-##
-##enddoc
+(defhelp file-readlines
+  "FUNCTION (file-readlines file)
+returns the complete file in a dynamic list of lines
+")
 
 (defmacro with-file-open (filename mode f . body)
-  `(scope
-    ,`(setq ,f ,`(file-open ,filename ,mode))
-    ,@body
-    ,`(file-close ,f)))
+  ,`(finally
+     ,`(progn
+	,`(setq ,f ,`(file-open ,filename ,mode))
+	,@body)
+     ,`(file-close ,f)))
 
-(setq stdin (file-open "/dev/stdin" "r"))
-(setq stdout (file-open "/dev/stdout" "w"))
+(defhelp with-file-open
+  "MACRO (with-file-open filename mode f . body)
+Opens <filename> as file <f> and executed body.
+After execution, <f> will be closed
+")
+
+(setq stdin (file-fdopen 0 "r"))
+(setq stdout (file-fdopen 1 "w"))
+(setq stderr (file-fdopen 2 "w"))
 (defun print x
   (cond ((cdr x) ; multiple parameters
-	 (file-print (car x) (cadr x)))
+	 (file-write (car x) (cadr x)))
 	(:else
-	 (file-print stdout (car x)))))
+	 (file-write stdout (car x)))))
+(defhelp print
+  "FUNCTION (print [file] string)
+Prints <string> to <file> if file is given, or else to stdout.
+")

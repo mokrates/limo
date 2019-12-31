@@ -3,13 +3,14 @@
 (setq _help-dict (make-dict))
 
 ;; use this to define a helpstring for your symbol
-(defmacro defhelp (sym helpstr)
-  `(dict-set _help-dict ,`(quote ,sym) ,helpstr))
+
+(defun defhelp (sym helpstr)
+  (dict-set _help-dict (reprn (address-of sym)) helpstr))
 
 ;; use this to ask for help
-(defmacro help sym
+(defun help sym
   (if (not sym)
-      `(print "
+      (print "
 Help for limo
 -------------
 To request help for a particular symbol or function type
@@ -18,9 +19,23 @@ for Example
 (help format)
 
 ")
-    `(if ,`(dict-has-key _help-dict ,`(car ,`(quote ,sym)))
-	 ,`(print ,`(cdr ,`(dict-get _help-dict ,`(car ,`(quote ,sym)))))
-       ,`(print ,`(format "no help on %s, sorry\n" ,`(symbol-to-string ,`(car ,`(quote ,sym))))))))
+      (if (dict-has-key _help-dict (reprn (address-of (car sym))))
+	  (print (dict-getvalue _help-dict (reprn (address-of (car sym)))))
+	  (print "Sorry, there is no help on this topic, but there probably should be!\n"))))
+
+;;;;;;;;;;;;;;;;; help for stuff
+
+(defhelp defhelp
+  "FUNCTION (defhelp object helpstring)
+Defines help for <object> by storing helpstring.
+See (help help)
+")
+
+(defhelp help
+  "FUNCTION (help object)
+Lets you request help on <object>.
+Example: (help help)
+")
 
 (defhelp mod-load
   "MACRO (mod-load name)
@@ -39,18 +54,6 @@ At the moment there are only three placeholders:
 %s to insert a string
 %n to insert a number
 %r to insert the representation of data
-")
-
-(defhelp print
-  "FUNCTION (print [file] string)
-Prints <string> to <file> if <file> is given.
-If <file> is not given prints to STDOUT
-")
-
-(defhelp stdout
-  "VARIABLE stdout
-Contains a file-object pointing to the stdout filehandle.
-Is opened by (file-open \"/dev/stdout\"
 ")
 
 (defhelp with-gensym
@@ -82,14 +85,13 @@ example:
 [foo . bar] -> \"baz\"           ; reading a member
 
 see defmethod.
-")
 
-(defhelp defmethod
-  "SYMBOL defmethod
+SYMBOL defmethod
 (defmethod (args...) body)
 The <args> can be used like in a lambda (see lambda)
 Methods work similar to like they work in python.
 see defclass
+
 ")
 
 (defhelp for-each
