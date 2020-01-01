@@ -56,7 +56,7 @@ BUILTIN(builtin_ord)
   ld = eval(FIRST_ARG, env);
   if (ld->type != limo_TYPE_STRING)
     limo_error("(ORD string)");
-  return make_number_from_long_long(ld->data.d_string[0]);
+  return make_number_from_long_long((unsigned char)ld->data.d_string[0]);
 }
 
 BUILTIN(builtin_chr)
