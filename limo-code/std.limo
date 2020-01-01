@@ -550,7 +550,7 @@
 (defun repr (x)
   (warn-once "TODO: (REPR string) must be reworked")
   (defun list-to-string (x)
-    (cond ((not x) x)
+    (cond ((not x) ")")
 	  ((not (cdr x)) 
 	   (string-concat (repr (car x)) ")"))
 	  ((not (consp (cdr x))) 
