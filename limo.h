@@ -203,10 +203,15 @@ limo_data *thunk_safe_cdr(limo_data *x);
 
 // for arglists
 #define ZEROTH_ARG (CAR(arglist))
-#define FIRST_ARG (CAR(CDR(arglist)))
+#define FIRST_ARG  (CAR(CDR(arglist)))
 #define SECOND_ARG (CAR(CDR(CDR(arglist))))
-#define THIRD_ARG (CAR(CDR(CDR(CDR(arglist)))))
+#define THIRD_ARG  (CAR(CDR(CDR(CDR(arglist)))))
 #define FOURTH_ARG (CAR(CDR(CDR(CDR(CDR(arglist))))))
+#define FIFTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(arglist)))))))
+#define SIXTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(arglist))))))))
+#define SEVENTH_ARG (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist)))))))))
+#define EIGTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist))))))))))
+#define NINTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist)))))))))))
 
 BUILTIN(builtin_quote);
 BUILTIN(builtin_setq);
