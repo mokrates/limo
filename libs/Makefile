@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl threading regex sdl
+LIBS=file string_builtins simplesdl threading regex sdl ncurses
 
 .PHONY: all clean realclean $(LIBS)
 
