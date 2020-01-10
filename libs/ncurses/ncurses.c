@@ -23,7 +23,7 @@ BUILTIN(builtin_ncurses_start_color)
 BUILTIN(builtin_ncurses_has_colors)
 {
   if (has_colors())
-    return make_sym(":T");
+    return sym_true;
   else
     return nil;
 }
@@ -54,7 +54,18 @@ BUILTIN(builtin_ncurses_color_pair)
 
 BUILTIN(builtin_ncurses_keypad)
 {
-  limo_error("KEYPAD not implemented");
+  limo_data *ld_win, *ld_bf;
+  WINDOW *win;
+  int bf;
+  REQUIRE_ARGC("WADDCH", 2);
+  ld_win = eval(FIRST_ARG, env);
+  ld_bf = eval(SECOND_ARG, env);
+  win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
+  if (is_nil(ld_bf))
+    bf=0;
+  else
+    bf=1;
+  return make_number_from_long_long(keypad(win, bf));
 }
 
 // BUILTIN(builtin_ncurses_@(fname))  { @(fname)();  return nil; }
@@ -64,6 +75,8 @@ BUILTIN(builtin_ncurses_nocbreak) { nocbreak(); return nil; }
 BUILTIN(builtin_ncurses_cbreak)   { cbreak();   return nil; }
 BUILTIN(builtin_ncurses_noraw)    { noraw();    return nil; }
 BUILTIN(builtin_ncurses_raw)      { raw();      return nil; }
+BUILTIN(builtin_ncurses_echo)     { echo();     return nil; }
+BUILTIN(builtin_ncurses_noecho)   { noecho();   return nil; }
 BUILTIN(builtin_ncurses_endwin)   { endwin();   return nil; }
 
 BUILTIN(builtin_ncurses_waddch)
@@ -234,7 +247,8 @@ void limo_init_ncurses(limo_data *env)
   INS_NCURSES_BUILTIN(builtin_ncurses_cbreak, "CBREAK"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_noraw, "NORAW"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_raw, "RAW"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_noraw, "NORAW"); 
+  INS_NCURSES_BUILTIN(builtin_ncurses_noecho, "NOECHO");
+  INS_NCURSES_BUILTIN(builtin_ncurses_echo, "ECHO");
   INS_NCURSES_BUILTIN(builtin_ncurses_endwin, "ENDWIN"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_waddch, "WADDCH"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_wmove, "WMOVE");

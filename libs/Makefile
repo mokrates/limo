@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl threading regex sdl ncurses
+LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu
 
 .PHONY: all clean realclean $(LIBS)
 

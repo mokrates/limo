@@ -28,8 +28,8 @@ exelimo.o: $(HEADERS) limo.c
 inlined_mods.c: inlined.mods
 	./make-inlined_mods-c.sh
 
-limo: $(OBJ)
-	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lgc -lgmp -ldl -lreadline -lm -o limo
+limo: $(OBJ) libs
+	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
 
 limo-almost-static: $(OBJ) libs
 	$(CC) $(OBJ) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
