@@ -1,0 +1,18 @@
+(mod-load "ncurses")
+([_ncurses . initscr])
+(setq stdscr ([_ncurses . stdscr]))
+([_ncurses . wclear] ([_ncurses . stdscr]))
+(setq dimensions ([_ncurses . getmaxyx] stdscr))
+(setq maxx (cdr dimensions))
+(setq maxy (car dimensions))
+(setq message "Hello from limo with ncurses!")
+(setq ydest (idiv maxy 2))
+(setq xdest (idiv (- maxx (string-length message)) 2))
+([_ncurses . wmove] stdscr ydest xdest)
+(for-each c (string-to-list message)
+  ([_ncurses . waddch] stdscr (ord c)))
+([_ncurses . wrefresh] stdscr)
+
+([_ncurses . wgetch] stdscr)
+([_ncurses . endwin] stdscr)
+

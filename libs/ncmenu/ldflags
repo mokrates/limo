@@ -1,0 +1,1 @@
+libs/ncmenu/ncmenu.a -lmenu -lcurses
