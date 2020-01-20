@@ -267,10 +267,10 @@ BUILTIN(builtin_ncmenu_menu_pad)
        /* new_item               menu_new(3MENU) */
 static void limo_free_item(limo_data *obj, ITEM *user_data)
 {
-  //  free(item_name(user_data));
-  //  free(item_description(user_data));
-  //  free_item(user_data);
-    printf("\n(TODO: remove after debug) CALLED FREE_ITEM\n");
+   free(item_name(user_data));
+   free(item_description(user_data));
+   free_item(user_data);
+   //printf("\n(TODO: remove after debug) CALLED FREE_ITEM\n");
 }
 
 BUILTIN(builtin_ncmenu_new_item)
@@ -293,9 +293,9 @@ BUILTIN(builtin_ncmenu_new_item)
        /* new_menu               new(3MENU) */
 static void limo_free_menu(limo_data *obj, MENU *user_data)
 {
-  //free(menu_items(user_data));
-  //free_menu(user_data);
-  printf("\n(TODO: remove after debug) CALLED FREE_MENU\n");
+  free(menu_items(user_data));
+  free_menu(user_data);
+  //printf("\n(TODO: remove after debug) CALLED FREE_MENU\n");
 }
 
 BUILTIN(builtin_ncmenu_new_menu)
@@ -358,6 +358,11 @@ BUILTIN(builtin_ncmenu_set_item_opts)
 // which I would normally use to pass in a limo_data* for the hook-lambda
 
        /* set_item_userptr       menu_userptr(3MENU) */
+// cannot put limo_data in there,
+// because it gets collected while still reachable, so, no support yet
+       /* set_menu_back          attributes(3MENU) */
+
+
        /* set_item_value         menu_value(3MENU) */
 BUILTIN(builtin_ncmenu_set_item_value)
 {
@@ -400,6 +405,22 @@ BUILTIN(builtin_ncmenu_set_menu_fore)
 }
 
        /* set_menu_format        format(3MENU) */
+BUILTIN(builtin_ncmenu_set_menu_format)
+{
+  limo_data *ld_menu, *ld_rows, *ld_cols;
+  MENU *menu;
+  int rows, cols;
+  REQUIRE_ARGC("SET-MENU-FORMAT", 3);
+  ld_menu = eval(FIRST_ARG, env);
+  ld_rows = eval(SECOND_ARG, env);
+  ld_cols = eval(THIRD_ARG, env);
+  menu = (MENU *)get_special(ld_menu, sym_ncmenu_menu);
+  rows = GETINTFROMMPQ(ld_rows);
+  cols = GETINTFROMMPQ(ld_cols);
+  return make_number_from_long_long(set_menu_format(menu, rows, cols));
+}
+
+
        /* set_menu_grey          attributes(3MENU) */
 BUILTIN(builtin_ncmenu_set_menu_grey)
 {
@@ -482,8 +503,6 @@ BUILTIN(builtin_ncmenu_unpost_menu)
   return make_number_from_long_long(unpost_menu(menu));
 }
 
-
-
 void limo_init_ncmenu(limo_data *env)
 {
   limo_data *limo_ncmenu_env;
@@ -516,6 +535,7 @@ void limo_init_ncmenu(limo_data *env)
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_item_value, "SET-ITEM-VALUE");
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_back, "SET-MENU-BACK");
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_fore, "SET-MENU-FORE");
+  INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_format, "SET-MENU-FORMAT");
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_grey, "SET-MENU-GREY");
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_items, "SET-MENU-ITEMS");
   INS_NCMENU_BUILTIN(builtin_ncmenu_set_menu_pad, "SET-MENU-PAD");
