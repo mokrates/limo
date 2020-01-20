@@ -24,11 +24,11 @@ BUILTIN(builtin_idivmod)
   limo_data *r = make_number();
   limo_data *res = make_cons(q, make_cons(r, nil));
 
-  if (list_length(arglist) != 3)
-    limo_error("idivmod needs 2 args");
-
+  REQUIRE_ARGC("IDIVMOD", 2);
   limo_data *n = eval(FIRST_ARG, env);
   limo_data *d = eval(SECOND_ARG, env);
+  REQUIRE_TYPE("IDIVMOD", n, limo_TYPE_GMPQ);
+  REQUIRE_TYPE("IDIVMOD", n, limo_TYPE_GMPQ);
 
   if (!mpz_cmp_si(mpq_numref(LIMO_MPQ(d)), 0))
     limo_error("integer division by zero");
@@ -62,9 +62,12 @@ CALC2_BUILTIN(mpq_div);
 #define CALC1_BUILTIN(fun) BUILTIN(builtin_##fun ) \
 { \
   limo_data *res = make_number(); \
+  limo_data *arg;		  \
   if (list_length(arglist) != 2) \
     limo_error(#fun " needs 1 arg!"); \
-  fun(LIMO_MPQ(res), LIMO_MPQ(eval(FIRST_ARG, env))); \
+  arg = eval(FIRST_ARG, env); \
+  REQUIRE_TYPE(#fun, arg, limo_TYPE_GMPQ); \
+  fun(LIMO_MPQ(res), LIMO_MPQ(arg)); \
   return res; \
 }
 
