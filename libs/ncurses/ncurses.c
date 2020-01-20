@@ -57,7 +57,7 @@ BUILTIN(builtin_ncurses_keypad)
   limo_data *ld_win, *ld_bf;
   WINDOW *win;
   int bf;
-  REQUIRE_ARGC("WADDCH", 2);
+  REQUIRE_ARGC("KEYPAD", 2);
   ld_win = eval(FIRST_ARG, env);
   ld_bf = eval(SECOND_ARG, env);
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
@@ -66,6 +66,32 @@ BUILTIN(builtin_ncurses_keypad)
   else
     bf=1;
   return make_number_from_long_long(keypad(win, bf));
+}
+
+BUILTIN(builtin_ncurses_nodelay)
+{
+  limo_data *ld_win, *ld_bf;
+  WINDOW *win;
+  int bf;
+  REQUIRE_ARGC("NODELAY", 2);
+  ld_win = eval(FIRST_ARG, env);
+  ld_bf = eval(SECOND_ARG, env);
+  win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
+  if (is_nil(ld_bf))
+    bf=0;
+  else
+    bf=1;
+  return make_number_from_long_long(nodelay(win, bf));
+}
+
+BUILTIN(builtin_ncurses_halfdelay)
+{
+  limo_data *ld_tenths;
+  REQUIRE_ARGC("HALFDELAY", 1);
+  ld_tenths = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("HALFDELAY", ld_tenths, limo_TYPE_GMPQ);
+  halfdelay(GETINTFROMMPQ(ld_tenths));
+  return nil;
 }
 
 // BUILTIN(builtin_ncurses_@(fname))  { @(fname)();  return nil; }
@@ -241,6 +267,8 @@ void limo_init_ncurses(limo_data *env)
   INS_NCURSES_BUILTIN(builtin_ncurses_init_pair, "INIT-PAIR"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_color_pair, "COLOR-PAIR"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_keypad, "KEYPAD");
+  INS_NCURSES_BUILTIN(builtin_ncurses_nodelay, "NODELAY");
+  INS_NCURSES_BUILTIN(builtin_ncurses_halfdelay, "HALFDELAY");
   INS_NCURSES_BUILTIN(builtin_ncurses_nonl, "NONL"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_nl, "NL"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_nocbreak, "NOCBREAK"); 
