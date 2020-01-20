@@ -7,8 +7,25 @@ http://www.gnu.org/licenses/gpl.html
 
 **************************************
 
-how to build:
-should be buildable by just entering 'make'.
+for the impatient:
+$ bash build.sh
+builds and installs limo into ~/.local/bin and ~/.local/lib
+
+$ make limo-almost-static
+$ make install
+builds and installs into /usr/local/
+
+You can define a prefix where limo should be installed by giving make
+a INSTALL_PREFIX:
+$ make clean
+$ make INSTALL_PREFIX=/usr/local/ limo
+$ make INSTALL_PREFIX=/usr/local/ install
+please be aware that the INSTALL_PREFIX should be given to all the
+make targets.
+
+It it advisable to always make clean before every build.
+
+**************************************
 
 dependencies:
 
@@ -16,6 +33,35 @@ build-essential (gcc, make)
 libgc (boehm garbage collector)
 libreadline
 libgmp (gnu multiprecision library)
+libpthread
+
+Libraries:
+You can choose to build libraries or not to build them:
+If you choose not to build libraries, you have to remove them from
+libs/Makefile
+
+If you choose to build a library with limo you can choose to inline
+libraries or to build them as shared objects. If you want to inline a
+library, add it to inlined.mods
+
+Library dependencies:
+ncurses: ncurses
+ncmenu: ncurses ncmenu
+sdl: sdl
+simplesdl: sdl
+
+NCMENU
+If you build ncmenu, you have to inline or not inline it just like
+ncurses. If you don't limo segfaults.
+
+Building on MAC OS X
+====================
+You can install all the dependencies using homebrew (http://brew.sh)
+You have to use the limo-wsl or limo-almost-static target.
+
+Building on Windows Subsystem for Linux (WSL)
+=============================================
+You have to use the limo-wsl or limo-almost-static target.
 
 **************************************
 
@@ -29,14 +75,8 @@ on REPL:    _	: the last evaluated value
 
 _exception	: see try
 
-_callerenv	: the environment of the caller. not neccessarily equal to _up
-		  only valid in macros. (used by quasiquote())
-
 (eval EXP [ENV]): evaluate EXP under environment ENV. EXP and ENV are evaluated once under the
       	  	  normal environment, as befits a function. THEN EXP is evaluated again.
-
-_env		: no real variable. has no entry in the environment.
-		  the internal lookup-function returns the local environment to this name.
 
 dcons/#<thunk>	: #<thunk> are instances of a type which cannot be instatiated by a program.
 	  	  what CAN be instantiated are dcons'es.
