@@ -329,6 +329,8 @@
 
 (setq != (comp not eq)) (freezeq !=)
 
+(defun floor (n)
+    (idiv (mpq_numerator n) (mpq_denominator n)))
 
 (defun fak (n)
   (defun helper (n akku)

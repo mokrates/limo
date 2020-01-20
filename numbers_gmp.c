@@ -28,7 +28,7 @@ BUILTIN(builtin_idivmod)
   limo_data *n = eval(FIRST_ARG, env);
   limo_data *d = eval(SECOND_ARG, env);
   REQUIRE_TYPE("IDIVMOD", n, limo_TYPE_GMPQ);
-  REQUIRE_TYPE("IDIVMOD", n, limo_TYPE_GMPQ);
+  REQUIRE_TYPE("IDIVMOD", d, limo_TYPE_GMPQ);
 
   if (!mpz_cmp_si(mpq_numref(LIMO_MPQ(d)), 0))
     limo_error("integer division by zero");
@@ -37,6 +37,29 @@ BUILTIN(builtin_idivmod)
 	      mpq_numref(LIMO_MPQ(r)),
 	      mpq_numref(LIMO_MPQ(n)),
 	      mpq_numref(LIMO_MPQ(d)));
+  return res;
+}
+
+BUILTIN(builtin_mpq_numerator) {
+  limo_data *arg, *res;
+  
+  REQUIRE_ARGC("MPQ_NUMERATOR", 1);
+  arg = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("MPQ_NUMERATOR", arg, limo_TYPE_GMPQ);
+  res = make_number();  // 0/1
+  mpq_set_num(LIMO_MPQ(res), mpq_numref(LIMO_MPQ(arg)));
+  return res;
+}
+
+BUILTIN(builtin_mpq_denominator)
+{
+  limo_data *arg, *res;
+  
+  REQUIRE_ARGC("MPQ_DENONINATOR", 1);
+  arg = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("MPQ_DENONINATOR", arg, limo_TYPE_GMPQ);
+  res = make_number();  // 0/1
+  mpq_set_num(LIMO_MPQ(res), mpq_denref(LIMO_MPQ(arg)));
   return res;
 }
 
@@ -122,7 +145,7 @@ limo_data *make_number(void)
   res->type=limo_TYPE_GMPQ;
   res->data.d_mpq = (mpq_t *)GC_malloc(sizeof (mpq_t));
 
-  mpq_init(LIMO_MPQ(res));
+  mpq_init(LIMO_MPQ(res)); // initializes to 0/1
   return res;
 }
 
@@ -179,6 +202,8 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_MUL", builtin_mpq_mul },
   { "MPQ_DIV", builtin_mpq_div },
   { "IDIVMOD", builtin_idivmod },
+  { "MPQ_NUMERATOR", builtin_mpq_numerator },
+  { "MPQ_DENOMINATOR", builtin_mpq_denominator },
   { "SIN", builtin_sin },
   { "COS", builtin_cos },
   { "POWER", builtin_power },
