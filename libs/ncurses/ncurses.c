@@ -163,6 +163,16 @@ BUILTIN(builtin_ncurses_wclear)
   return make_number_from_long_long(wclear(win));
 }
 
+BUILTIN(builtin_ncurses_werase)
+{
+  limo_data *ld_win;
+  WINDOW *win;
+  REQUIRE_ARGC("WERASE", 1);
+  ld_win = eval(FIRST_ARG, env);
+  win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
+  return make_number_from_long_long(werase(win));
+}
+
 BUILTIN(builtin_ncurses_getyx)
 {
   limo_data *ld_win;
@@ -282,7 +292,8 @@ void limo_init_ncurses(limo_data *env)
   INS_NCURSES_BUILTIN(builtin_ncurses_wmove, "WMOVE");
   INS_NCURSES_BUILTIN(builtin_ncurses_wrefresh, "WREFRESH"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_wgetch, "WGETCH");
-  INS_NCURSES_BUILTIN(builtin_ncurses_wclear, "WCLEAR"); 
+  INS_NCURSES_BUILTIN(builtin_ncurses_wclear, "WCLEAR");
+  INS_NCURSES_BUILTIN(builtin_ncurses_werase, "WERASE");
   INS_NCURSES_BUILTIN(builtin_ncurses_getyx, "GETYX"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_getparyx, "GETPARYX"); 
   INS_NCURSES_BUILTIN(builtin_ncurses_getbegyx, "GETBEGYX"); 

@@ -15,7 +15,10 @@
   (put 'defmacro 'scheme-indent-function 2)
   (put 'for-each 'scheme-indent-function 2)
   (put 'for-list 'scheme-indent-function 2)
+  (put 'block 'scheme-indent-function 1)
   (put 'synchronized 'scheme-indent-function 1)
+  (put 'while 'scheme-indent-function 1)
+  (put 'switch 'scheme-indent-function 1)
   (define-key limo-mode-map (kbd "C-c h") 'limo-help))
 
 (add-to-list 'auto-mode-alist '("\\.limo\\'" . limo-mode))

@@ -88,8 +88,8 @@
     ([_ncurses . wrefresh] [self . _scr]))
   (defmethod getch (self)
     ([_ncurses . wgetch] [self . _scr]))
-  (defmethod clear (self)
-    ([_ncurses . wclear] [self . _scr]))
+  (defmethod erase (self)
+    ([_ncurses . werase] [self . _scr]))
   (defmethod print-with-attr (self str attr)
     (for-each c (string-to-list str)
       [self addch (+ (ord c) attr)]))
@@ -116,7 +116,7 @@
   (cons 0 (idiv (- 10 (list-length (caar (nth kind *tetrominoes*)))) 2)))
 
 (defun paint-board ()
-  [*screen* clear]
+  [*screen* erase]
 
   ;; paintin board
   (for-each c_line (enumerate *board*)
