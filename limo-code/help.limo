@@ -100,3 +100,27 @@ see defclass
   body...)
 Executes <body> for each <item> in <list>
 ") 
+
+(defhelp cond
+  "MACRO cond
+(cond (<condition> <body>)
+      (<condition> <body>)  ;; as many as you want
+      (:default    <body>)) ;; optional
+Executes the first clause where condition is true
+")
+
+(defhelp block
+  "BUILTIN block
+(block label
+  (progn 
+    (write 'a)
+    (return-from label :optional-return-value)
+    (write 'b)))
+writes only A.
+Caution: BLOCK creates a subscope
+")
+
+(defhelp return-from
+  "BUILTIN return-from
+see BLOCK
+")
