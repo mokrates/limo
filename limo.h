@@ -247,6 +247,7 @@ BUILTIN(builtin_gc_disable);
 BUILTIN(builtin_gc_collect);
 BUILTIN(builtin_gc_setmax);
 BUILTIN(builtin_env_extract);
+BUILTIN(builtin_envp);
 BUILTIN(builtin_sleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);

@@ -301,11 +301,11 @@ limo_data *read_sym_num(reader_stream *f)
 {
   int i;
   char buf[BUFFER_SIZE];
-  char c;
+  int c;
 
   for (i=0; i<BUFFER_SIZE-1; ++i) {
     c=limo_getc(f);
-    if (strchr(")]", c) || isspace(c)) {  // ( for emacs
+    if (strchr(")]", c) || isspace(c) || c==EOF) {  // ( for emacs
       limo_ungetc(c, f);
       break;
     }
@@ -321,7 +321,8 @@ limo_data *read_sym_num(reader_stream *f)
 }
 
 // strings (ld->data.d_string) has a buffer which is stringlen+1 bytes long
-// and is zero-terminated. BUT in ld->hash, the stringlength is saved and
+// and is zero-terminated. BUT in ld->hash (in union with ld->string_length),
+// the stringlength is saved and
 // strings can contain \0
 limo_data *read_string(reader_stream *f)
 {
@@ -353,7 +354,7 @@ limo_data *read_string(reader_stream *f)
   }
   buf[i]='\0';
   ld->type = limo_TYPE_STRING;
-  ld->hash = i;
+  ld->string_length = i;
   ld->data.d_string = (char *)GC_malloc(i + 1);
   memcpy(ld->data.d_string, buf, i+1);
   return ld;
@@ -367,7 +368,7 @@ inline limo_data *annotate(limo_data *ld, limo_annotation *la)
 
 limo_data *reader(reader_stream *f)
 {
-  char c;
+  int c;
   limo_data *ld;
   limo_annotation *la;
 
@@ -378,7 +379,7 @@ limo_data *reader(reader_stream *f)
 
   prompt = "λimo>> ";
 
-  if (limo_eof(f))
+  if (c == EOF)
     return make_nil();
 
   if (c=='(') { // list

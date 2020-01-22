@@ -408,6 +408,17 @@ BUILTIN(builtin_env_extract)
   return ld->data.d_env;
 }
 
+BUILTIN(builtin_envp)
+{
+  REQUIRE_ARGC("ENVP", 1);
+  limo_data *ld;
+  ld = eval(FIRST_ARG, env);
+  if (ld->type == limo_TYPE_ENV)
+    return sym_true;
+  else
+    return nil;
+}
+
 BUILTIN(builtin_sleep)
 {
   if (list_length(arglist)!=2)

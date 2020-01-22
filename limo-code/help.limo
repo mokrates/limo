@@ -94,6 +94,12 @@ see defclass
 
 ")
 
+(defhelp instancep
+  "FUNCTION instancep
+(is-instance <class> <object-or-class>)
+true if <object-or-class> is an object or a subclass of class <class>
+")
+
 (defhelp for-each
   "MACRO for-each
 (for-each item list
