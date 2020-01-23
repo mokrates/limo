@@ -101,7 +101,7 @@ BUILTIN(builtin_socket_inet_addr)
   return make_number_from_long_long(inet_addr(ld_in->data.d_string));
 }
 
-BUILTIN(make_socket_connect)
+BUILTIN(builtin_socket_connect)
 {
   limo_data *ld_sockfd, *ld_sockaddr;
   int sockfd;
@@ -131,6 +131,7 @@ void limo_init_socket(limo_data *env)
   INS_SOCKET_BUILTIN(builtin_socket_accept, "SOCKET-ACCEPT");
   INS_SOCKET_BUILTIN(builtin_socket_inet_addr, "INET-ADDR");
   INS_SOCKET_BUILTIN(builtin_socket_make_sockaddr, "MAKE-SOCKADDR");
+  INS_SOCKET_BUILTIN(builtin_socket_connect, "CONNECT");
 
   INS_SOCKET_VAR(make_number_from_long_long(AF_INET), "AF_INET");
   INS_SOCKET_VAR(make_number_from_long_long(SOCK_STREAM), "SOCK_STREAM");
