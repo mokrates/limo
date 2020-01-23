@@ -3,6 +3,7 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "limo.h"
 
@@ -71,6 +72,13 @@ void limo_error(char *msg, ...)
   vsnprintf(buf, 256, msg, ap);
   //  printf("%s\n", buf);
   throw(make_string(buf));
+}
+
+void limo_error_errno(limo_data *excp_type)
+{
+  char buf[512];
+  strerror_r(errno, buf, 512);
+  throw(make_cons(excp_type, make_string(buf)));
 }
 
 void segfault()

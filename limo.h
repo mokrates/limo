@@ -158,6 +158,7 @@ void throw(limo_data *excp);
 #endif
 void throw_after_finally(void);
 void limo_error(char *, ...);
+void limo_error_errno(limo_data *excp_name);
 void print_stacktrace(limo_data *s); // prints stacktrace s
 
 extern pthread_key_t pk_stacktrace_key;
