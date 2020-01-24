@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
 #define INS_SOCKET_BUILTIN(f, name) setq(limo_socket_env, make_sym(name), make_builtin(f))
 #define INS_SOCKET_VAR(val, name)   setq(limo_socket_env, make_sym(name), val)
@@ -118,6 +119,23 @@ BUILTIN(builtin_socket_connect)
   return nil;
 }
 
+BUILTIN(builtin_socket_gethostbyname)
+{
+  struct hostent *he;
+  limo_data *ld_hostname, *ld_res;
+
+  REQUIRE_ARGC("GETHOSTBYNAME", 1);
+  ld_hostname = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("GETHOSTBYNAME", ld_hostname, limo_TYPE_STRING);
+
+  he = gethostbyname(ld_hostname->data.d_string);
+
+  if (!he) throw(make_cons(sym_socket, make_string("couldn't resolve hostname")));
+
+  ld_res = make_number_from_long_long(*(in_addr_t *)(he->h_addr));
+  return ld_res;
+}
+
 void limo_init_socket(limo_data *env)
 {
   limo_data *limo_socket_env;
@@ -132,6 +150,7 @@ void limo_init_socket(limo_data *env)
   INS_SOCKET_BUILTIN(builtin_socket_inet_addr, "INET-ADDR");
   INS_SOCKET_BUILTIN(builtin_socket_make_sockaddr, "MAKE-SOCKADDR");
   INS_SOCKET_BUILTIN(builtin_socket_connect, "CONNECT");
+  INS_SOCKET_BUILTIN(builtin_socket_gethostbyname, "GETHOSTBYNAME");
 
   INS_SOCKET_VAR(make_number_from_long_long(AF_INET), "AF_INET");
   INS_SOCKET_VAR(make_number_from_long_long(SOCK_STREAM), "SOCK_STREAM");
