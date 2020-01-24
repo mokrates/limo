@@ -1,0 +1,22 @@
+(mod-load "fd")
+(import "socket.limo")
+
+(setq s ([_socket . make-socket] [_socket . AF_INET] [_socket . SOCK_STREAM] 0))
+
+(print (format "socket: %r\n" s))
+
+(setq ip ([_socket . gethostbyname] "towel.blinkenlights.nl"))
+
+(print (format "ip %r\n" ip))
+(print (format "ip in ip-format: %s\n" (ip-to-string ip)))
+
+(setq sa ([_socket . make-sockaddr] ip 23))
+
+([_socket . connect] s sa)
+
+(print "connected\n")
+
+(setq c ([_fd . fd-read] s 1))
+(while (not (= c -1))
+  (print c)
+  (setf c ([_fd . fd-read] s 1)))
