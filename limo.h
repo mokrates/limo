@@ -300,7 +300,7 @@ void file_builtins(limo_data *env);
 ////////////////////////////////////
 // numbers
 #define LIMO_MPQ(x) (*((x)->data.d_mpq))
-#define GETINTFROMMPQ(mpq)     ((int)mpq_get_d(*(mpq)->data.d_mpq))
+#define GETINTFROMMPQ(mpq)     ((long long)mpq_get_d(*(mpq)->data.d_mpq))
 #define GETDOUBLEFROMMPQ(mpq)  (mpq_get_d(*(mpq)->data.d_mpq))
 char *repr_number(limo_data *ld);
 limo_data *make_number(void);
