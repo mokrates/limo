@@ -202,5 +202,7 @@ void limo_init_ssl(limo_data *env)
   INS_SSL_VAR(make_number_from_long_long(SSL_FILETYPE_PEM), "SSL_FILETYPE_PEM");
   
   setq(env, make_sym("_SSL"), limo_ssl_env);
+
+  printf("TODO: rewrite ssl, this cannot check certificates yet!\n");
 }
 
