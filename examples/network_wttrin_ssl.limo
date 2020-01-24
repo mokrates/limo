@@ -1,7 +1,8 @@
-;;;;;;;; weather-report with wttr.in
+;;;;;;;; weather-report with wttr.in and with ssl!
 
 (mod-load "fd")
 (import "socket.limo")
+(mod-load "ssl")
 
 (setq s ([_socket . make-socket] [_socket . AF_INET] [_socket . SOCK_STREAM] 0))
 
@@ -12,16 +13,21 @@
 (print (format "ip %r\n" ip))
 (print (format "ip in ip-format: %s\n" (ip-to-string ip)))
 
-(setq sa ([_socket . make-sockaddr] ip 80))
+(setq sa ([_socket . make-sockaddr] ip 443))
 
 ([_socket . connect] s sa)
 
+(setq ctx ([_ssl . ssl-ctx-new] ([_ssl . ssl-TLS-client-method])))
+(setq sslconn ([_ssl . ssl-new] ctx))
+([_ssl . ssl-set-fd] sslconn s)
+([_ssl . ssl-connect] sslconn)
+
 (print "connected\n")
 
-([_fd . fd-write] s "GET http://wttr.in/ HTTP/1.0\r
+([_ssl . ssl-write] sslconn "GET https://wttr.in/ HTTP/1.0\r
 User-Agent: Wget/1.20.3 (linux-gnu)\r\n\r\n")
 
-(setq c ([_fd . fd-read] s 1))
+(setq c ([_ssl . ssl-read] sslconn 1))
 (while (not (eq c ""))
   (print c)
-  (setf c ([_fd . fd-read] s 1)))
+  (setf c ([_ssl . ssl-read] sslconn 1)))

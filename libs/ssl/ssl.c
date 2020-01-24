@@ -123,6 +123,56 @@ BUILTIN(builtin_ssl_use_privatekey_file)
   return nil;
 }
 
+BUILTIN(builtin_ssl_read)
+{
+  limo_data *ld_sslconn, *ld_count, *ld_res;
+  SSL *ssl;
+  size_t count;
+  ssize_t res;
+  char *buf;
+
+  REQUIRE_ARGC("SSL-READ", 2);
+  ld_sslconn = eval(FIRST_ARG, env);
+  ld_count = eval(SECOND_ARG, env);
+  REQUIRE_TYPE("SSL-READ", ld_count, limo_TYPE_GMPQ);
+  ssl = get_special(ld_sslconn, sym_sslconn);
+  count = GETINTFROMMPQ(ld_count);
+  buf = GC_malloc_atomic(count+1);
+  res = SSL_read(ssl, buf, count);
+  if (res < 0)
+    throw(make_cons(sym_ssl, make_string("couldn't read from ssl-connection")));
+
+  buf[res] = '\0';
+  ld_res = make_limo_data();
+  ld_res->type = limo_TYPE_STRING;
+  ld_res->string_length = res;
+  ld_res->data.d_string = buf;
+
+  return ld_res;
+}
+
+BUILTIN(builtin_ssl_write)
+{
+  limo_data *ld_sslconn, *ld_buf;
+  SSL *ssl;
+  ssize_t res;
+
+  REQUIRE_ARGC("SSL-WRITE", 2);
+  ld_sslconn = eval(FIRST_ARG, env);
+  ld_buf = eval(SECOND_ARG, env);
+  ssl = get_special(ld_sslconn, sym_sslconn);
+  REQUIRE_TYPE("SSL-WRITE", ld_buf, limo_TYPE_STRING);
+
+  res = SSL_write(ssl,
+		  ld_buf->data.d_string,
+		  ld_buf->string_length);
+  
+  if (res < 0)
+    throw(make_cons(sym_ssl, make_string("could't write to ssl-connection")));
+  
+  return make_number_from_long_long(res);
+}
+
 void limo_init_ssl(limo_data *env)
 {
   limo_data *limo_ssl_env;
@@ -144,6 +194,8 @@ void limo_init_ssl(limo_data *env)
   INS_SSL_BUILTIN(builtin_ssl_set_fd, "SSL-SET-FD");
   INS_SSL_BUILTIN(builtin_ssl_connect, "SSL-CONNECT");
   INS_SSL_BUILTIN(builtin_ssl_accept, "SSL-ACCEPT");
+  INS_SSL_BUILTIN(builtin_ssl_read, "SSL-READ");
+  INS_SSL_BUILTIN(builtin_ssl_write, "SSL-WRITE");
   INS_SSL_BUILTIN(builtin_ssl_ctx_use_certificate_file, "SSL-CTX-USE-CERTIFICATE-FILE");
   INS_SSL_BUILTIN(builtin_ssl_use_privatekey_file, "SSL-USE-PRIVATEKEY-FILE");
 
