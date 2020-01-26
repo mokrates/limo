@@ -1,0 +1,44 @@
+(import "pmatch.limo")
+
+;; watch this: https://www.youtube.com/watch?v=OyfBQmvr2Hc
+;; and read this: https://www.lvguowei.me/post/the-most-beautiful-program-ever-written/
+
+;; simple list interpreter in 24 lines
+(defun evalo (expr env)
+  (pmatch expr
+	  (,n (guard (numberp n)) n)  ;; eval numbers to self
+	  ((add1 ,e)                  ;; add1
+	   (+ (evalo e env) 1))       
+	  ((sub1 ,e)                  ;; sub1
+	   (- (evalo e env) 1))       
+	  ((zero? ,e)                 ;; zero?
+	   (= 0 (evalo e env)))
+	  ((* ,e1 ,e2)                ;; * multiplication
+	   (* (evalo e1 env) (evalo e2 env)))
+	  ((if ,t ,c ,a)              ;; if
+	   (if (evalo t env)
+	       (evalo c env)
+	       (evalo a env)))
+	  (,x (guard (symbolp x)) (env x))   ;; variable resolution
+	  ((lambda (,x) ,body)             ;; lambda
+	   (lambda (arg)
+	     (evalo body (lambda (y)
+			       (if (eq x y)
+				   arg
+				   (env y))))))
+	  ((,rator ,rand)             ;; lambda application
+	   ((evalo rator env) (evalo rand env)))))
+
+(defun empty-evalo-env (x)
+  (throw (cons x "variable not found")))
+
+(defun test-evalo ()
+  (evalo '(((lambda (!)
+	      (lambda (n)
+		((! !) n)))
+	    (lambda (!)
+	      (lambda (n)
+		(if (zero? n)
+		    1
+		    (* n ((! !) (sub1 n))))))) 5)
+	 empty-evalo-env))
