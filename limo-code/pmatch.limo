@@ -15,6 +15,8 @@
 	 (if expr
 	     :no-match
 	     accu))
+	((not expr)   ;; (not pattern) already checked
+	 :no-match)
 	((eq (setq match (_pmatch-try (car expr) (car pattern))) :no-match)  ;; the not-case falls through!
 	 :no-match)
 	(:else
@@ -56,12 +58,13 @@
       (progn 
        (setq vars (make-dict))
        (block _conflict
-	 (for-each m possible-match
-	   (if (dict-has-key vars (cadr m))
-	       (unless (eq (dict-getvalue (cadr m)) (caddr m))
-		 (return-from _conflict :no-match))
-	       (dict-set vars (cadr m) (caddr m)))))
-       vars)))
+	 (progn
+	  (for-each m possible-match
+	    (if (dict-has-key vars (cadr m))
+		(unless (eq (dict-getvalue vars (cadr m)) (caddr m))
+		  (return-from _conflict :no-match))
+		(dict-set vars (cadr m) (caddr m))))
+	  vars)))))
 
 (defmacro pmatch (expr . body)
   `(cond ,@(dmap (lambda (clause)
@@ -87,3 +90,19 @@
 		      ,`(apply ,`(lambda ,vars ,`(progn ,@clause-body))
 			       ,`(map ,`(lambda ,`(v) ,`(dict-getvalue ,match v)) ,`',vars)))))
 		 body)))
+
+(defhelp pmatch
+  "MACRO pmatch
+Syntax:
+(pmatch <expr>
+        (<pattern> [<guard>] <result-body>)
+        ...
+)
+
+<pattern> takes the form of a list data structure containing variables
+marked by COMMA (,x). If a <pattern> matches structurally an optional
+<guard> [in the form of (guard (and (numberp x) (> x 0))) ] will be
+checked. If all matches up, the branch will be executed and the result
+returned. There is no fallthrough.  Scope: The result-body is
+internally wrapped in a lambda and thus gets it's own scope
+")
