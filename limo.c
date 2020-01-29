@@ -1,4 +1,5 @@
 #include "limo.h"
+#include <assert.h>
 #include <signal.h>
 #include <execinfo.h>
 #include <pthread.h>
@@ -89,6 +90,9 @@ int main(int argc, char **argv)
   // hopefully, the GC-thread gets spawned here
   // and inherits the NO SIGINT
   GC_init();
+  GC_allow_register_threads();
+
+  assert(GC_thread_is_registered());
   
   pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
   /////////////////////

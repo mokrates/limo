@@ -17,6 +17,8 @@
 	     accu))
 	((not expr)   ;; (not pattern) already checked
 	 :no-match)
+	((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
+	 (append accu (list (list :var (cadr pattern) expr))))
 	((eq (setq match (_pmatch-try (car expr) (car pattern))) :no-match)  ;; the not-case falls through!
 	 :no-match)
 	(:else
@@ -39,6 +41,8 @@
 (defun _pmatch-get-vars-list (pattern accu)
   (cond ((not pattern)
 	 accu)
+	((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
+	 (append accu (list (list :var (cadr pattern) ()))))
 	((consp (car pattern))
 	 (_pmatch-get-vars-list (cdr pattern) (append accu (_pmatch-get-vars (car pattern)))))
 	(:else
@@ -105,4 +109,10 @@ marked by COMMA (,x). If a <pattern> matches structurally an optional
 checked. If all matches up, the branch will be executed and the result
 returned. There is no fallthrough.  Scope: The result-body is
 internally wrapped in a lambda and thus gets it's own scope
+
+non-proper lists can be matched, but only with a variable
+for the tail. 
+Legal pattern: '(foo . ,tail)
+Illegal pattern: '(foo . bar)
+If you want to check the tail for some condition, use a guard.
 ")

@@ -577,17 +577,17 @@
   nd)
 (freezeq dict-copy)
 
+(setq block
+      (scope
+       (setq _block block)
+       (freezeq _block)
+       (macro (label . body)
+	 `(,_block ,label ,@body))))
+(freezeq block)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; objects and classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; this is an easily understandable implementation
-;; which for lack of more support from the limo-core
-;; is SLOW and memory-consuming
-;; because of all the copying
-;; I don't think I will fix this as the ease of
-;; understanding is what I like about my limo
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;; a class is an env.
 ;; (setq new-class (make-class parent-class))
 ;; (defmethod the-class init (args ...) body)
