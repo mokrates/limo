@@ -121,7 +121,7 @@ int limo_getc(reader_stream *rs)
       char *rl = readline(prompt);
       if (rl == NULL) { // EOF
 	rs->eof=1;
-	return -1;
+	return EOF;
       }
       else {
 	rs->stream.readline = (char *)GC_malloc(strlen(rl)+2);
@@ -218,11 +218,11 @@ limo_annotation *limo_rs_annotation(reader_stream *rs)
 
 //////////////////////////////////////////////////////////
 
-char read_skip_space_comments(reader_stream *f)
+int read_skip_space_comments(reader_stream *f)
 {
-  char c;
+  int c;
   c=limo_getc(f);
-  while ((isspace(c) || c==';' || c=='#') && !limo_eof(f)) {
+  while ((isspace(c) || c==';' || c=='#') && !(c==EOF) && !limo_eof(f)) {
     if (c == ';' || c=='#')
       while (c != '\n')
 	c=limo_getc(f);
@@ -329,7 +329,7 @@ limo_data *read_string(reader_stream *f)
   limo_data *ld = make_limo_data();
   int i;
   char *buf;
-  char c;
+  int c;
   int cur_bufsiz = BUFFER_SIZE;
 
   buf = (char *)GC_malloc(cur_bufsiz);
@@ -337,8 +337,11 @@ limo_data *read_string(reader_stream *f)
     c=limo_getc(f);
     if (c=='"')
       break;
+    if (c==EOF)
+      limo_error("EOF in middle of string");
     else if (c=='\\')
       switch (c=limo_getc(f)) {
+      case EOF: limo_error("EOF in middle of string");
       case 'n': c='\n'; break;
       case 't': c='\t'; break;
       case '"': c='"'; break;
