@@ -590,7 +590,7 @@
     (when lblock
       `(progn ,`(setq ,(caar lblock) ,(cadar lblock)) ,(letvars (cdr lblock)))))
   `(progn ,(letvars lblock) ,@body))
-    
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; objects and classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

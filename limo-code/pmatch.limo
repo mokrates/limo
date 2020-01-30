@@ -1,99 +1,103 @@
-(defun _pmatch-flatten (l)
-  (defun _pmatch-flatten-aux (l accu)
-    (cond ((not l) accu)
-	  ((eq l :no-match) :no-match)
-	  ((and (car l) (consp (car l)) (caar l) (eq :var (caar l)))  ;; variable found
-	   (_pmatch-flatten-aux (cdr l) (append accu (list (car l))))) 
-	  ((consp (car l))
-	   (_pmatch-flatten-aux (cdr l) (append accu (_pmatch-flatten (car l) ()))))  ;; sublist
-	  (:else
-	   (throw (cons '_pmatch-flatten-aux "list structure not ok")))))
-  (_pmatch-flatten-aux l ()))
+(setq pmatch
+      (scope
+       (defun _pmatch-flatten (l)
+	 (defun _pmatch-flatten-aux (l accu)
+	   (cond ((not l) accu)
+		 ((eq l :no-match) :no-match)
+		 ((and (car l) (consp (car l)) (caar l) (eq :var (caar l)))  ;; variable found
+		  (_pmatch-flatten-aux (cdr l) (append accu (list (car l))))) 
+		 ((consp (car l))
+		  (_pmatch-flatten-aux (cdr l) (append accu (_pmatch-flatten (car l) ()))))  ;; sublist
+		 (:else
+		  (throw (cons '_pmatch-flatten-aux "list structure not ok")))))
+	 (_pmatch-flatten-aux l ()))
+       
+       (defun _pmatch-try-list (expr pattern accu)
+	 (cond ((not pattern)
+		(if expr
+		    :no-match
+		    accu))
+	       ((not expr)   ;; (not pattern) already checked
+		:no-match)
+	       ((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
+		(append accu (list (list :var (cadr pattern) expr))))
+	       ((eq (setq match (_pmatch-try (car expr) (car pattern))) :no-match)  ;; the not-case falls through!
+		:no-match)
+	       (:else
+		(_pmatch-try-list (cdr expr) (cdr pattern) (append accu match)))))
 
-(defun _pmatch-try-list (expr pattern accu)
-  (cond ((not pattern)
-	 (if expr
+       (defun _pmatch-try (expr pattern)
+	 (cond ((not pattern)    ;; empty expr matches only to empty pattern
+		(if expr
+		    :no-match
+		    ()))
+	       ((and (consp pattern) (eq (car pattern) 'comma))   ;; ,x matches everything and ends
+		(list (list :var (cadr pattern) expr)))
+	       ((and (consp pattern) (consp expr) expr)
+		(_pmatch-try-list expr pattern ()))
+	       (:t
+		(if (eq expr pattern)
+		    ()
+		    :no-match))))
+
+       (defun _pmatch-get-vars-list (pattern accu)
+	 (cond ((not pattern)
+		accu)
+	       ((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
+		(append accu (list (list :var (cadr pattern) ()))))
+	       ((consp (car pattern))
+		(_pmatch-get-vars-list (cdr pattern) (append accu (_pmatch-get-vars (car pattern)))))
+	       (:else
+		(_pmatch-get-vars-list (cdr pattern) accu))))
+
+       (defun _pmatch-get-vars (pattern)
+	 (cond ((not pattern) ())
+	       ((and (consp pattern) (eq (car pattern) 'comma))   ;; ,x matches everything and ends
+		(list (list :var (cadr pattern) ())))
+	       ((consp pattern)
+		(_pmatch-get-vars-list pattern ()))
+	       (:else ())))
+
+       (defun _pmatch-var-values (possible-match)
+	 (if (eq possible-match :no-match)
 	     :no-match
-	     accu))
-	((not expr)   ;; (not pattern) already checked
-	 :no-match)
-	((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
-	 (append accu (list (list :var (cadr pattern) expr))))
-	((eq (setq match (_pmatch-try (car expr) (car pattern))) :no-match)  ;; the not-case falls through!
-	 :no-match)
-	(:else
-	 (_pmatch-try-list (cdr expr) (cdr pattern) (append accu match)))))
+	     (progn 
+	      (setq vars (make-dict))
+	      (block _conflict
+		(progn
+		 (for-each m possible-match
+		   (if (dict-has-key vars (cadr m))
+		       (unless (eq (dict-getvalue vars (cadr m)) (caddr m))
+			 (return-from _conflict :no-match))
+		       (dict-set vars (cadr m) (caddr m))))
+		 vars)))))
 
-(defun _pmatch-try (expr pattern)
-  (cond ((not pattern)    ;; empty expr matches only to empty pattern
-	 (if expr
-	     :no-match
-	     ()))
-	((and (consp pattern) (eq (car pattern) 'comma))   ;; ,x matches everything and ends
-	 (list (list :var (cadr pattern) expr)))
-	((and (consp pattern) (consp expr) expr)
-	 (_pmatch-try-list expr pattern ()))
-	(:t
-	 (if (eq expr pattern)
-	     ()
-	     :no-match))))
+       (defmacro pmatch (expr . body)
+	 `(cond ,@(dmap (lambda (clause)
+			  (progn
+			   (setq pattern (car clause))
+			   (if (and (consp (cadr clause)) (cadr clause) (eq (car (cadr clause)) 'guard))
+			       (progn
+				(setq guard (cadr clause))
+				(setf clause (cdr clause)))  ;; shorten by one, so code is at second position in pattern
+			       (setq guard '(guard :t)))
+			   (setq vars (map cadr (_pmatch-flatten (_pmatch-get-vars pattern))))
+			   (setq clause-body (cdr clause))
+			   (setq match (gensym))
+			   
+			   `(,`(and ,`(not ,`(eq
+					      ,`(setq ,match
+						      ,`(,_pmatch-var-values
+							 ,`(,_pmatch-flatten
+							    ,`(,_pmatch-try ,expr ,`',pattern))))
+					      :no-match))
+				    ,`(apply ,`(lambda ,vars ,`(progn ,@(cdr guard)))
+					     ,`(map ,`(lambda ,`(v) ,`(dict-getvalue ,match v)) ,`',vars)))
+			     ,`(apply ,`(lambda ,vars ,`(progn ,@clause-body))
+				      ,`(map ,`(lambda ,`(v) ,`(dict-getvalue ,match v)) ,`',vars)))))
+			body)))
 
-(defun _pmatch-get-vars-list (pattern accu)
-  (cond ((not pattern)
-	 accu)
-	((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
-	 (append accu (list (list :var (cadr pattern) ()))))
-	((consp (car pattern))
-	 (_pmatch-get-vars-list (cdr pattern) (append accu (_pmatch-get-vars (car pattern)))))
-	(:else
-	 (_pmatch-get-vars-list (cdr pattern) accu))))
-
-(defun _pmatch-get-vars (pattern)
-  (cond ((not pattern) ())
-	((and (consp pattern) (eq (car pattern) 'comma))   ;; ,x matches everything and ends
-	 (list (list :var (cadr pattern) ())))
-	((consp pattern)
-	 (_pmatch-get-vars-list pattern ()))
-	(:else ())))
-
-(defun _pmatch-var-values (possible-match)
-  (if (eq possible-match :no-match)
-      :no-match
-      (progn 
-       (setq vars (make-dict))
-       (block _conflict
-	 (progn
-	  (for-each m possible-match
-	    (if (dict-has-key vars (cadr m))
-		(unless (eq (dict-getvalue vars (cadr m)) (caddr m))
-		  (return-from _conflict :no-match))
-		(dict-set vars (cadr m) (caddr m))))
-	  vars)))))
-
-(defmacro pmatch (expr . body)
-  `(cond ,@(dmap (lambda (clause)
-		   (progn
-		    (setq pattern (car clause))
-		    (if (and (consp (cadr clause)) (cadr clause) (eq (car (cadr clause)) 'guard))
-			(progn
-			 (setq guard (cadr clause))
-			 (setf clause (cdr clause)))  ;; shorten by one, so code is at second position in pattern
-			(setq guard '(guard :t)))
-		    (setq vars (map cadr (_pmatch-flatten (_pmatch-get-vars pattern))))
-		    (setq clause-body (cdr clause))
-		    (setq match (gensym))
-		    
-		    `(,`(and ,`(not ,`(eq
-				       ,`(setq ,match
-					       ,`(_pmatch-var-values
-						  ,`(_pmatch-flatten
-						     ,`(_pmatch-try ,expr ,`',pattern))))
-				       :no-match))
-			     ,`(apply ,`(lambda ,vars ,`(progn ,@(cdr guard)))
-				      ,`(map ,`(lambda ,`(v) ,`(dict-getvalue ,match v)) ,`',vars)))
-		      ,`(apply ,`(lambda ,vars ,`(progn ,@clause-body))
-			       ,`(map ,`(lambda ,`(v) ,`(dict-getvalue ,match v)) ,`',vars)))))
-		 body)))
+       pmatch))
 
 (defhelp pmatch
   "MACRO pmatch
