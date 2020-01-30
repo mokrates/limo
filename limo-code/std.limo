@@ -588,12 +588,14 @@
 (defmacro letrec (lblock . body)
   (defun letvars (lblock)
     (when lblock
-      `(progn ,`(setq ,(caar lblock) ,(cadar lblock)) ,(letvars (cdr lblock)))))
-  `(progn ,(letvars lblock) ,@body))
+      (cons `(setq ,(caar lblock) ,(cadar lblock)) (letvars (cdr lblock)))))
+  `(progn ,@(letvars lblock) ,@body))
+(freezeq letrec)
 
 (defmacro let (lblock . body)
   `(,`(lambda ,(map (lambda (x) (car x)) lblock) ,`(progn ,@body))
     ,@(map (lambda (x) (cadr x)) lblock)))
+(freezeq let)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; objects and classes
