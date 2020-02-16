@@ -58,6 +58,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "ENV-SETQ", builtin_env_setq },
   { "ENV-SETF", builtin_env_setf },
   { "ENV-GETQ", builtin_env_getq },
+  { "ENV-CURRENT", builtin_env_current },
   { "SYSTEM", builtin_system},
   { "TIME", builtin_time}
 };

@@ -588,3 +588,8 @@ BUILTIN(builtin_env_getq)
   result = var_lookup(the_env, name, &marked_constant);
   return result;
 }
+
+BUILTIN(builtin_env_current)
+{
+  return env;
+}

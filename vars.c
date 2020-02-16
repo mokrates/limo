@@ -60,9 +60,6 @@ limo_data *var_lookup(limo_data *env, limo_data *name, int *constant)
 
   assert(name->type != limo_TYPE_CONST);
 
-  if (limo_equals(name, sym_env))
-    return env;
-
   place = var_lookup_place(env, name);
 
   if (place) {
