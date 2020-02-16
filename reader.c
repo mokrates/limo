@@ -375,12 +375,12 @@ limo_data *reader(reader_stream *f)
   limo_data *ld;
   limo_annotation *la;
 
-  prompt = "λimo > ";
+  prompt = "λimo >\001 \002";   // the lambda is a wide-char, so we ignore one char to get readline to count the prompt length correctly
 
   c=read_skip_space_comments(f);
   la = limo_rs_annotation(f);
 
-  prompt = "λimo>> ";
+  prompt = "λimo>>\001 \002";
 
   if (c == EOF)
     return make_nil();
