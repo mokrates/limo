@@ -93,6 +93,7 @@ extern limo_data *sym_block;
 extern limo_data *nil;
 
 extern limo_data *traceplace;
+extern int limo_rl_inited;
 
 #define CAR(x) ((x)->data.d_cons->car)
 #define CDR(x) ((x)->data.d_cons->cdr)
@@ -252,6 +253,7 @@ BUILTIN(builtin_envp);
 BUILTIN(builtin_sleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);
+BUILTIN(builtin_make_sym_uninterned);
 BUILTIN(builtin_get_annotation);
 BUILTIN(builtin_make_dict);
 BUILTIN(builtin_dict_get);

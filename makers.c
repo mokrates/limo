@@ -36,9 +36,7 @@ limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
   char *cp, *cpi;
   
   if (interned_symbols == NULL) {
-    interned_symbols = make_limo_data();
-    interned_symbols->type = limo_TYPE_ENV;
-    (interned_symbols->data.d_env) = make_nil();
+    interned_symbols = make_nil();
   }
 
   cp = (char *)GC_malloc_atomic(strlen(name) +1);
@@ -52,7 +50,7 @@ limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
     }
   }
   
-  for (is=interned_symbols->data.d_env; 
+  for (is=interned_symbols; 
        !is_nil(is) && strcmp(cp, CAR(is)->data.d_string); 
        is=CDR(is));
 
@@ -64,7 +62,7 @@ limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
     
     ++next_symbol_identity;
     
-    interned_symbols->data.d_env = make_cons(ld, interned_symbols->data.d_env);
+    interned_symbols = make_cons(ld, interned_symbols);
 
     return ld_dup(ld);
   }

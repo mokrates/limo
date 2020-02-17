@@ -149,13 +149,17 @@ char limo_eof(reader_stream *rs)
   }
 }
 
+int limo_rl_inited = 0;
 reader_stream *limo_rs_make_readline(void)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
   memset(rs, 0, sizeof *rs);
 
-  rl_completion_entry_function = rl_completer_generator;
-  rl_basic_word_break_characters = " \t\n\"\\'`@{([";
+  if (!limo_rl_inited) {
+    rl_completion_entry_function = rl_completer_generator;
+    rl_completer_word_break_characters = " \t\n\"\\'`@{([";
+    limo_rl_inited = 1;
+  }
   limo_history_read_history();
 
   rs->type = RS_READLINE;
@@ -375,12 +379,12 @@ limo_data *reader(reader_stream *f)
   limo_data *ld;
   limo_annotation *la;
 
-  prompt = "λimo >\001 \002";   // the lambda is a wide-char, so we ignore one char to get readline to count the prompt length correctly
+  prompt = "\xce\001\xbb\002imo > ";   // the lambda is a wide-char, so we ignore one char to get readline to count the prompt length correctly
 
   c=read_skip_space_comments(f);
   la = limo_rs_annotation(f);
 
-  prompt = "λimo>>\001 \002";
+  prompt = "\xce\001\xbb\002imo>> ";
 
   if (c == EOF)
     return make_nil();

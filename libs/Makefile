@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu fd socket ssl
+LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu fd socket ssl rlcompleter
 
 .PHONY: all clean realclean $(LIBS)
 

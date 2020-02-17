@@ -463,7 +463,19 @@ BUILTIN(builtin_make_sym)
   if (str1->type != limo_TYPE_STRING)
     limo_error("(make-sym STR1)");
 
-  return make_sym_uninterned(str1->data.d_string);
+  return make_sym(str1->data.d_string);
+}
+
+BUILTIN(builtin_make_sym_uninterned)
+{
+  if (list_length(arglist) != 2)
+    limo_error("(make-sym STR)");
+
+  limo_data *str1 = eval(FIRST_ARG, env);
+  if (str1->type != limo_TYPE_STRING)
+    limo_error("(make-sym STR1)");
+
+  return make_sym_uninterned(str1->data.d_string);  
 }
 
 BUILTIN(builtin_get_annotation)

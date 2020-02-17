@@ -165,18 +165,17 @@
 (defun map1 (f a)
   (defun helper (f a)
     (when a
-	  (cons (f (car a)) (helper f (cdr a)))))
-  (freezeq helper)
-  (helper f a))
+	  (dcons (f (car a)) (helper f (cdr a)))))
+   (undyn (helper f a)))
 (freezeq map1)
 
 (define (map f . a)
   (define (helper f a)
     (if (and (car a) (consp (car a)))
-	(cons (apply f (map1 (lambda (x) (car x)) a))
-	      (helper f (map1 (lambda (x) (cdr x)) a)))
+	(dcons (apply f (map1 (lambda (x) (car x)) a))
+	       (helper f (map1 (lambda (x) (cdr x)) a)))
 	()))
-  (helper f a))
+  (undyn (helper f a)))
 (freezeq map)
 
 (defun map-list (f a)
@@ -441,7 +440,7 @@
 (freezeq qsort)
 
 (defun make-symbol (s)
-  (make-sym (string-concat "#:" s)))
+  (make-sym-uninterned (string-concat "#:" s)))
 (freezeq make-symbol)
 
 (setq _ngensym 0)
