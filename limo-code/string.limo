@@ -47,3 +47,26 @@
 
 (defun string-split (s d)
   (map list-to-string (list-split (string-to-list s) d)))
+
+(defclass string@ ()      ; string-class
+  (defmethod init (self s)
+    (setmember [self . _s] s))
+  (defmethod @ (self)     ; unbox
+    [self . _s])
+  (defmethod tostring (self)
+    [self . _s])
+
+  ;; strips
+  (defmethod strip (self)
+    (string-strip [self . _s]))
+  (defmethod lstrip (self)
+    (string-lstrip [self . _s]))
+  (defmethod rstrip (self)
+    (string-rstrip [self . _s]))
+
+  (defmethod slice (self l u)
+    (string-slice [self . _s] l u))
+  (defmethod split (self d)
+    (string-split [self . _s] d))
+  (defmethod format (self . rest)
+    (apply format (cons [self . _s] rest))))
