@@ -5,7 +5,7 @@ BUILTIN(builtin_sdl_surface_rgbpcolor)
 {
   limo_data *ld_surface, *ld_r, *ld_g, *ld_b;
   SDL_Surface *surface;
-  REQUIRE_ARGC("SDL-SURFACE-RGBCOLOR", 3);
+  REQUIRE_ARGC("SDL-SURFACE-RGBCOLOR", 4);
   unsigned int r,g,b, return_color;
 
   ld_surface = eval(FIRST_ARG, env);
@@ -25,7 +25,7 @@ BUILTIN(builtin_sdl_surface_rgbapcolor)
 {
   limo_data *ld_surface, *ld_r, *ld_g, *ld_b, *ld_a;
   SDL_Surface *surface;
-  REQUIRE_ARGC("SDL-SURFACE-RGBACOLOR", 4);
+  REQUIRE_ARGC("SDL-SURFACE-RGBACOLOR", 5);
   unsigned int r,g,b,a, return_color;
 
   ld_surface = eval(FIRST_ARG, env);
