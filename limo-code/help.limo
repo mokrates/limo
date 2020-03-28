@@ -130,3 +130,15 @@ Caution: BLOCK creates a subscope
   "BUILTIN return-from
 see BLOCK
 ")
+
+(defhelp assoc
+  "FUNCTION assoc
+Accessor function for association lists. Examples:
+
+λimo > (assoc :foo '((\"key\" . \"value\") (:foo . :bar)))
+-> (:FOO . :BAR)
+λimo > (assoc \"key\" '((\"key\" . \"value\") (:foo . :bar)))
+-> (\"key\" . \"value\")
+λimo > (assoc 'bla '((\"key\" . \"value\") (:foo . :bar)))
+-> ()
+")
