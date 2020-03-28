@@ -1,5 +1,5 @@
 LIBNAME=sdl
-OBJ = $(LIBNAME).o surface.o surfacecolor.o plot.o line.o text.o
+OBJ = $(LIBNAME).o surface.o surfacecolor.o plot.o line.o text.o clearsurface.o
 CFLAGS += -Wall -g -I../.. -fPIC `sdl-config --cflags`
 CC=gcc
 

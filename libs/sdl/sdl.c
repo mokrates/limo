@@ -129,6 +129,7 @@ void limo_init_sdl(limo_data *env)
   INS_SDL_BUILTIN(builtin_sdl_makecolor, "SDL-MAKECOLOR"); // not really a sdl-function
   INS_SDL_BUILTIN(builtin_sdl_plot, "SDL-PLOT"); // not really a sdl-function
   INS_SDL_BUILTIN(builtin_sdl_line, "SDL-LINE"); // not really a sdl-function
+  INS_SDL_BUILTIN(builtin_sdl_clearsurface, "CLEARSURFACE"); // not really a sdl-function
 
   INS_SDL_BUILTIN(builtin_sdl_ttf_init, "SDL-TTF-INIT");
   INS_SDL_BUILTIN(builtin_sdl_ttf_quit, "SDL-TTF-QUIT");

@@ -19,6 +19,7 @@ BUILTIN(builtin_sdl_surface_rgbapcolor);
 BUILTIN(builtin_sdl_makecolor);
 BUILTIN(builtin_sdl_plot);
 BUILTIN(builtin_sdl_line);
+BUILTIN(builtin_sdl_clearsurface);
 
 BUILTIN(builtin_sdl_ttf_init);
 BUILTIN(builtin_sdl_ttf_quit);
