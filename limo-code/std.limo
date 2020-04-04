@@ -330,7 +330,8 @@
   (or (> x y) (= x y)))
 (freezeq >=)
 
-(setq != (comp not eq)) (freezeq !=)
+(defun != (x y) (not (eq x y)))
+(freezeq !=)
 
 (defun floor (n)
     (idiv (mpq_numerator n) (mpq_denominator n)))

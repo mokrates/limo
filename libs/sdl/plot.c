@@ -56,7 +56,7 @@ BUILTIN(builtin_sdl_plot)
 
   REQUIRE_ARGC("SDL-PLOT", 3);
   ld_surface = eval(FIRST_ARG, env);
-  ld_point = eval(FIRST_ARG, env);
+  ld_point = eval(SECOND_ARG, env);
   ld_color = eval(THIRD_ARG, env);
 
   x = GETINTFROMMPQ(CAR(ld_point));

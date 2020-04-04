@@ -23,7 +23,9 @@
   (defmethod nodelay (self bf)
     ([_ncurses . nodelay] [self . _scr] bf))
   (defmethod halfdelay (self tenths)
-    ([_ncurses . halfdelay] tenths)))
+    ([_ncurses . halfdelay] tenths))
+  (defmethod getmaxyx (self)
+    ([_ncurses . getmaxyx] [self . _scr])))
 
 (defun ncurses-init ()
   ([_ncurses . initscr])

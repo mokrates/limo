@@ -60,3 +60,25 @@ Fills the <surface> with color <pcolor>.
 Mind that this function returns a different color-type than
 sdl-surface-rgbpcolor.
 ")
+
+(defhelp [_sdl . sdl-ttf-init] "
+  FUNCTION [_sdl . sdl-ttf-init]
+([_sdl . sdl-ttf-init])
+Initialize the sdl-ttf subsystem
+")
+
+(defhelp [_sdl . sdl-ttf-openfont] "
+  FUNCTION [_sdl . sdl-ttf-openfont]
+([_sdl . sdl-ttf-openfont] <fontfile.ttf> <ptsize>) -> <font>
+")
+
+(defhelp [_sdl . sdl-ttf-sizetext] "
+  FUNCTION [_sdl . sdl-ttf-sizetext]
+([_sdl . sdl-ttf-sizetext <font> <string>) -> (<width> <height>)
+")
+
+(defhelp [_sdl . sdl-ttf-rendertext-blended] "
+  FUNCTION [_sdl . sdl-ttf-rendertext-blended]
+([_sdl . sdl-ttf-rendertext-blended] <font> <string> <color>) -> <surface>
+The color can be obtained with [_sdl . sdl-makecolor]
+")

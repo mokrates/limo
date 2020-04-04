@@ -28,6 +28,8 @@ BUILTIN(builtin_sdl_ttf_openfont)
   TTF_Font *ttf_fnt;
 
   REQUIRE_ARGC("SDL-TTF-OPENFONT", 2);
+  ld_file = eval(FIRST_ARG, env);
+  ld_ptsize=eval(SECOND_ARG, env);
   filename = ld_file->data.d_string;
   ptsize = GETINTFROMMPQ(ld_ptsize);
   if (!(ttf_fnt = TTF_OpenFont(filename, ptsize)))
@@ -43,6 +45,8 @@ BUILTIN(builtin_sdl_ttf_sizetext)
   int x, y;
   
   REQUIRE_ARGC("SDL-TTF-SIZETEXT", 2);
+  ld_font = eval(FIRST_ARG, env);
+  ld_text = eval(SECOND_ARG, env);
   text = ld_text->data.d_string;
   font = get_special(ld_font, sym_sdl_font);
   if (TTF_SizeText(font, text, &x, &y))

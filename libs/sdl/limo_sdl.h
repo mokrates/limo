@@ -12,6 +12,7 @@ extern limo_data *sym_sdl_error;
 extern limo_data *sym_sdl_surface;
 extern limo_data *sym_sdl_color;
 extern limo_data *sym_sdl_font;
+extern limo_data *sym_sdl_event;
 
 BUILTIN(builtin_sdl_setvideomode);
 BUILTIN(builtin_sdl_surface_rgbpcolor);
@@ -27,3 +28,5 @@ BUILTIN(builtin_sdl_ttf_wasinit);
 BUILTIN(builtin_sdl_ttf_openfont);
 BUILTIN(builtin_sdl_ttf_sizetext);
 BUILTIN(builtin_sdl_ttf_rendertext_blended);
+
+BUILTIN(builtin_sdl_blitsurface);

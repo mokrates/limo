@@ -115,6 +115,23 @@ void limo_init_sdl(limo_data *env)
   setq(limo_sdl_env, make_sym("SDL_OPENGLBLIT"), limo_SDL_OPENGLBLIT);
   setq(limo_sdl_env, make_sym("SDL_RESIZABLE"), limo_SDL_RESIZABLE);
 
+  setq(limo_sdl_env, make_sym("SDL_ACTIVEEVENT"), make_number_from_long_long(SDL_ACTIVEEVENT));
+  setq(limo_sdl_env, make_sym("SDL_KEYDOWN"), make_number_from_long_long(SDL_KEYDOWN));
+  setq(limo_sdl_env, make_sym("SDL_KEYUP"), make_number_from_long_long(SDL_KEYUP));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEMOTION"), make_number_from_long_long(SDL_MOUSEMOTION));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONDOWN"), make_number_from_long_long(SDL_MOUSEBUTTONDOWN));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONUP"), make_number_from_long_long(SDL_MOUSEBUTTONUP));
+  setq(limo_sdl_env, make_sym("SDL_JOYAXISMOTION"), make_number_from_long_long(SDL_JOYAXISMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYBALLMOTION"), make_number_from_long_long(SDL_JOYBALLMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYHATMOTION"), make_number_from_long_long(SDL_JOYHATMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONDOWN"), make_number_from_long_long(SDL_JOYBUTTONDOWN));
+  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONUP"), make_number_from_long_long(SDL_JOYBUTTONUP));
+  setq(limo_sdl_env, make_sym("SDL_QUIT"), make_number_from_long_long(SDL_QUIT));
+  setq(limo_sdl_env, make_sym("SDL_SYSWMEVENT"), make_number_from_long_long(SDL_SYSWMEVENT));
+  setq(limo_sdl_env, make_sym("SDL_VIDEORESIZE"), make_number_from_long_long(SDL_VIDEORESIZE));
+  setq(limo_sdl_env, make_sym("SDL_VIDEOEXPOSE"), make_number_from_long_long(SDL_VIDEOEXPOSE));
+  setq(limo_sdl_env, make_sym("SDL_USEREVENT"), make_number_from_long_long(SDL_USEREVENT));
+
   INS_SDL_BUILTIN(builtin_sdl_init, "SDL-INIT");
   INS_SDL_BUILTIN(builtin_sdl_initsubsystem, "SDL-INITSUBSYSTEM");
   INS_SDL_BUILTIN(builtin_sdl_quit, "SDL-QUIT");
@@ -138,6 +155,10 @@ void limo_init_sdl(limo_data *env)
   INS_SDL_BUILTIN(builtin_sdl_ttf_sizetext, "SDL-TTF-SIZETEXT");
   INS_SDL_BUILTIN(builtin_sdl_ttf_rendertext_blended, "SDL-TTF-RENDERTEXT-BLENDED");
 
-  
+  INS_SDL_BUILTIN(builtin_sdl_blitsurface, "SDL-BLITSURFACE");
+
+  //  INS_SDL_BUILTIN(builtin_sdl_pollevent, "SDL-POLL-EVENT");
+  // INS_SDL_BUILTIN(builtin_sdl_event_type, "EVENT");
+
   setq(env, make_sym("_SDL"), limo_sdl_env);
 }
