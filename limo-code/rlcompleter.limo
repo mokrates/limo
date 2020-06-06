@@ -19,7 +19,7 @@
   (defun string-startswith (pre str)
     (eq (string-slice str 0 (string-length pre)) pre))
     
-  (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text (dict-getvalue regex-const 'reg_extended) 0)))
+  (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text 1 (dict-getvalue regex-const 'reg_extended) 0)))
   (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))
   (map (curry string-concat prefix)
        (filter (curry string-startswith (upcase-str lword))
@@ -61,10 +61,10 @@
   
   (setq res nil)
   
-  (setq br-match-obj (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)$" text (dict-getvalue regex-const 'reg_extended) 0))
-  (setq br-dot (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)\\s+\\.$" text (dict-getvalue regex-const 'reg_extended) 0))
+  (setq br-match-obj (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)$" text 2 (dict-getvalue regex-const 'reg_extended) 0))
+  (setq br-dot (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)\\s+\\.$" text 2 (dict-getvalue regex-const 'reg_extended) 0))
   (setq br-match (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)\\s+(\\.\\s)?\\s*([[:alnum:]$*-_/+~%&]*)$"
-			      text (dict-getvalue regex-const 'reg_extended) 0))
+			      text 4 (dict-getvalue regex-const 'reg_extended) 0))
 
   (cond (br-match-obj      ;; complete [incompl...
 	 (setq lword (cadr br-match-obj))
@@ -93,7 +93,7 @@
 			     (allsyms theenv))))))
     
 	(:t       ;; complete the rest
-	 (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text (dict-getvalue regex-const 'reg_extended) 0)))
+	 (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text 1 (dict-getvalue regex-const 'reg_extended) 0)))
 	 (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))
 	 (map (curry string-concat prefix)
 	      (filter (curry string-startswith (upcase-str lword))

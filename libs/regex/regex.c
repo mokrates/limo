@@ -40,46 +40,56 @@ BUILTIN(builtin_regex_match)
 {
   limo_data *ldpattern;
   limo_data *ldstring;
+  limo_data *ldngroups;
   limo_data *ldcflags;
   limo_data *ldeflags;
   limo_data *result;
+  int ngroups=0;
   int cflags=0;
   int eflags=0;
   regex_t preg;
-  regmatch_t pmatch[10];
+  regmatch_t *pmatch;
   int ret;
   
-  REQUIRE_ARGC("REGEX-MATCH", 4);
+  REQUIRE_ARGC("REGEX-MATCH", 5);
   ldpattern = eval(FIRST_ARG, env);
   ldstring  = eval(SECOND_ARG, env);
-  ldcflags = eval(THIRD_ARG, env);
-  ldeflags = eval(FOURTH_ARG, env);
+  ldngroups = eval(THIRD_ARG, env);
+  ldcflags = eval(FOURTH_ARG, env);
+  ldeflags = eval(FIFTH_ARG, env);
   
   if (ldcflags->type != limo_TYPE_GMPQ ||
       ldeflags->type != limo_TYPE_GMPQ ||
       ldpattern->type != limo_TYPE_STRING ||
       ldstring->type != limo_TYPE_STRING)
-      limo_error("(REGEX-MATCH pattern string cflags eflags)");
+      limo_error("(REGEX-MATCH pattern string ngroups cflags eflags)");
 
   cflags = GETINTFROMMPQ(ldcflags);
   eflags = GETINTFROMMPQ(ldeflags);
+  ngroups= GETINTFROMMPQ(ldngroups);
+  pmatch = GC_malloc(ngroups * sizeof (regmatch_t));
 
   if (ret = regcomp(&preg, ldpattern->data.d_string, cflags))
     regex_error(ret, &preg);
-  if (ret = regexec(&preg, ldstring->data.d_string, 10, pmatch, eflags))
+  if (ret = regexec(&preg, ldstring->data.d_string, ngroups, pmatch, eflags))
     result = nil;
   else {
     int i;
     limo_data **cursor;
     cursor = &result;
-    for (i=0; i<10 && pmatch[i].rm_so != -1; ++i) {
-      int matchlen = pmatch[i].rm_eo - pmatch[i].rm_so;
-      limo_data *match = make_limo_data();
-      match->type = limo_TYPE_STRING;
-      match->data.d_string = (char *)GC_malloc(matchlen + 1);
-      memcpy(match->data.d_string, ldstring->data.d_string + pmatch[i].rm_so, matchlen);
-      match->data.d_string[matchlen] = '\0';
-      match->hash = matchlen;
+    for (i=0; i<ngroups; ++i) {
+      limo_data *match;
+      if (pmatch[i].rm_so == -1) {
+        match = nil;
+      } else {
+        int matchlen = pmatch[i].rm_eo - pmatch[i].rm_so;
+        match = make_limo_data();
+        match->type = limo_TYPE_STRING;
+        match->data.d_string = (char *)GC_malloc(matchlen + 1);
+        memcpy(match->data.d_string, ldstring->data.d_string + pmatch[i].rm_so, matchlen);
+        match->data.d_string[matchlen] = '\0';
+        match->hash = matchlen;
+      }
       (*cursor) = make_cons(match, NULL);
       cursor = &CDR(*cursor);
     }
