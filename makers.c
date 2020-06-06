@@ -4,23 +4,54 @@
 #include <ctype.h>
 #include <assert.h>
 
+/* limo_data *make_limo_data(void) */
+/* { */
+/*   limo_data *ld = (limo_data *)GC_malloc(sizeof (limo_data)); */
+/*   return ld; */
+/* } */
+
 limo_data *make_limo_data(void)
 {
-  limo_data *ld = (limo_data *)GC_malloc(sizeof (limo_data));
-  return memset(ld, 0, sizeof (limo_data));
+  static void *make_limo_data_next  = NULL;
+  limo_data *result;
+  
+  if (make_limo_data_next == NULL)
+    make_limo_data_next = GC_malloc_many(sizeof (limo_data));
+
+  result = (limo_data *)make_limo_data_next;
+  make_limo_data_next = GC_NEXT(make_limo_data_next);
+  return result;
 }
 
 limo_data *make_nil(void)
 {
-  limo_data *ld = make_limo_data();
+  limo_data *ld = memset(make_limo_data(), 0, sizeof (limo_data));
   ld->type = limo_TYPE_CONS;
   return ld;
 }
 
+/* limo_data *make_cons(limo_data *car, limo_data *cdr) */
+/* { */
+/*   limo_data *ld = make_nil(); */
+/*   ld->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons)); */
+/*   ld->data.d_cons->car = car; */
+/*   ld->data.d_cons->cdr = cdr; */
+/*   return ld; */
+/* } */
+
 limo_data *make_cons(limo_data *car, limo_data *cdr)
 {
   limo_data *ld = make_nil();
-  ld->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
+  static void *make_cons_next  = NULL;
+  limo_data *cons;
+  
+  if (make_cons_next == NULL)
+    make_cons_next = GC_malloc_many(sizeof (limo_cons));
+
+  cons = (limo_data *)make_cons_next;
+  make_cons_next = GC_NEXT(make_cons_next);
+
+  ld->data.d_cons = cons;
   ld->data.d_cons->car = car;
   ld->data.d_cons->cdr = cdr;
   return ld;
