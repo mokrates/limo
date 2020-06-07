@@ -20,12 +20,19 @@ limo_data *traceplace;
 pthread_key_t pk_stacktrace_key;
 pthread_key_t pk_exception_key;
 pthread_key_t pk_ljbuf_key;
+pthread_key_t pk_limo_data_next_key;
+pthread_key_t pk_cons_next_key;
+
+void *make_limo_data_next = NULL;
+void *make_cons_next = NULL;
 
 static void init_pthread_keys(void)
 {
   pthread_key_create(&pk_ljbuf_key, NULL);
   pthread_key_create(&pk_stacktrace_key, NULL);
   pthread_key_create(&pk_exception_key, NULL);
+  pthread_key_create(&pk_limo_data_next_key, NULL);
+  pthread_key_create(&pk_cons_next_key, NULL);
 }
 
 static void init_syms()
@@ -97,10 +104,14 @@ int main(int argc, char **argv)
   pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
   /////////////////////
 
-  init_syms();
   init_pthread_keys();
+  pk_limo_data_next_set(&make_limo_data_next);
+  pk_cons_next_set(&make_cons_next);
+  
+  init_syms();
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
+  
 
   env = make_globalenv(argc, argv);
   globalenv = env;

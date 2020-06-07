@@ -165,6 +165,8 @@ void print_stacktrace(limo_data *s); // prints stacktrace s
 extern pthread_key_t pk_stacktrace_key;
 extern pthread_key_t pk_exception_key;
 extern pthread_key_t pk_ljbuf_key;
+extern pthread_key_t pk_limo_data_next_key;
+extern pthread_key_t pk_cons_next_key;
 
 #define pk_ljbuf_set(VAL)      (pthread_setspecific(pk_ljbuf_key, (void *)(VAL)))
 #define pk_ljbuf_get()         ((sigjmp_buf *)pthread_getspecific(pk_ljbuf_key))
@@ -172,6 +174,10 @@ extern pthread_key_t pk_ljbuf_key;
 #define pk_stacktrace_get()    ((limo_data *)pthread_getspecific(pk_stacktrace_key))
 #define pk_exception_set(VAL)  (pthread_setspecific(pk_exception_key, (void *)(VAL)))
 #define pk_exception_get()     ((limo_data *)pthread_getspecific(pk_exception_key))
+#define pk_limo_data_next_set(VAL)  (pthread_setspecific(pk_limo_data_next_key, (void *)(VAL)))
+#define pk_limo_data_next_get()     ((void **)pthread_getspecific(pk_limo_data_next_key))
+#define pk_cons_next_set(VAL)  (pthread_setspecific(pk_cons_next_key, (void *)(VAL)))
+#define pk_cons_next_get()     ((void **)pthread_getspecific(pk_cons_next_key))
 
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)
