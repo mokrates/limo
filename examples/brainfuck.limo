@@ -1,0 +1,53 @@
+(mod-load "vector")
+
+(setq NCELLS 10000)        ; Anzahl Zellen
+(setq cptr (floor (/ NCELLS 2)))       ; Zellenpointer
+(setq cells (make-vector NCELLS))       ; Zellen-Array (RAM)
+(for-each i (drange 0 (vector-len cells) 1)
+  (vector-set cells i 0))
+
+(setq iptr 0)                   ; Instructionpointer
+(setq loopstack ())             ; Stack, um Schleifenpositionen zu finden.
+      
+(setq progfile (file-open (car argv) "r"))
+(defun fread (file)
+  (setq x (file-getc file))
+  (if (!= x "")
+      (dcons x (fread file))
+      ()))
+(setq program-string (list-to-string (fread progfile)))
+(setq program (make-vector (string-length program-string)))
+(for-each i (drange 0 (string-length program-string) 1)
+  (vector-set program i (string-nth i program-string)))
+
+(for-each i (drange 0 (vector-len program) 1)
+  (cond ((= (vector-ref program i) "[")
+	 (setf loopstack (cons i loopstack)))
+	((= (vector-ref program i) "]")
+	 (setq loopstart (car loopstack))
+	 (setf loopstack (cdr loopstack))
+	 (vector-set program loopstart (cons "[" i))
+	 (vector-set program i (cons "]" loopstart)))))
+
+(while (< iptr (vector-len program))
+  (setq op (vector-ref program iptr))
+  (cond ((= op ">")
+	 (setf cptr (+ 1 cptr)))
+	((= op "<")
+	 (setf cptr (- cptr 1)))
+	((= op "+")
+	 (vector-set cells cptr (+ 1 (vector-ref cells cptr))))
+	((= op "-")
+	 (vector-set cells cptr (- (vector-ref cells cptr) 1)))
+	((= op ".")
+	 (file-write stdout (chr (vector-ref cells cptr)))
+	 (file-flush stdout))
+	((= op ",")
+	 (vector-set cells cptr (file-getc stdin)))
+	((consp op)
+	 (if (and (= "[" (car op)) (= (vector-ref cells cptr) 0))
+	     (setf iptr (cdr op))
+	     (when (and (= "]" (car op)) (!= (vector-ref cells cptr) 0))
+	       (setf iptr (cdr op))))))
+  (setf iptr (+ iptr 1)))
+
