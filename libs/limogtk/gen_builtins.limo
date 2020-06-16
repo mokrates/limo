@@ -1,0 +1,155 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; shouldn't this be standard?
+;; but perhaps importable... idk
+
+(defun char-upcase (c)
+  (setq o (ord c))
+  (if (and (>= o (ord "a")) (<= o (ord "z")))
+      (chr (+ o (- (ord "A") (ord "a"))))
+      c))
+
+(defun string-upcase (s)
+  (list-to-string (map char-upcase (string-to-list s))))
+
+(defun string-join (s l)
+  (list-to-string (cdr (apply append (map (lambda (x) (list s x)) l)))))
+
+(defun uscore-to-minus (c)
+  (if (= c "_")
+      "-"
+      c))
+
+(defun uscore-to-minus-string (s)
+  (list-to-string (map uscore-to-minus (string-to-list s))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass gtktype ()
+  (defmethod init (self typename)
+    (setmember [self . _typename] typename))
+  (defmethod typename (self)
+    [self . _typename])
+  (defmethod l2c-assign (self vname fname)
+    (format "%s = (%s)get_special(ld_%s, sym_limogtk_gpointer);\n" vname [self . _typename] vname))
+  (defmethod c2l-to-result (self sfuncall)
+    (format "result = make_special(sym_limogtk_gpointer, %s);\n" sfuncall)))
+
+(defclass gtkvoidtype gtktype   ;; only for c2l-to-result... makes no sense as argument!
+  (defmethod c2l-to-result (self sfuncall)
+    (format "%s;
+result = nil;" sfuncall)))
+
+(defclass gtknewtype gtktype
+  (defmethod c2l-to-result (self sfuncall)
+    (format "result = make_special(sym_limogtk_gpointer, %s);\n
+GC_register_finalizer(result, (GC_finalization_proc)limogtk_finalizer_g_object_unref, CDR(result->data.d_special) -> data.d_special_intern, NULL, NULL);" sfuncall)))
+
+(defclass gtkenumtype gtktype
+  (defmethod l2c-assign (self vname limofname)
+    (format "REQUIRE_TYPE(\"%s\", ld_%s, limo_TYPE_GMPQ);\n%s = (%s)GETINTFROMMPQ(ld_%s);\n"
+            limofname vname vname [self . _typename] vname))
+  (defmethod c2l-to-result (self sfuncall)
+    (format "result = make_number_from_long_long(%s);\n" sfuncall)))
+
+(defclass gtkstringtype gtktype
+  (defmethod l2c-assign (self vname limofname)
+    (format "REQUIRE_TYPE(\"%s\", ld_%s, limo_TYPE_STRING);\n%s = ld_%s->data.d_string;\n"
+            limofname vname vname vname))
+  (defmethod c2l-to-result (self sfuncall)
+    (format "result = make_string(%s);\n" sfuncall)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun create-limo-data-vars (arguments)
+  (string-concat "limo_data *result"
+                  (list-to-string (map (lambda (x) (format ", *ld_%s" (cadr x))) arguments))
+                 ";"))
+
+(defun create-c-vars (arguments)
+  (list-to-string (map (lambda (x) (format "%s %s;\n" [(car x) typename] (cadr x))) arguments)))
+
+(defun get-arguments (arguments)
+  (list-to-string
+   (map (lambda (x) (format "ld_%s = eval(%s, env);\n" (cadar x) (cadr x)))
+        (zip arguments
+             '("FIRST_ARG" "SECOND_ARG" "THIRD_ARG" "FOURTH_ARG" "FIFTH_ARG")))))
+
+(defun create-limo-fun (return-type fname . arguments)
+  (setq argumentlist (string-join ", " (map cadr arguments)))
+  (setq limofname (uscore-to-minus-string (string-upcase fname)))
+  (list
+   (format "INS_LIMOGTK_BUILTIN(builtin_%s,\"%s\");\n" fname limofname)
+   (format "BUILTIN(builtin_%s)
+{
+  %s
+  %s
+  REQUIRE_ARGC(\"%s\", %n);
+  %s
+  %s
+  %s
+  return result;
+}
+
+"
+           fname
+           (create-limo-data-vars arguments)
+           (create-c-vars arguments)
+           limofname (list-length arguments)
+           (get-arguments arguments)
+           (list-to-string (map (lambda (x) (format "%s" [(car x) l2c-assign (cadr x) limofname])) arguments))
+           [return-type c2l-to-result (format "%s(%s)" fname argumentlist)])))
+
+
+(defun output-file (list-of-functions)
+  (setq results (map (lambda (x) (apply create-limo-fun x)) list-of-functions))
+  (setq functions (string-join "\n" (map cadr results)))
+  (setq inserts (list-to-string (map (lambda (x) (car x)) results)))
+
+  (setq fun-file  (file-open "gtk-functions.h" "w"))
+  (print fun-file (format "%s" functions))
+  (print (format "%s" functions))
+  (file-close fun-file)
+
+  (setq insert-file (file-open "gtk-inserts.h" "w"))
+  (print insert-file (format "%s" inserts))
+  (print (format "%s" inserts))
+  (file-close insert-file))
+
+;;;;;;;;;;;; types
+
+(setq GApplication* (new gtktype "GApplication *"))
+(setq GApplicationFlags (new gtkenumtype "GApplicationFlags"))
+(setq constgchar* (new gtkstringtype " const gchar *"))
+(setq gboolean (new gtkenumtype "gboolean"))
+(setq newGApplication* (new gtknewtype "GApplication *"))
+(setq void (new gtkvoidtype "void"))
+(setq guint (new gtkenumtype "guint"))
+(setq GDBusConnection* (new gtktype "GDBusConnection *"))
+(setq GActionGroup* (new gtktype "GActionGroup *"))
+(setq GNotification* (new gtktype "GNotification *"))
+
+;;;;;;;;;;;; list of functions
+
+(output-file `(,`(,gboolean "g_application_id_is_valid" ,`(,constgchar* "application_id"))
+               ,`(,newGApplication* "g_application_new" ,`(,constgchar* "application_id") ,`(,GApplicationFlags "flags"))
+               ,`(,constgchar* "g_application_get_application_id" ,`(,GApplication* "application"))
+               ,`(,void "g_application_set_application_id" ,`(,GApplication* "application") ,`(,constgchar* "application_id"))
+               ,`(,guint "g_application_get_inactivity_timeout" ,`(,GApplication* "application"))
+               ,`(,void "g_application_set_inactivity_timeout" ,`(,GApplication* "application") ,`(,guint "inactivity_timeout"))
+               ,`(,GApplicationFlags "g_application_get_flags" ,`(,GApplication* "application"))
+               ,`(,void "g_application_set_flags" ,`(,GApplication* "application") ,`(,GApplicationFlags "flags"))
+               ,`(,constgchar* "g_application_get_resource_base_path" ,`(,GApplication* "application"))
+               ,`(,void "g_application_set_resource_base_path" ,`(,GApplication* "application") ,`(,constgchar* "resource_path"))
+               ,`(,GDBusConnection* "g_application_get_dbus_connection" ,`(,GApplication* "application"))
+               ,`(,constgchar* "g_application_get_dbus_object_path" ,`(,GApplication* "application"))
+               ,`(,void "g_application_set_action_group" ,`(,GApplication* "application") ,`(,GActionGroup* "action_group"))
+               ,`(,gboolean "g_application_get_is_registered" ,`(,GApplication* "application"))
+               ,`(,gboolean "g_application_get_is_remote" ,`(,GApplication* "application"))
+               ;; ,`(,gboolean "g_application_register" ,`(,GApplication* "application") ( GCancellable *cancellable,  GError **error);  ;;;; this doesn't work with this code TODO
+               ,`(,void "g_application_hold" ,`(,GApplication* "application"))
+               ,`(,void "g_application_release" ,`(,GApplication* "application"))
+               ,`(,void "g_application_quit" ,`(,GApplication* "application"))
+               ,`(,void "g_application_activate" ,`(,GApplication* "application"))
+               ;; g_application_open ()  ;; GFILE ** is not supported TODO
+               ,`(,void "g_application_send_notification" ,`(,GApplication* "application") ,`(,constgchar* "id") ,`(,GNotification* "notification"))
+               ))

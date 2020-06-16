@@ -1,0 +1,1 @@
+libs/limogtk/limogtk.a $(pkg-config gtk+-3.0 --libs)

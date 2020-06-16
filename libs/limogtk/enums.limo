@@ -1,0 +1,17 @@
+#!/usr/bin/env limo
+
+(import "regex.limo")
+
+(defun put-identifier (s)
+  (setq matches (regex-match "^([A-Za-z0-9_]+).*" s 2
+                             (dict-getvalue regex-const 'reg_extended) 0))
+  (when matches
+    (print (format "INS_LIMOGTK_FLAG(\"%s\", %s);\n" (cadr matches) (cadr matches)))))
+
+(while (!= (setq line (file-readline stdin)) "")
+  (setf line (string-strip line))
+  (when (= line "typedef enum {")
+    (while (!= (progn
+                (setq line (string-strip (file-readline stdin)))
+                (string-nth 0 line)) "}")
+      (put-identifier (format "%s\n" line)))))
