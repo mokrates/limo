@@ -24,11 +24,11 @@
 	      (setf argv (cdr argv))
 	      (setf executelist (append executelist (list `(load ,(car argv)))))
 	      (setf argv (cdr argv)))
-	     ((or (eq "-?" (car argv)) 
-		  (eq "-h" (car argv)) 
+	     ((or (eq "-?" (car argv))
+		  (eq "-h" (car argv))
 		  (eq "--help" (car argv)))
 	      (write "limo")
-	      (write "usage: limo [ -n ] { -i <file> | -e <string> | -h } [ <file> ] [ -- { rest_arguments} ]")
+	      (write "usage: limo [ -n ] { -i <file> | -e <string> | -h } [ <file> | -- ] [ { rest_arguments} ]")
 	      (write "")
 	      (write "    -n : doesn't execute init.limo. (you get the barebone)")
 	      (write "    -i file: execute file, resume execution of command line")
@@ -37,9 +37,9 @@
 	      (write "  If a file is named without switch, the file will be executed and limo terminates after that")
 	      (write "")
 	      (exit))
-	     (:else 
+	     (:else
 	      (setf executelist (append executelist (list `(load ,(car argv)) '(exit))))
-	      (setf argv (cdr argv)))))
+	      (setf argv (cons "--" (cdr argv))))))
 
 (if (and argv (eq (car argv) "--"))
     (setf argv (cdr argv))
