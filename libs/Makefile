@@ -1,4 +1,4 @@
-LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu fd socket ssl rlcompleter date vector
+LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu fd socket ssl rlcompleter date vector limogtk
 
 .PHONY: all clean realclean $(LIBS)
 

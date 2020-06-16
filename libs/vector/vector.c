@@ -15,17 +15,17 @@ BUILTIN(builtin_make_vector)
   unsigned long i;
   limo_data *result;
   struct VECTOR *v;
-  
+
   REQUIRE_ARGC("MAKE-VECTOR", 1);
   len = eval(FIRST_ARG, env);
   if (len->type != limo_TYPE_GMPQ)
     limo_error("(make-vector LENGTH)");
 
   i = (unsigned long)mpq_get_d(*len->data.d_mpq);
-  
+
   v = GC_malloc(sizeof (struct VECTOR));
   v->length = i;
-  v->contents = (struct VECTOR *)memset(GC_malloc(i * sizeof (limo_data *)), 0, i*sizeof (limo_data *));
+  v->contents = (limo_data **)memset(GC_malloc(i * sizeof (limo_data *)), 0, i*sizeof (limo_data *));
   return make_special(sym_vector, v);
 }
 
