@@ -20,6 +20,12 @@
 	      (setf argv (cdr argv))
 	      (setf executelist (append executelist (list (read-string (car argv)))))
 	      (setf argv (cdr argv)))
+             ((eq "-E" (car argv))
+	      (setf argv (cdr argv))
+	      (setf executelist (append
+                                 executelist
+                                 (list `(print ,`(format "%r\n" ,(read-string (car argv)))))))
+	      (setf argv (cdr argv)))
 	     ((eq "-i" (car argv))
 	      (setf argv (cdr argv))
 	      (setf executelist (append executelist (list `(load ,(car argv)))))
@@ -33,6 +39,7 @@
 	      (write "    -n : doesn't execute init.limo. (you get the barebone)")
 	      (write "    -i file: execute file, resume execution of command line")
 	      (write "    -e string: execute string, resume execution of command line")
+              (write "    -E string: evaluate string and print REPR of it")
 	      (write "    -h, -?, --help : this help")
 	      (write "  If a file is named without switch, the file will be executed and limo terminates after that")
 	      (write "")
