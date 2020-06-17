@@ -17,6 +17,11 @@
 #include <gmp.h>
 #endif
 
+// limo_register
+extern unsigned long long limo_register;
+#define LR_SIGINT         (1<<0)
+#define LR_TRACE          (1<<1)
+
 #define limo_TYPE_EMPTY   0
 #define limo_TYPE_SYMBOL  1
 #define limo_TYPE_CONS    2

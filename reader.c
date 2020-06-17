@@ -65,7 +65,7 @@ void limo_history_read_history(void)
 
 ///// !history file for readline
 
-char *rl_completer_generator(const char *text, int state) 
+char *rl_completer_generator(const char *text, int state)
 {
   static limo_data *lookup_pos;
   static int textlen=0;
@@ -75,7 +75,7 @@ char *rl_completer_generator(const char *text, int state)
     lookup_pos = dict_to_list(CDR(globalenv->data.d_env));
     textlen = strlen(text);
   }
-  
+
   while (!is_nil(lookup_pos)) {
     if (!strncasecmp(CAR(CAR(lookup_pos))->data.d_string, text, textlen)) {
       res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string)+1); // yes, malloc
@@ -119,6 +119,10 @@ int limo_getc(reader_stream *rs)
   case RS_READLINE:
     if (!rs->stream.readline[rs->pos]) {
       char *rl = readline(prompt);
+      if (limo_register & LR_SIGINT) {
+        limo_register &= ~LR_SIGINT;
+        limo_error("Keyboard Interrupt");
+      }
       if (rl == NULL) { // EOF
 	rs->eof=1;
 	return EOF;
@@ -158,6 +162,7 @@ reader_stream *limo_rs_make_readline(void)
   if (!limo_rl_inited) {
     rl_completion_entry_function = rl_completer_generator;
     rl_completer_word_break_characters = " \t\n\"\\'`@{([";
+    rl_catch_signals = 1;
     limo_rl_inited = 1;
   }
   limo_history_read_history();

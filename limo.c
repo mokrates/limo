@@ -3,6 +3,9 @@
 #include <signal.h>
 #include <execinfo.h>
 #include <pthread.h>
+#include <readline/readline.h>
+
+unsigned long long limo_register;
 
 limo_data *globalenv;
 
@@ -14,8 +17,6 @@ limo_data *sym_stacktrace;
 limo_data *sym_underscore;
 limo_data *sym_block;
 limo_data *nil;
-
-limo_data *traceplace;
 
 pthread_key_t pk_stacktrace_key;
 pthread_key_t pk_exception_key;
@@ -64,16 +65,24 @@ void load_limo_file(char *filename, limo_data *env)
 
 void limo_repl_sigint(int signum)
 {
-  limo_error("Keyboard Interrupt");
+  if (rl_readline_state & RL_STATE_SIGHANDLER) {
+    // this is stolen from https://stackoverflow.com/a/41917863
+    printf("\n");
+    rl_on_new_line();
+    rl_replace_line("", 0);
+    rl_redisplay();
+  }
+  else
+    limo_register |= LR_SIGINT;
 }
 
 void sigsegv_handler(int sig) {
   void *array[10];
   size_t size;
-  
+
   // get void*'s for all entries on the stack
   size = backtrace(array, 10);
-  
+
   // print out all the frames to stderr
   fprintf(stderr, "Interpreter Error: signal %d:\n", sig);
   backtrace_symbols_fd(array, size, 2);
@@ -100,18 +109,18 @@ int main(int argc, char **argv)
   GC_allow_register_threads();
 
   assert(GC_thread_is_registered());
-  
+
   pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
   /////////////////////
 
   init_pthread_keys();
   pk_limo_data_next_set(&make_limo_data_next);
   pk_cons_next_set(&make_cons_next);
-  
+
   init_syms();
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
-  
+
 
   env = make_globalenv(argc, argv);
   globalenv = env;
@@ -140,9 +149,9 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
-  
+
   rs = limo_rs_make_readline();
-  
+
   while (!limo_eof(rs)) { // REPL
     limo_data *ld;
     sigjmp_buf ljbuf;
@@ -150,6 +159,7 @@ int main(int argc, char **argv)
     if (sigsetjmp(*pk_ljbuf_get(), 1)) {
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (pk_exception_get()) {
+        signal(SIGINT, limo_repl_sigint);
     	rs = limo_rs_make_readline();
     	print_stacktrace(pk_stacktrace_get());
     	pk_stacktrace_set(nil);
@@ -165,8 +175,8 @@ int main(int argc, char **argv)
       printf("\n");
       setq(globalenv, sym_underscore, ld);
     }
-    
+
 #endif
-  } 
+  }
   return 0;
 }

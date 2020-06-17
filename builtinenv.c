@@ -81,8 +81,6 @@ limo_data *make_globalenv(int argc, char **argv)
   (*args) = make_nil();
 
   setq(env, make_sym("ARGV"), args_start);
-  setq(env, make_sym("_TRACE"), make_nil());
-  traceplace = var_lookup_place(env, make_sym("_TRACE"));
   setq(env, make_sym("_INTERNED-SYMBOLS"), interned_symbols);
   setq(env, make_sym("_LIMO-PREFIX"), make_string(LIMO_PREFIX));
 

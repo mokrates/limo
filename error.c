@@ -21,7 +21,7 @@ limo_data *try_catch(limo_data *try, limo_data *env) /// TODO thread-safe!
   sigjmp_buf *ljstacksafe;  // here the bufs get stacked
   sigjmp_buf ljbuf;
   limo_data *res;
-  
+
   ljstacksafe = pk_ljbuf_get();
   pk_ljbuf_set(&ljbuf);
   if (sigsetjmp(ljbuf, 1)) { // if true; exception was thrown.
@@ -45,6 +45,7 @@ void throw(limo_data *excp)
   pk_exception_set(excp);
   setq(globalenv, sym_stacktrace, pk_stacktrace_get());
 
+  //if (*pk_ljbuf_get())
   siglongjmp(*pk_ljbuf_get(), 1);
 }
 
@@ -63,14 +64,8 @@ void limo_error(char *msg, ...)
   va_list ap;
   char buf[257];
 
-  if (!pk_ljbuf_get()) {
-    printf("Ctrl-C inside Garbage-Collector - Doing nothing\n");
-    return;
-  }
-
   va_start(ap, msg);
   vsnprintf(buf, 256, msg, ap);
-  //  printf("%s\n", buf);
   throw(make_string(buf));
 }
 

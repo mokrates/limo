@@ -127,7 +127,7 @@ limo_data *list_dup(limo_data *list)
 
 limo_data *list_eval(limo_data *list, limo_data *env)
 {
-  limo_data *ld;  
+  limo_data *ld;
   limo_data **el = &ld;
   while (list->type == limo_TYPE_CONS && !is_nil(list)) {
     (*el) = make_cons(eval(CAR(list), env), NULL);
@@ -142,19 +142,21 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
   int again=1;
-  static int level=0;
-  int trace = !is_nil(CDR(traceplace));
   limo_data *tmp_stacktrace = pk_stacktrace_get();
 
-  ++level;
-
-  while (again) {
-    if (trace) {
-      printf("eval(level % 3i): ", level);
+  if (limo_register) {        // TODO: here is a check of "things". could be used to signal Ctrl-c
+    if (limo_register & LR_SIGINT) {
+      limo_register &= ~LR_SIGINT;
+      limo_error("Keyboard Interrupt");
+    }
+    if (limo_register & LR_TRACE) {
+      printf("eval: ");
       writer(form);
       printf("\n");
     }
+  }
 
+  while (again) {
     pk_stacktrace_set(make_cons(form, tmp_stacktrace));
 
     form=real_eval(form, env);
@@ -176,7 +178,6 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   }
 
   pk_stacktrace_set(tmp_stacktrace);
-  --level;
   return form;
 }
 
