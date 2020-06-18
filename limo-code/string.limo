@@ -24,7 +24,7 @@
 	(defun list-lstrip (l)
 	  (when l
 		(setq c (car l))
-		(if (or (eq c " ") (eq c "\t") (eq c "\n"))
+		(if (or (eq c " ") (eq c "\t") (eq c "\n") (eq c "\r"))
 		    (list-lstrip (cdr l))
 		    l)))
 	

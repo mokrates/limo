@@ -11,6 +11,8 @@ the result will always be ().
 The first element of the result-list is the whole match, the other
 elements correspond to parenthesis enclosed groups.
 
+If the regex doesn't match, regex-match returns nil.
+
 Internally the regex will be 'compiled' and then 'evaluated'. Cflags
 correspond to the compiling part, the eflags correspond to the
 evaluation part.

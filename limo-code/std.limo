@@ -214,9 +214,9 @@
   (cond ((not fs) identity)
 	((not (consp fs)) (throw (cons "(comp {fun}*)" fs)))
 	((not (cdr fs)) (car fs))
-	(:t (lambda x ((car fs) (apply (apply comp 
-					      (cdr fs))
-				       x))))))
+	(:t (lambda x ((car fs) (apply (apply comp
+                                         (cdr fs))
+                                  x))))))
 (freezeq comp)
 
 (defun dzipn x
