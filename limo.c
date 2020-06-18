@@ -66,11 +66,7 @@ void load_limo_file(char *filename, limo_data *env)
 void limo_repl_sigint(int signum)
 {
   if (rl_readline_state & RL_STATE_SIGHANDLER) {
-    // this is stolen from https://stackoverflow.com/a/41917863
-    printf("\n");
-    rl_on_new_line();
-    rl_replace_line("", 0);
-    rl_redisplay();
+    limo_error("Keybord Interrupt");
   }
   else
     limo_register |= LR_SIGINT;
@@ -121,7 +117,6 @@ int main(int argc, char **argv)
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
 
-
   env = make_globalenv(argc, argv);
   globalenv = env;
 
@@ -160,6 +155,8 @@ int main(int argc, char **argv)
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (pk_exception_get()) {
         signal(SIGINT, limo_repl_sigint);
+        rl_readline_state &= ~RL_STATE_SIGHANDLER;
+        rl_reset_after_signal();
     	rs = limo_rs_make_readline();
     	print_stacktrace(pk_stacktrace_get());
     	pk_stacktrace_set(nil);
