@@ -1,6 +1,6 @@
 LIBNAME=limogtk
 OBJ = $(LIBNAME).o
-CFLAGS += -Wall -g -I../.. `pkg-config gtk+-3.0 --cflags` -fPIC
+CFLAGS += -Wno-discarded-qualifiers -g -I../.. `pkg-config gtk+-3.0 --cflags` -fPIC
 CC=gcc
 
 $(LIBNAME).so: $(OBJ) Makefile
@@ -11,7 +11,13 @@ $(LIBNAME).a: $(OBJ) Makefile
 
 .PHONY: clean
 clean :
-	rm -f *.[oa] *~
+	rm -f *.[oa] *~ _*
 
 realclean: clean
 	rm -f $(LIBNAME).so
+
+$(LIBNAME).o: _gtk-inserts.h
+	$(CC) $(CFLAGS) -c $(LIBNAME).c
+
+_gtk-inserts.h:
+	bash generate_stuff.sh
