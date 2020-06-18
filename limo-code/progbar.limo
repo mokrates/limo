@@ -1,0 +1,43 @@
+(unify
+ (progress-bar-wt progress-bar-w)
+ (scope
+  (setq progbarcounter 0)
+  (defun progress-bar-x (it width pbc total pos)
+    (if it
+        (progn
+         (for-each x (drange 0 pbc 1)
+           (print (format "%s[E" (chr 27)))) ;; go down
+         
+         (setq spinner (format "[%s] " (string-nth (mod pos 4) "-\\|/")))
+         (setq numbers (format "(%n/%n) " pos total))
+         (setq left-bar-margin "[")
+         (setq right-bar-margin "] ")
+         (setq bar-width (- width
+                            (string-length
+                             (string-concat spinner
+                                            numbers
+                                            left-bar-margin
+                                            right-bar-margin))))
+         (setq nfilled (floor (/ (* pos bar-width) total)))
+         (print (list-to-string (list spinner
+                                      numbers
+                                      left-bar-margin
+                                      (list-to-string (map (lambda (x) "#")
+                                                           (drange 0 nfilled 1)))
+                                      (list-to-string (map (lambda (x) " ")
+                                                           (drange 0
+                                                                   (- bar-width nfilled) 1)))
+                                      right-bar-margin
+                                      "\r")))
+         (for-each x (drange 0 pbc 1)
+           (print (format "%s[F" (chr 27)))) ;; go up
+         (dcons (car it) (progress-bar-x (cdr it) width pbc total (+ pos 1))))
+        ()))
+  
+  (defun progress-bar-wt (it width total)
+      (progress-bar-x it width 0 total 0))
+
+  (defun progress-bar-w (it width)
+      (progress-bar-x it width 0 (list-length it) 0))
+
+  (list progress-bar-wt progress-bar-w)))
