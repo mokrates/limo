@@ -150,7 +150,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                   "GdkSubpixelLayout" "int" "GDateYear" "GTlsCertificateFlags"
                   "GtkStackTransitionType" "GDBusObjectManagerClientFlags"
                   "GSocketFamily" "gchar" "double" "PangoWrapMode" "GConverterResult"
-                  "GLogFunc" "GPrintFunc" "GFileAttributeType" "GtkRecentSortType"
+                  "GFileAttributeType" "GtkRecentSortType"
                   "GUnicodeScript" "GtkFileChooserAction" "GtkJunctionSides"
                   "PangoFontMask" "GRegexCompileFlags" "GtkPrintDuplex" "PangoGravity"
                   "GSocketType" "float"
@@ -194,7 +194,6 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                   "GtkTreeModelFlags" "GtkShadowType" "GtkImageType" "GtkCssSectionType"
                   "GDBusInterfaceSkeletonFlags"))
 
-                  
 (setq gtktypes '("GtkRevealer *" "gunichar *" "GtkLayout *"
                  "GtkMenuBar *" "GtkToolbar *" "GOutputMessage *" "GtkBin *"
                  "GMemoryInputStream *" "GtkNotebook *" "GtkInvisible *" "AtkHypertext *"
@@ -202,7 +201,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                  "GtkAppChooserDialog *" "GtkPaned *" "GApplicationCommandLine *"
                  "GtkAppChooser *" "GtkScaleButton *" "const GEnumValue *"
                  "AtkComponent *" "GtkMenuToolButton *" "GtkHeaderBar *" "GtkMenuButton *"
-                 "GtkActionable *" "GtkListBox *" "const GString *" "const GTimeVal *"
+                 "GtkActionable *" "GtkListBox *" "const GString *"
                  "GtkNativeDialog *" "GtkFileChooser *" "const GtkTargetEntry *"
                  "GRWLock *" "GtkStatusbar *" "GtkFrame *" "GDBusMethodInvocation *"
                  "const GdkPixbufFormat *" "GClosure *" "GtkScale *" "const volatile gint *"
@@ -398,7 +397,10 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 (dict-set typedict "void" (new gtkvoidtype "void"))
 
 (setq exceptions (make-dict))
-(setq exceptionlist '("g_atomic_pointer_get" "g_once_init_enter" "g_scanner_cur_value"))
+(setq exceptionlist '("g_atomic_pointer_compare_and_exchange" "g_atomic_pointer_add" "g_atomic_pointer_and"
+                      "g_atomic_pointer_or" "g_atomic_pointer_xor" "g_once_init_leave" "g_atomic_pointer_set"
+                      "g_atomic_pointer_get" "g_once_init_enter" "g_scanner_cur_value" "g_pointer_bit_lock"
+                      "g_pointer_bit_trylock" "g_pointer_bit_unlock" "g_key_file_set_double_list"))
 (for-each e exceptionlist (dict-set exceptions e ()))
 
 (setq missing-types (make-dict))
