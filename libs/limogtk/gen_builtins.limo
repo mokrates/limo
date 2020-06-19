@@ -1,6 +1,8 @@
 (import "regex.limo")
 (import "progbar.limo")
 
+(gcsetmax (* 1024 20))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; shouldn't this be standard?
 ;; but perhaps importable... idk
@@ -50,9 +52,9 @@
   (defmethod typename (self)
     [self . _typename])
   (defmethod l2c-assign (self vname fname)
-    (format "%s = (%s)get_special(ld_%s, sym_limogtk_gpointer);\n" vname [self . _typename] vname))
+    (format "%s = is_nil(ld_%s)?NULL:(%s)get_special(ld_%s, sym_limogtk_gpointer);\n" vname vname [self . _typename] vname))
   (defmethod c2l-to-result (self sfuncall)
-    (format "ReSuLt = make_special(sym_limogtk_gpointer, %s);\n" sfuncall)))
+    (format "gpointer gp_ReSuLt = %s;\nReSuLt = gp_ReSuLt?make_special(sym_limogtk_gpointer, gp_ReSuLt):nil;\n" sfuncall)))
 
 (defclass gtkvoidtype gtktype   ;; only for c2l-to-result... makes no sense as argument!
   (defmethod c2l-to-result (self sfuncall)

@@ -1,6 +1,7 @@
 #!/usr/bin/env limo
 
 (import "regex.limo")
+(gcsetmax (* 1024 20))
 
 (defun put-identifier (s)
   (setq matches (regex-match "^([A-Za-z0-9_]+).*" s 2
