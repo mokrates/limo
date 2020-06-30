@@ -16,7 +16,7 @@ clean :
 realclean: clean
 	rm -f $(LIBNAME).so
 
-$(LIBNAME).o: _gtk-inserts.h
+$(LIBNAME).o: _gtk-inserts.h $(LIBNAME).c gtk-marshall.h
 	$(CC) $(CFLAGS) -c $(LIBNAME).c
 
 _gtk-inserts.h:

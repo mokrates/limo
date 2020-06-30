@@ -35,6 +35,9 @@
                    (string-length s))
      end))
 
+(defun string-startswith (s start)
+  (= (string-slice s 0 (string-length start)) start))
+
 (defun list-to-dict (l)
   (setq d (make-dict))
   (for-each p l
@@ -43,6 +46,16 @@
 
 (defun re-match (p s n)
   (regex-match p s n (dict-getvalue regex-const 'reg_extended) 0))
+
+(defun in (i l)
+  (if l
+      (if (= i (car l))
+          :t
+          (in i (cdr l)))
+      ()))
+
+(defun instr (c s)
+  (in c (string-to-list s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -94,7 +107,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
   (list-to-string
    (map (lambda (x) (format "ld_%s = eval(%s, env);\n" (cadar x) (cadr x)))
         (zip arguments
-             '("FIRST_ARG" "SECOND_ARG" "THIRD_ARG" "FOURTH_ARG" "FIFTH_ARG")))))
+             '("FIRST_ARG" "SECOND_ARG" "THIRD_ARG" "FOURTH_ARG" "FIFTH_ARG" "SIXTH_ARG" "SEVENTH_ARG" "EIGHTH_ARG" "NINTH_ARG")))))
 
 (defun create-limo-fun (return-type fname . arguments)
   (setq argumentlist (string-join ", " (map cadr arguments)))
@@ -124,16 +137,16 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 
 (defun output-file (list-of-functions)
   (setq results (dmap (lambda (x) (apply create-limo-fun x)) (progress-bar-w list-of-functions 80)))
-  
+
   (setq fun-file  (file-open "_gtk-functions.h" "w"))
-  (setq insert-file (file-open "_gtk-inserts.h" "w"))  
+  (setq insert-file (file-open "_gtk-inserts.h" "w"))
 
   (for-each res (progress-bar-w results 80)
     (print fun-file (cadr res))
     (print fun-file "\n")
 
     (print insert-file (car res)))
-  
+
   (file-close insert-file)
   (file-close fun-file))
 
@@ -194,9 +207,13 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                   "PangoEllipsizeMode" "AtkStateType" "GtkWindowType" "GtkLicense"
                   "gint32" "guint16" "GTokenType" "GtkSortType"
                   "GtkTreeModelFlags" "GtkShadowType" "GtkImageType" "GtkCssSectionType"
-                  "GDBusInterfaceSkeletonFlags"))
+                  "GDBusInterfaceSkeletonFlags" "GdkWindowHints"
 
-(setq gtktypes '("GtkRevealer *" "gunichar *" "GtkLayout *"
+                  "cairo_line_cap_t" "cairo_format_t" "cairo_content_t" "cairo_surface_observer_mode_t"
+                  "cairo_status_t" "cairo_font_slant_t" "cairo_font_weight_t" "cairo_extend_t" "cairo_filter_t"
+                  "cairo_text_cluster_flags_t" "cairo_fill_rule_t"))
+
+(setq gtktypes '("GError **" "GtkRevealer *" "gunichar *" "GtkLayout *"
                  "GtkMenuBar *" "GtkToolbar *" "GOutputMessage *" "GtkBin *"
                  "GMemoryInputStream *" "GtkNotebook *" "GtkInvisible *" "AtkHypertext *"
                  "GtkFixed *" "GtkGesturePan *" "GLoadableIcon *" "GtkProgressBar *"
@@ -388,9 +405,16 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                  "GFileAttributeInfoList *" "const guint8 *" "GTlsInteraction *"
                  "GIOExtensionPoint *" "cairo_region_t *" "GSource *" "GProxyResolver *"
                  "AtkObjectFactory*" "const GtkTargetEntry*" "PangoItem *" "GThread *"
-                 "GtkTreeRowReference *" "GtkCellRenderer *" "GDBusNodeInfo *" "GDBusObject *"))
+                 "GtkTreeRowReference *" "GtkCellRenderer *" "GDBusNodeInfo *" "GDBusObject *"
 
-(setq stringtypes '("const gchar *" "const guchar *" "gchar*" "const char *" "const gchar*" "const char*" "gchar *" "char *" "guchar *" ))
+                 "cairo_rectangle_int_t *" "cairo_glyph_t *" "const cairo_scaled_font_t *"
+                 "cairo_font_face_t *" "cairo_rectangle_list_t *" "const cairo_user_data_key_t *"
+                 "const cairo_glyph_t *" "const cairo_matrix_t *" "cairo_font_extents_t *"
+                 "cairo_text_cluster_t *" "cairo_matrix_t *" "const cairo_path_t *" "cairo_text_extents_t *"
+                 "cairo_pattern_t *" "cairo_device_t *" "const cairo_text_cluster_t *" "const cairo_rectangle_t *"
+                 "const cairo_text_cluster_t *" "cairo_path_t *" "cairo_font_options_t *" ))
+
+(setq stringtypes '("const gchar *" "const guchar *" "gchar*" "const char *" "const gchar*" "const char*" "gchar *" "char *" "guchar *" "unsigned char *"))
 
 (setq typedict (make-dict))
 (for-each t enumtypes (dict-set typedict t (new gtkenumtype t)))
@@ -414,7 +438,10 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
            (progn
             (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+)(,|\\);)?" s 4))
             (when (not matches)
-              (print (format "not matching params: %r\n" pl))
+              (if (= (nth (- (list-length pl) 1) pl) "...);")
+                  ;;(print (format "variadic func %r\n" pl))
+                  ()
+                  (print (format "not matching params: %r\n" pl)))
               (break))
 ;;            (print (format "parameter-matches: %r\n" matches))
             (setq ptype (string-strip (nth 1 matches)))
@@ -429,13 +456,26 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 (defun process-fn-def (f-stuff)
   (block _break
     (progn
-     ;;(print (format "%r\n" f-stuff))
-     (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+) ?\\((.*)(,|\\);)" (car f-stuff) 4))
-     ;;(print (format "%r\n" matches))
+
+     (when (not (instr "(" (car f-stuff)))
+       (setf f-stuff (cons (string-concat (car f-stuff) " " (cadr f-stuff)) (cddr f-stuff))))
+     
+     ;; if first line contains several parameters divided by commas ...:
+     (setf f-stuff
+           (apply append
+                  (map (lambda (y)
+                         (filter (lambda (x) (!= x ""))
+                                 (string-split y ",")))
+                       f-stuff)))
+     ;;;; !!several parameters divided by commas
+
+     (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+) ?\\((.*)($|,|\\);)" (car f-stuff) 4))
+
      (if matches
          (progn
           (setq rettype (string-strip (cadr matches)))
           (when (not (dict-has-key typedict rettype))
+            (print (format "missing type %s\n" rettype))
             (dict-set missing-types rettype ())
             (break))
           (setq fname (caddr matches))
@@ -446,7 +486,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
             (setf processed-fns
                   (cons (list (dict-getvalue typedict rettype) fname) processed-fns))
             (break))
-          
+
           (setq plist (process-paramlist (cons first-arg (cdr f-stuff))))
           (when (not plist) (break))
           (setf processed-fns
@@ -455,17 +495,28 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                       processed-fns)))
          (print (format "coudn't parse: %r\n" f-stuff))))))
 
-(for-each line (progress-bar-wt (file-readlines stdin) 80 49000)
-  (setf line (string-strip line))
-  (when (= line "extern")  ;; ignore the deprecated stuff
-    (setq function-def ())
-    (setq cont-loop :t)
-    (while cont-loop
-      (setq line (string-strip (file-readline stdin)))
-      (setf function-def (append function-def (list line)))
-      (when (string-endswith line ");")
-        (break)))
-    (process-fn-def function-def)))
+(setq line ())
+(setq last-line ())
+(for-each next-line (progress-bar-wt (file-readlines stdin) 80 49000)
+  (setf last-line line)
+  (setf line (string-strip next-line))
+  (cond ((= line "extern")  ;; ignore the deprecated stuff
+         (setq function-def ())
+         (while :t
+           (setq line (string-strip (file-readline stdin)))
+           (setf function-def (append function-def (list line)))
+           (when (string-endswith line ");")
+             (break)))
+         (process-fn-def function-def))
+
+        ((string-startswith line "cairo_")
+         (setq function-def (list (format "%s %s" (string-strip last-line) line)))
+         (while :t
+           (setq line (string-strip (file-readline stdin)))
+           (setf function-def (append function-def (list line)))
+           (when (string-endswith line ");")
+             (break)))
+         (process-fn-def function-def))))
 
 (print (format "%r\n" (map (lambda (x) (car x)) (dict-to-list missing-types))))
 (output-file processed-fns)
