@@ -9,7 +9,7 @@
            (for-each x (drange 0 pbc 1)
              (print (format "%s[E" (chr 27)))) ;; go down
            
-           (setq spinner (format "[%s] " (string-nth (mod pos 4) "-\\|/")))
+           (setq spinner (format "[%s] " (string-nth (mod lastepoch 4) "-\\|/")))
            (setq numbers (format "(%n/%n) " pos total))
            (setq left-bar-margin "[")
            (setq right-bar-margin "] ")
@@ -25,7 +25,7 @@
                                         left-bar-margin
                                         (list-to-string (map (lambda (x) "#")
                                                              (drange 0 nfilled 1)))
-                                        (list-to-string (map (lambda (x) " ")
+                                        (list-to-string (map (lambda (x) ".")
                                                              (drange 0
                                                                      (- bar-width nfilled) 1)))
                                         right-bar-margin
