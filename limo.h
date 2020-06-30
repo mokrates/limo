@@ -141,6 +141,7 @@ limo_data *get_annotation(limo_data *ld); // gets annotation from ld in readable
 limo_data *annotate(limo_data *ld, limo_annotation *la); // annotates ld with la, and returns it.
 limo_data *reader(reader_stream *);
 void writer(limo_data *);
+void l_writer(limo_data ***dest, limo_data *);
 
 void load_limo_file(char *fname, limo_data *env);
 
@@ -223,7 +224,7 @@ limo_data *thunk_safe_cdr(limo_data *x);
 #define FIFTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(arglist)))))))
 #define SIXTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(arglist))))))))
 #define SEVENTH_ARG (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist)))))))))
-#define EIGTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist))))))))))
+#define EIGHTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist))))))))))
 #define NINTH_ARG  (CAR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(CDR(arglist)))))))))))
 
 BUILTIN(builtin_quote);
@@ -247,6 +248,7 @@ BUILTIN(builtin_car);
 BUILTIN(builtin_cdr);
 BUILTIN(builtin_eq);
 BUILTIN(builtin_write);
+BUILTIN(builtin_write_to_list);
 BUILTIN(builtin_try);
 BUILTIN(builtin_throw);
 BUILTIN(builtin_finally);
@@ -327,11 +329,13 @@ limo_data *make_special(limo_data *type_symbol, void *content);
 void *get_special(limo_data *expr, limo_data *type_symbol);
 void writer_special(limo_data *expr);
 void writer_special_intern(limo_data *expr);
+void l_writer_special(limo_data ***dest, limo_data *expr);
+void l_writer_special_intern(limo_data ***dest, limo_data *expr);
 limo_data *get_special_type_symbol(limo_data *expr);
 
 limo_data *freeze_var(limo_data *name, limo_data *env);
 limo_data *make_const(limo_data *name, limo_data *val);
-void writer_const(limo_data *c);
+// void writer_const(limo_data *c); // TODO delete this if it compiles without it
 
 void segfault(void);  // segfault to generate a stacktrace. selfmade debug stopping-point
 

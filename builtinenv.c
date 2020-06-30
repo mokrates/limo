@@ -22,6 +22,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "CDR", builtin_cdr},
   { "EQ", builtin_eq},
   { "WRITE", builtin_write},
+  { "WRITE-TO-LIST", builtin_write_to_list},
   { "TRY", builtin_try },
   { "FINALLY", builtin_finally},
   { "THROW", builtin_throw },

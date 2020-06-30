@@ -42,10 +42,27 @@ void writer_special_intern(limo_data *expr)
   printf("#<special_intern:%p>", expr->data.d_special_intern);
 }
 
+void l_writer_special(limo_data ***dest, limo_data *expr)
+{
+  list_put_str(dest, "#<special:");
+  l_writer(dest, expr->data.d_special);
+  list_put_str(dest, ">");
+}
+
+void l_writer_special_intern(limo_data ***dest, limo_data *expr)
+{
+  char buf[20];
+  list_put_str(dest, "#<special_intern:");
+  snprintf(buf, 20, "%p", expr->data.d_special_intern);
+  list_put_str(buf);
+  list_put_str(dest, ">");
+}
+
+
 limo_data *get_special_type_symbol(limo_data *expr)
 {
   if (expr->type != limo_TYPE_SPECIAL)
     throw(make_string("special type expected"));
-  
+
   return CAR(expr->data.d_special);
 }

@@ -213,6 +213,17 @@ BUILTIN(builtin_write)
   return ld;
 }
 
+BUILTIN(builtin_write_to_list)
+{
+  REQUIRE_ARGC("write-to-list", 1);
+  limo_data *res = make_nil();
+  limo_data **dest = &res;
+
+  limo_data *ld = eval(FIRST_ARG, env);
+  l_writer(&dest, ld);
+  return res;
+}
+
 BUILTIN(builtin_setf)
 {
   REQUIRE_ARGC("setf", 2);

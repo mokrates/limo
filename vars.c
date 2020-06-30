@@ -32,7 +32,7 @@ limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons
     cons = var_lookup_place(up, name);
     if (cons == NULL)
       throw(make_cons(make_string("variable not bound"), name));
-  
+
     //setq(env, name, make_vcache(cons));
 
     *place = make_cons(CAR(cons), make_vcache(cons));
