@@ -1,0 +1,74 @@
+;; mazegen.limo
+;; usage: limo mazegen.limo <x> <y>
+;; ex: limo mazegen.limo 10 10
+;; author: mmolle
+;; see: https://en.wikipedia.org/wiki/Maze_generation_algorithm
+
+(mod-load "vector")
+
+;;;;; shuffling ;;;;;;
+
+(defun random (n)
+  (with-file-open "/dev/urandom" "r" f
+    (mod (ord (file-getc f)) n)))
+
+(defun remove-nth (l n)
+  (when l
+    (if (= n 0)
+        (cdr l)
+        (cons (car l) (remove-nth (cdr l) (- n 1))))))
+
+(defun shuffle (l)
+  (when l
+    (setq r (random (list-length l)))
+    (cons (nth r l) (shuffle (remove-nth l r)))))
+
+;;;;;;;;;;;;;;;;;;;
+
+;;;; sooooo
+;;;; we don't really have a means to convert strings to numbers, so
+;;;; we just eval the strings to get the numbers. REALLY UGLY!
+
+(setq *x* (read-string (car argv)))
+(setq *y* (read-string (cadr argv)))
+
+(setq *maze* (make-vector (* *x* *y* 4)))
+
+(defun getv (x y)
+  (vector-ref *maze* (+ x (* y (* 2 *x*)))))
+
+(defun setv (x y v)
+  (vector-set *maze* (+ x (* y (* 2 *x*))) v))
+
+(defun walk (x y)
+  (setv (* 2 x) (* 2 y) :t) ;; we're here!
+  (setq possibilities
+        (shuffle
+         (filter
+          (lambda (i)
+            (and (>= (car i) 0)
+                 (>= (cadr i) 0)
+                 (< (car i) *x*)
+                 (< (cadr i) *y*)))
+          (list (list (- x 1) y)
+                (list (+ x 1) y)
+                (list x (- y 1))
+                (list x (+ y 1))))))
+
+  (for-each pos possibilities
+    (when (not (getv (* 2 (car pos)) (* 2 (cadr pos))))
+      (setq wx (/ (+ (* (car pos) 2) (* 2 x)) 2))
+      (setq wy (/ (+ (* (cadr pos) 2) (* 2 y)) 2))
+      (setv wx wy :t)
+      (walk (car pos) (cadr pos)))))
+
+(print (format "generating maze with %r x %r\n" *x* *y*))
+(walk 0 0)
+
+(print (list-to-string (map (lambda (x) "[]") (drange 0 (+ 1 (* 2 *x*)) 1))))
+(print "\n")
+(for-each y (drange 0 (* 2 *y*) 1)
+  (print "[]")
+  (for-each x (drange 0 (* 2 *x*) 1)
+    (print (if (getv x y) "  " "[]")))
+  (print "\n"))
