@@ -1,0 +1,39 @@
+(mod-load "sdl")
+
+[_sdl . sdl-init]
+
+(setq _turtle-surface ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
+(setq _turtle-pcolor ([_sdl . sdl-surface-rgbpcolor] _turtle-surface 255 255 255))
+
+(setq _turtle-x 240)
+(setq _turtle-y 320)
+(setq _turtle-pi (/ 3141592653589793
+                    1000000000000000))
+(setq _turtle-pendown :t)
+(setq _turtle-direction 0)
+
+;; sin x = gegenkathete / hypothenuse (y-koord)
+;; cos x = ankathete    / hypothenuse (x-koord) 
+
+(defun turtle-left (a)
+  (setf _turtle-direction (mod (+ _turtle-direction (- 360 a)) 360)))
+
+(defun turtle-right (a)
+  (setf _turtle-direction (mod (+ _turtle-direction a) 360)))
+
+(defun turtle-forward (x)
+  (let ((newx (+ _turtle-x
+                 (* x (cos (/ (* _turtle-direction 2 _turtle-pi) 360)))))
+        (newy (+ _turtle-y
+                 (* x (sin (/ (* _turtle-direction 2 _turtle-pi) 360))))))
+    (when _turtle-pendown
+      ([_sdl . sdl-line]
+       _turtle-surface
+       (cons _turtle-x _turtle-y)
+       (cons newx newy)
+       _turtle-pcolor))
+    ([_sdl . sdl-flip] _turtle-surface)
+    (setf _turtle-x newx)
+    (setf _turtle-y newy)))
+
+
