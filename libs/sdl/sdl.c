@@ -4,6 +4,7 @@ limo_data *sym_sdl_error;
 limo_data *sym_sdl_surface;
 limo_data *sym_sdl_color;
 limo_data *sym_sdl_font;
+limo_data *sym_sdl_event;
 
 BUILTIN(builtin_sdl_init)
 {
@@ -71,6 +72,7 @@ void limo_init_sdl(limo_data *env)
   sym_sdl_surface = make_sym("SDL-SURFACE");
   sym_sdl_color = make_sym("SDL-COLOR");
   sym_sdl_font = make_sym("SDL-FONT");
+  sym_sdl_event = make_sym("SDL-EVENT");
 
   /// constants
   limo_data *limo_SDL_INIT_TIMER = make_number_from_long_long(SDL_INIT_TIMER);

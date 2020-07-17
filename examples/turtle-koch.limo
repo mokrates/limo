@@ -14,5 +14,5 @@
 
 (defun koch-star (len lvl)
   (for-each x (drange 0 3 1)
-    (koch-line 150 lvl)
+    (koch-line len lvl)
     (turtle-right 120)))
