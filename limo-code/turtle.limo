@@ -4,6 +4,13 @@
 
 (setq _turtle-surface ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
 (setq _turtle-pcolor ([_sdl . sdl-surface-rgbpcolor] _turtle-surface 255 255 255))
+(setq _turtle-textcolor ())
+(setq _turtle-textfont ())
+(setq _turtle-textinitp ())
+(defmacro _turtle-with-text body
+  `(if _turtle-textinitp
+       ,`(progn ,@body)
+       (throw "please call (TURTLE-TEXTINIT) to init turtle textfunctions")))
 
 (setq _turtle-x 240)
 (setq _turtle-y 320)
@@ -36,4 +43,18 @@
     (setf _turtle-x newx)
     (setf _turtle-y newy)))
 
+(defun turtle-textinit ()
+  ([_sdl . SDL-TTF-INIT ])
+  (setf _turtle-textcolor ([_sdl . sdl-makecolor] 255 255 255])
+  (setf _turtle-textfont ([_sdl . sdl-ttf-openfont]
+                          (string-concat _limo-prefix "DejaVuSansMono.ttf") 12))
+  (setf _turtle-textinitp :t))
 
+(defun turtle-write (text)
+  (_turtle-with-text
+   (let ((surface ([_sdl . sdl-ttf-rendertext-blended]
+                   _turtle-textfont
+                   text
+                   _turtle-textcolor)))
+     ([_sdl . sdl-blitsurface] surface _turtle-surface (cons _turtle-x _turtle-y))
+     ([_sdl . sdl-flip] _turtle-surface))))
