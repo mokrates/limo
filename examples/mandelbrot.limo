@@ -1,0 +1,72 @@
+(mod-load "sdl")
+
+(setq *surface* ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
+
+(freezeq +)
+(freezeq -)
+(freezeq /)
+(freezeq *)
+
+(defun bit (n v)
+  (mod (/ v n) 2))
+
+;; create a map of colors
+(setq *colors* (map (lambda (n) ([_sdl . sdl-surface-rgbpcolor]
+			    *surface*
+			    (* 255 (bit 1 n))
+			    (* 255 (bit 2 n))
+			    (* 255 (bit 4 n))))
+		    (range 0 17 1)))
+
+(defun sqrt (x) 
+  (block fun
+    (let ((lo 0)
+	  (hi x)
+	  (mid (/ x 2)))
+      (for-each i (drange 0 10 1)
+	(setq sqr (* mid mid))
+	(cond ((= sqr x) (return-from fun mid))
+	      ((< sqr x) (setf lo mid))
+	      (:t (setf hi mid)))
+	(setf mid (/ (+ hi lo) 2)))
+      mid)))
+(freezeq sqrt)
+
+(defun csqr (c)
+  (cons (- (* (car c) (car c))
+	   (* (cdr c) (cdr c)))
+	(* 2 (car c) (cdr c))))
+(freezeq csqr)
+
+(defun cadd (a b)
+  (cons (+ (car a) (car b))
+	(+ (cdr a) (cdr b))))
+(freezeq cadd)
+
+(defun cabs (c)
+  (sqrt (+ (* (car c) (car c)) (* (cdr c) (cdr c)))))
+(freezeq cabs)
+
+(defun mandelbrot (x y)
+  (block fun
+    (progn
+     (setq z (cons x y))
+     (for-each n (drange 0 16 1)
+       (if (>= (+ (* (car z) (car z)) (* (cdr z) (cdr z))) 4)
+	   (return-from fun n)
+	   (setf z (cadd (csqr z) (cons x y)))))
+     16)))
+(freezeq mandelbrot)
+
+(defun main ()
+  (for-each y (drange 0 480 1)
+    (for-each x (drange 0 640 1)
+      ([_sdl . sdl-plot] 
+       *surface*
+       (cons x y)
+       (nth (mandelbrot (/ (- x 320) 128) (/ (- y 240) 128))
+	    *colors*)))
+    ([_sdl . sdl-flip] *surface*)))
+
+;; (print "press RET to quit\n")
+;; (file-getc stdin)
