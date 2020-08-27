@@ -1,7 +1,5 @@
 (mod-load "sdl")
 
-[_sdl . sdl-init]
-
 (setq _turtle-surface ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
 (setq _turtle-pcolor ([_sdl . sdl-surface-rgbpcolor] _turtle-surface 255 255 255))
 (setq _turtle-textcolor ())
