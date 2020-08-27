@@ -8,7 +8,7 @@
 (freezeq *)
 
 (defun bit (n v)
-  (mod (/ v n) 2))
+  (mod (floor (/ v n)) 2))
 
 ;; create a map of colors
 (setq *colors* (map (lambda (n) ([_sdl . sdl-surface-rgbpcolor]
@@ -68,5 +68,6 @@
 	    *colors*)))
     ([_sdl . sdl-flip] *surface*)))
 
-;; (print "press RET to quit\n")
-;; (file-getc stdin)
+(main)
+(print "press RET to quit\n")
+(file-getc stdin)
