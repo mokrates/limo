@@ -294,6 +294,7 @@ BUILTIN(builtin_env_setq);
 BUILTIN(builtin_env_setf);
 BUILTIN(builtin_env_getq);
 BUILTIN(builtin_env_current);
+BUILTIN(builtin_set_finalizer);
 
 /////////////////////////////////
 // misc

@@ -616,3 +616,19 @@ BUILTIN(builtin_env_current)
 {
   return env;
 }
+
+static void finalization_proc(limo_data *obj, limo_data *thunk)
+{
+  // we can return to nowhere, so there is no returning a value
+  eval(make_cons(CAR(thunk), make_cons(obj, nil)), CDR(thunk));
+}
+
+BUILTIN(builtin_set_finalizer)
+{
+  limo_data *obj, *fun, *ofun_cons;
+
+  obj = eval(FIRST_ARG, env);
+  fun = eval(SECOND_ARG, env);
+  GC_register_finalizer(obj, finalization_proc, make_cons(fun, env), NULL, &ofun_cons);
+  return ofun_cons?CAR(ofun_cons):nil;
+}
