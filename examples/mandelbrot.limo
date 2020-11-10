@@ -1,4 +1,12 @@
 (mod-load "sdl")
+(mod-load "vector")
+
+(defun vector-from-list (l)
+  (let ((v (make-vector (list-length l))))
+    (for-each n (drange 0 (list-length l) 1)
+      (vector-set v n (car l))
+      (setf l (cdr l)))
+    v))
 
 (setq *surface* ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
 
@@ -11,12 +19,12 @@
   (mod (floor (/ v n)) 2))
 
 ;; create a map of colors
-(setq *colors* (map (lambda (n) ([_sdl . sdl-surface-rgbpcolor]
-			    *surface*
-			    (* 255 (bit 1 n))
-			    (* 255 (bit 2 n))
-			    (* 255 (bit 4 n))))
-		    (range 0 17 1)))
+(setq *colors* (vector-from-list (map (lambda (n) ([_sdl . sdl-surface-rgbpcolor]
+					      *surface*
+					      (* 255 (bit 1 n))
+					      (* 255 (bit 2 n))
+					      (* 255 (bit 4 n))))
+				      (range 0 17 1))))
 
 (defun sqrt (x) 
   (block fun
@@ -64,8 +72,8 @@
       ([_sdl . sdl-plot] 
        *surface*
        (cons x y)
-       (nth (mandelbrot (/ (- x 320) 128) (/ (- y 240) 128))
-	    *colors*)))
+       (vector-ref *colors*
+		   (mandelbrot (/ (- x 320) 128) (/ (- y 240) 128)))))
     ([_sdl . sdl-flip] *surface*)))
 
 (main)
