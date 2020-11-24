@@ -165,6 +165,7 @@ reader_stream *limo_rs_make_readline(void)
     rl_catch_signals = 1;
     limo_rl_inited = 1;
   }
+  rl_variable_bind("blink-matching-paren", "on");
   limo_history_read_history();
 
   rs->type = RS_READLINE;
