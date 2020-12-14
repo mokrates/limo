@@ -357,6 +357,8 @@ limo_data *read_string(reader_stream *f)
       case '"': c='"'; break;
       case '\\':c='\\'; break;
       case 'r': c='\r'; break;
+      case '(': c='('; break;     // can be used to not confuse emacs paredit mode
+      case ')': c=')'; break;     // see https://www.gnu.org/software/guile/manual/guile.txt
       case '0': c='\0'; break;
       }
     buf[i]=c;
