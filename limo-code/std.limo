@@ -577,20 +577,14 @@
   nd)
 (freezeq dict-copy)
 
-(setq block
-      (scope
-       (setq _block block)
-       (freezeq _block)
-       (macro (label . body)
-	 `(,_block ,label ,@body))))
 (freezeq block)
 
-(defmacro letrec (lblock . body)
+(defmacro let* (lblock . body)
   (defun letvars (lblock)
     (when lblock
       (cons `(setq ,(caar lblock) ,(cadar lblock)) (letvars (cdr lblock)))))
   `(progn ,@(letvars lblock) ,@body))
-(freezeq letrec)
+(freezeq let*)
 
 (defmacro let (lblock . body)
   `(,`(lambda ,(map (lambda (x) (car x)) lblock) ,`(progn ,@body))
