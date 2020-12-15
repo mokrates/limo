@@ -1,0 +1,176 @@
+;; simplejson library for limo
+
+;; definition
+
+;; json		<==> limo
+;; ==================================
+;; null		<==> :null
+;; true		<==> :t
+;; false	<==> :f
+;; "string"	<==> "string"
+;; [array]	<==> (limo list)
+;; {object}	<==> limo dictionary
+
+(defun json-load-charlist (s)  ;;
+  (defun skip-whitespace ()
+    (while (member (car s) (string-to-list " \t\n"))
+      (setf s (cdr s))))
+
+  (defun load-string ()
+    (setq res '("\""))
+    (setf s (cdr s))    ;; skipping "\""
+    (while (not (eq (car s) "\""))
+      (cond ((eq (car s) "\\")
+	     (setf res (cons (cadr s)
+			     (cons (car s)
+				   res)))
+	     (setf s (cddr s)))
+	    (:else 
+	     (setf res (cons (car s) res))
+	     (setf s (cdr s)))))
+    (setf res (cons "\"" res))
+    (setf s (cdr s))   ;; skip trailing "\""
+    (read-string (list-to-string (reverse res))))
+
+  (defun load-number ()     ;; perhaps unsafe?
+    (setq res ())
+    (while (member (car s) (string-to-list "0123456789.Ee+-"))
+      (setf res (cons (car s) res))
+      (setf s (cdr s)))
+    (read-string (list-to-string (reverse res))))
+  
+  (defun load-list ()
+    (setq res ())
+    (setf s (cdr s)) ;; skip opening bracket
+    (skip-whitespace)
+    
+    (while (not (eq (car s) "]"))
+      (setf res (cons (load-object) res))
+      (skip-whitespace)
+      (cond ((eq (car s) ",")
+	     (setf s (cdr s))   ;; skip ,
+	     (skip-whitespace))
+	    ((eq (car s) "]")
+	     ())                 ;; do nothing
+	    (:else
+	     (throw (list 'json-error "broken list syntax")))))
+    (setf s (cdr s))    ;; skip closing bracket
+    (reverse res))
+  
+  (defun load-dict ()
+    (setq res (make-dict))
+    (setf s (cdr s)) ;; skip opening bracket
+    (skip-whitespace)
+    
+    (while (not (eq (car s) "}"))
+      (setq key (load-object))
+      (skip-whitespace)
+      (unless (eq (car s) ":")
+	(throw (list 'json-error "broken object syntax")))
+      (setf s (cdr s))   ;; skip :
+      (skip-whitespace)
+      (setq val (load-object))
+      (dict-set res key val)
+      (cond ((eq (car s) ",")
+	     (setf s (cdr s))   ;; skip ,
+	     (skip-whitespace))
+	    ((eq (car s) "}")
+	     ())                 ;; do nothing
+	    (:else
+	     (throw (list 'json-error "broken list syntax")))))
+    (setf s (cdr s)) 
+    res)
+
+  (defun load-keyword (kw val)
+    (for-each c (string-to-list kw)
+      (unless (eq (car s) c)
+	(throw (list 'json-error "unknown keyword encountered"))))
+    val)
+	    
+  (defun load-object ()
+    (cond ((eq (car s) "\"")
+	   (load-string))
+	  ((eq (car s) "[")
+	   (load-list))
+	  ((eq (car s) "{")
+	   (load-dict))
+	  ((eq (car s) "n")
+	   (load-keyword "null" :null))
+	  ((eq (car s) "t")
+	   (load-keyword "true" :t))
+	  ((eq (car s) "f")
+	   (load-keyword "false" :f))
+	  (:else (load-number))))
+  (skip-whitespace)
+  (load-object))
+
+(defun json-loads (s)
+  (json-load-charlist (string-to-list s)))
+
+(defun json-dumps (o)
+  (cond ((not o)
+	 "[]")
+	
+	((eq o :t)
+	 "true")
+	
+	((eq o :f)
+	 "false")
+	
+	((eq o :null)
+	 "null")
+	
+	((consp o)
+	 (list-to-string (append '("[")
+				 (list (json-dumps (car o)))
+				 (map (lambda (x) (string-concat ", " (json-dumps x)))
+				      (cdr o))
+				 '("]"))))
+	((stringp o)
+	 (list-to-string (write-to-list o)))
+	
+	((numberp o)
+	 (list-to-string (write-to-list o)))
+	
+	((dictp o)
+	 (let ((dl (dict-to-list o))
+	       (writepair (lambda (p)
+			    (string-concat (json-dumps (car p))
+					   ": "
+					   (json-dumps (cdr p))))))
+	   (if dl
+	       (list-to-string
+		(append '("{")
+			(list (writepair (car dl)))
+			(map (lambda (x) (string-concat ", " (writepair x)))
+			     (cdr dl))
+			'("}")))
+	       "{}")))))
+
+(defhelp json-load-charlist "JSON-LOAD-CHARLIST function:
+\(json-load-charlist s\)
+s: list of characters
+reads a json-object from the list of characters provided.
+for translation see \(help json-loads\)")
+
+(defhelp json-loads "JSON-LOADS function:
+\(json-loads s\)
+s: string containing json
+reads a json-object from s as follows
+
+ json		<==> limo
+ ===================================
+ null		<==> :null
+ true		<==> :t
+ false	<==> :f
+ \"string\"	<==> \"string\"
+ [array]	<==> \(limo list\)
+ {object}	<==> limo dictionary
+
+")
+
+(defhelp json-dumps "JSON-DUMPS function:
+\(json-dumps o\)
+o: json-convertible limo-object
+converts a limo-object into a json-string.
+see \(help json-loads\)")
