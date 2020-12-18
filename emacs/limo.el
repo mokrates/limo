@@ -24,6 +24,8 @@
         '(("lambda" . 955))) 
   (prettify-symbols-mode t)
   
-  (define-key limo-mode-map (kbd "C-c h") 'limo-help))
+  (define-key limo-mode-map (kbd "C-c h") 'limo-help)
+  (define-key paredit-mode (kbd "C-c p") 'paredit-mode)
+  (show-paren-mode)
 
 (add-to-list 'auto-mode-alist '("\\.limo\\'" . limo-mode))
