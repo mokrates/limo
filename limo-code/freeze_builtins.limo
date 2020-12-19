@@ -32,7 +32,7 @@
 (freezeq GCCOLLECT)
 (freezeq GCSETMAX)
 (freezeq ENV-EXTRACT)
-(freezeq SLEEP)
+(freezeq USLEEP)
 (freezeq STRING-CONCAT)
 (freezeq MAKE-SYM)
 (freezeq GET-ANNOTATION)

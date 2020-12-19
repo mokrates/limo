@@ -53,7 +53,7 @@
 			      (car (nth nach tuerme))
 			      (car (nth nach tuerme)))
 	     (write tuerme)
-;	     (sleep 1)
+	     (sleep (/ 1 100))
 	     (hanoi temp von nach (- scheibe 1))))
 
 (ssdl-startgraphics)

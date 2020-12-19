@@ -694,3 +694,7 @@
   (when x
     (write (car x))
     (writelist (cdr x))))
+
+(defun sleep (s)
+  (usleep (* s 1000000)))
+(freezeq sleep)

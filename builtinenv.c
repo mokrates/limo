@@ -37,7 +37,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "GCSETMAX", builtin_gc_setmax},
   { "ENV-EXTRACT", builtin_env_extract },
   { "ENVP", builtin_envp },
-  { "SLEEP", builtin_sleep },
+  { "USLEEP", builtin_usleep },
   { "STRING-CONCAT", builtin_string_concat },
   { "MAKE-SYM", builtin_make_sym },
   { "MAKE-SYM-UNINTERNED", builtin_make_sym_uninterned },

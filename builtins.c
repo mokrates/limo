@@ -430,17 +430,17 @@ BUILTIN(builtin_envp)
     return nil;
 }
 
-BUILTIN(builtin_sleep)
+BUILTIN(builtin_usleep)
 {
   if (list_length(arglist)!=2)
-    limo_error("(sleep SECONDS) [1]");
+    limo_error("(usleep SECONDS) [1]");
 
   limo_data *ld = eval(FIRST_ARG, env);
 
   if (ld->type == limo_TYPE_GMPQ)
-    sleep(mpq_get_d(*ld->data.d_mpq));
+    usleep(mpq_get_d(*ld->data.d_mpq));
   else
-    limo_error("(sleep SECONDS) [2]");
+    limo_error("(usleep SECONDS) [2]");
 
   return nil;
 }
