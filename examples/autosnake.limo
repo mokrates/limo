@@ -93,7 +93,8 @@
       (walk (car pos) (cadr pos)))))
 
 ;;;;;;;;;; generate maze
-(walk 0 0)
+;; (walk 0 0)
+(walk (floor (/ *x* 2)) (floor (/ *y* 2)))
 
 (print "hamilton-circle:\n")
 (for-each y (drange 0 (* 2 *y*) 2)
@@ -218,6 +219,7 @@
 	   (cons (car bs) (remove-as (cdr as) (cdr bs))))
 	  (:else
 	   (cons (car bs) (remove-as as (cdr bs))))))
+  (freezeq remove-as)
   (let* ((ssnake (qsort tuple-lt snake))
 	 (pot-apple-fields (remove-as ssnake *all-fields*)))
     (if pot-apple-fields
@@ -242,18 +244,16 @@
     (if (deepeq newpos apple)
 	(cons newpos snake)
 	(cons newpos (reverse (cdr rsnake))))))
+(freezeq move-snake-to-pos-and-paint)
 
 (setq *boardsize* (* (* 2 *x*) (* 2 *y*)))
 
 (defun norm-to-tail (wn tailwn)
-  (mod (- (+ wn *boardsize*) tailwn) *boardsize*))
-
-(setq _debugmoves ())
-(setq _debugmovesahead ())
-
-(setq _debug_applewnnormed ())
-(setq _debug_headwnnormed ())
-(setq _debug_tailwn ())
+  (let ((n (mod (- (+ wn *boardsize*) tailwn) *boardsize*)))
+    (if (= n 0)
+	*boardsize*
+	n)))
+(freezeq norm-to-tail)
 
 (defun find-next-move (snake apple)
   (let* ((tailpos (car (reverse snake)))
@@ -281,18 +281,14 @@
 			   (cons (car headpos)
 				 (+ (cdr headpos) 1)))))))
 	 (moves-most-ahead (qsort (lambda (m n) (> (norm-to-tail (car m) tailwn)
-					      (norm-to-tail (car n) tailwn))) moves)))
-    ;; (setf _debugmoves moves)    ;; DEBUG
-    ;; (setf _debugmovesahead moves-most-ahead) ;; DEBUG
-    ;; (setf _debug_applewnnormed (norm-to-tail applewn tailwn))
-    ;; (setf _debug_headwnnormed (norm-to-tail headwn tailwn))
-    ;; (setf _debug_tailwn tailwn)
-    
+					      (norm-to-tail (car n) tailwn)))
+				  moves)))
     (if (> (norm-to-tail headwn tailwn) (norm-to-tail applewn tailwn))
 	(cdar moves-most-ahead)
-	(cdar (filter (lambda (m) (>= (norm-to-tail applewn tailwn)
-				 (norm-to-tail (car m) tailwn)))
+	(cdar (dfilter (lambda (m) (>= (norm-to-tail applewn tailwn)
+				  (norm-to-tail (car m) tailwn)))
 		      moves-most-ahead)))))
+(freezeq find-next-move)
 
 (defun paint-board ()
   (for-each y (drange 0 (* 2 *y*) 1)
@@ -323,11 +319,20 @@
 [*scr* refresh]
 
 (while :t
-  (let ((next-move (find-next-move snake apple)))
-    (when (deepmember next-move snake)
+  (let ((next-move (find-next-move snake apple)))    
+    (setf snake (move-snake-to-pos-and-paint next-move snake apple))
+    (when (deepmember (car snake) (cdr snake))
+      [*scr* nodelay ()]
+      [*scr* move (* 2 *y*) 0]
+      [*scr* print-with-attr "COLLISION!!!" 0]
+      [*scr* refresh]
+      [*scr* getch]
+      ([_ncurses . endwin])
+      (print (format "snake: %r\n" (map (lambda (p) (cons (wn-get (car p) (cdr p)) p))
+				       snake)))
+      (print (format "apple: %r wn:%r\n" apple (wn-get (car apple) (cdr apple))))
       (throw (list 'OUCH "ouch. snake ran into herself")))
     
-    (setf snake (move-snake-to-pos-and-paint next-move snake apple))
     (when (deepeq next-move apple)
       (let ((newapple (set-apple snake)))
 	(when (not newapple)
