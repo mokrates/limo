@@ -52,12 +52,15 @@
 ;;;;;;;;;;;;;;;;;;
 
 (when (< (list-length argv) 2)
-  (print "limo autosnake.limo <width> <height> [ 'noshuffle' ]"))
+  (print "limo autosnake.limo <width> <height> [ 'noshuffle'/'shuffle' ] [ <limo-exp delay> ]"))
 
 (setq *x* (read-string (car argv)))
 (setq *y* (read-string (cadr argv)))
-(when (and (= (list-length argv) 3) (= (caddr argv) "noshuffle"))
+(setq *delay* (/ 1 20))
+(when (and (>= (list-length argv) 3) (= (caddr argv) "noshuffle"))
   (setf shuffle identity))
+(when (>= (list-length argv) 4)
+  (setf *delay* (eval (read-string (nth 3 argv)))))
 
 (setq *maze* (make-vector (* *x* *y* 4)))
 
@@ -229,7 +232,13 @@
       [*scr* move (cdar rsnake) (* 2 (caar rsnake))]
       [*scr* print-with-attr "  " 0])
     [*scr* move (cdr newpos) (* 2 (car newpos))]
-    [*scr* print-with-attr "<>" [_ncurses . A_REVERSE]]
+    (cond ((< (car newpos) (caar snake))
+	   [*scr* print-with-attr ": " [_ncurses . A_REVERSE]])
+	  ((> (car newpos) (caar snake))
+	   [*scr* print-with-attr " :" [_ncurses . A_REVERSE]])
+	  (:else
+	   [*scr* print-with-attr ".." [_ncurses . A_REVERSE]]))
+    
     (if (deepeq newpos apple)
 	(cons newpos snake)
 	(cons newpos (reverse (cdr rsnake))))))
@@ -309,7 +318,7 @@
 (paint-board)
 
 [*scr* move (* 2 (cdar snake)) (* 2 (caar snake))]
-[*scr* print-with-attr "<>"  [_ncurses . A_REVERSE]] ;; print init snake
+[*scr* print-with-attr ".."  [_ncurses . A_REVERSE]] ;; print init snake
 (paint-apple apple)
 [*scr* refresh]
 
@@ -333,7 +342,7 @@
 
     [*scr* move (* 2 *y*) (+ (* 4 *x*) 1)]
     [*scr* refresh]
-    (sleep (/ 1 20))
+    (sleep *delay*)
     (when (= (ord "q") [*scr* getch])
       (break))))
 
