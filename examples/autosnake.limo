@@ -235,11 +235,11 @@
       [*scr* print-with-attr "  " 0])
     [*scr* move (cdr newpos) (* 2 (car newpos))]
     (cond ((< (car newpos) (caar snake))
-	   [*scr* print-with-attr ": " [_ncurses . A_REVERSE]])
+	   [*scr* print-with-attr ": " *headcolor*])
 	  ((> (car newpos) (caar snake))
-	   [*scr* print-with-attr " :" [_ncurses . A_REVERSE]])
+	   [*scr* print-with-attr " :" *headcolor*])
 	  (:else
-	   [*scr* print-with-attr ".." [_ncurses . A_REVERSE]]))
+	   [*scr* print-with-attr ".." *headcolor*]))
     
     (if (deepeq newpos apple)
 	(cons newpos snake)
@@ -300,7 +300,7 @@
 
 (defun paint-apple (apple)
   [*scr* move (cdr apple) (* 2 (car apple))]
-  [*scr* print-with-attr "()" 0])
+  [*scr* print-with-attr "()" *applecolor*])
 
 (setq snake '((0 . 0))) ;; init the snake
 (setq apple (set-apple snake))  ;; the first apple
@@ -308,13 +308,19 @@
 (print (format "%r\n" ""))  ;; get rid of warning
 
 (setq *scr* (new screen (ncurses-init)))
+([_ncurses . start-color])
+([_NCURSES . INIT-PAIR] 1 [_NCURSES . COLOR_WHITE] [_NCURSES . COLOR_YELLOW])
+([_ncurses . init-pair] 2 [_ncurses . COLOR_GREEN] [_NCURSES . COLOR_RED])
+(setq *headcolor* ([_ncurses . color-pair] 1))
+(setq *applecolor* ([_ncurses . color-pair] 2))
+
 [*scr* nodelay :t]
 [*scr* erase]
 
 (paint-board)
 
 [*scr* move (* 2 (cdar snake)) (* 2 (caar snake))]
-[*scr* print-with-attr ".."  [_ncurses . A_REVERSE]] ;; print init snake
+[*scr* print-with-attr ".."  0] ;; print init snake
 (paint-apple apple)
 [*scr* refresh]
 
