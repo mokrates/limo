@@ -31,7 +31,6 @@
     (setq r (random (list-length l)))
     (cons (nth r l) (shuffle (remove-nth l r)))))
 
-;; slow (quick n dirty)random-choice, perhaps improve it?
 (defun random-choice (l)
   (nth (random (list-length l)) l))
 
@@ -283,8 +282,12 @@
 	 (moves-most-ahead (qsort (lambda (m n) (> (norm-to-tail (car m) tailwn)
 					      (norm-to-tail (car n) tailwn)))
 				  moves)))
-    (if (> (norm-to-tail headwn tailwn) (norm-to-tail applewn tailwn))
-	(cdar moves-most-ahead)
+    (if (and (> (norm-to-tail headwn tailwn) (norm-to-tail applewn tailwn))
+	     (!= headwn tailwn))
+	;; (cdar moves-most-ahead)    ;; fastest?
+	(cdar (dfilter (lambda (m) (= (norm-to-tail (car m) tailwn)  ;; slower? better?
+				 (+ 1 (norm-to-tail headwn tailwn))))
+		       moves-most-ahead))
 	(cdar (dfilter (lambda (m) (>= (norm-to-tail applewn tailwn)
 				  (norm-to-tail (car m) tailwn)))
 		      moves-most-ahead)))))
