@@ -1,0 +1,382 @@
+;; autosnake.limo
+;; usage: limo autosnake.limo <x> <y>
+;; ex: limo autosnake.limo 10 10
+;; author: mmolle
+;; mazegen from mazegen.limo
+;; after an inspiration from codebullet
+;; https://www.youtube.com/watch?v=tjQIO1rqTBE&
+
+(mod-load "vector")
+(import "ncurses.limo")
+
+;;;;; shuffling ;;;;;;
+
+(defun random-byte (n)
+  (with-file-open "/dev/urandom" "r" f
+    (mod (ord (file-getc f)) n)))
+
+(defun random (n)
+  (mod (+ (* 255 (random-byte 256))
+	  (random-byte 256))
+       n))
+
+(defun remove-nth (l n)
+  (when l
+    (if (= n 0)
+        (cdr l)
+        (cons (car l) (remove-nth (cdr l) (- n 1))))))
+
+(defun shuffle (l)
+  (when l
+    (setq r (random (list-length l)))
+    (cons (nth r l) (shuffle (remove-nth l r)))))
+
+(defun random-choice (l)
+  (nth (random (list-length l)) l))
+
+;;;;;;;;;;;;;;;;;;;
+;; helperstuff
+(defun pad-number-to-string (n p)
+  (let ((ns (format "%n" n)))
+    (list-to-string (append
+		     (map (lambda () " ")
+			  (drange 0 (- p (string-length ns)) 1))
+		     (list ns)))))
+
+(defun deepmember (m l)
+  (cond ((not l) ())			;
+	((deepeq m (car l))
+	 l)
+	(:else (deepmember m (cdr l)))))
+;;;;;;;;;;;;;;;;;;
+
+(when (< (list-length argv) 2)
+  (print "limo autosnake.limo <width> <height> [ 'noshuffle'/'shuffle' ] [ <limo-exp delay> ]"))
+
+(setq *x* (read-string (car argv)))
+(setq *y* (read-string (cadr argv)))
+(setq *delay* (/ 1 20))
+(when (and (>= (list-length argv) 3) (= (caddr argv) "noshuffle"))
+  (setf shuffle identity))
+(when (>= (list-length argv) 4)
+  (setf *delay* (eval (read-string (nth 3 argv)))))
+
+(setq *maze* (make-vector (* *x* *y* 4)))
+
+(defun getv (x y)
+  (vector-ref *maze* (+ x (* y (* 2 *x*)))))
+
+(defun setv (x y v)
+  (vector-set *maze* (+ x (* y (* 2 *x*))) v))
+
+(defun walk (x y)
+  (setv (* 2 x) (* 2 y) :t) ;; we're here!
+  (setq possibilities
+        (shuffle
+         (filter
+          (lambda (i)
+            (and (>= (car i) 0)
+                 (>= (cadr i) 0)
+                 (< (car i) *x*)
+                 (< (cadr i) *y*)))
+          (list (list (- x 1) y)
+                (list (+ x 1) y)
+                (list x (- y 1))
+                (list x (+ y 1))))))
+
+  (for-each pos possibilities
+    (when (not (getv (* 2 (car pos)) (* 2 (cadr pos))))
+      (setq wx (/ (+ (* (car pos) 2) (* 2 x)) 2))
+      (setq wy (/ (+ (* (cadr pos) 2) (* 2 y)) 2))
+      (setv wx wy :t)
+      (walk (car pos) (cadr pos)))))
+
+;;;;;;;;;; generate maze
+;; (walk 0 0)
+(walk (floor (/ *x* 2)) (floor (/ *y* 2)))
+
+(print "hamilton-circle:\n")
+(for-each y (drange 0 (* 2 *y*) 2)
+  (for-each x (drange 0 (* 2 *x*) 2)
+    (let ((up (and (!= y 0) (getv x (- y 1))))
+	  (left (and (!= x 0) (getv (- x 1) y)))
+	  (right (getv (+ x 1) y))
+	  (down (getv x (+ y 1))))
+      (cond ((and left up)  (print "╯ "))
+	    (left           (print "──"))
+	    (up             (print "│ "))
+	    (:else          (print "╭─")))
+      (cond ((and up right) (print "╰─"))
+	    (right          (print "──"))
+	    (up             (print "│ "))
+	    (:else          (print "╮ ")))))
+  (print "\n")
+  (for-each x (drange 0 (* 2 *x*) 2)
+    (let ((up (and (!= y 0) (getv x (- y 1))))
+	  (left (and (!= x 0) (getv (- x 1) y)))
+	  (right (getv (+ x 1) y))
+	  (down (getv x (+ y 1))))
+      (cond ((and left down)  (print "╮ "))
+	    (left            (print "──"))
+	    (down             (print "│ "))
+	    (:else            (print "╰─")))
+      (cond ((and down right) (print "╭─"))
+	    (right            (print "──"))
+	    (down               (print "│ "))
+	    (:else            (print "╯ ")))))
+  (print "\n"))
+
+
+;;;; create direction-array
+(setq dirarray (make-vector (* 2 *y*)))
+(for-each y (drange 0 (* 2 *y*) 1)
+  (vector-set dirarray y (make-vector (* 2 *x*))))
+
+;;;; create waynumber-array
+(setq wn-array (make-vector (* 2 *y*)))
+(for-each y (drange 0 (* 2 *y*) 1)
+  (vector-set wn-array y (make-vector (* 2 *x*))))
+
+;;;; helpers
+
+(defun da-set (x y val)
+  (vector-set (vector-ref dirarray y) x val))
+(freezeq da-set)
+
+(defun wn-set (x y val)
+  (vector-set (vector-ref wn-array y) x val))
+(freezeq wn-set)
+(defun wn-get (x y)
+  (vector-ref (vector-ref wn-array y) x))
+(freezeq wn-get)
+
+;; create directions
+(for-each y (drange 0 (* 2 *y*) 2)
+  (for-each x (drange 0 (* 2 *x*) 2)
+    (let ((up (and (!= y 0) (getv x (- y 1))))
+	  (left (and (!= x 0) (getv (- x 1) y))))
+      (cond (left           (da-set x y :l))
+	    (:else          (da-set x y :d)))
+      (cond (up             (da-set (+ x 1) y :u))
+	    (:else          (da-set (+ x 1) y :l)))))
+  (for-each x (drange 0 (* 2 *x*) 2)
+    (let ((right (getv (+ x 1) y))
+	  (down (getv x (+ y 1))))
+      (cond (down             (da-set x (+ y 1) :d))
+	    (:else            (da-set x (+ y 1) :r)))
+      (cond (right            (da-set (+ x 1) (+ y 1) :r))
+	    (:else            (da-set (+ x 1) (+ y 1) :u))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; create waynumbers
+
+(setq current-way-number 0)
+(setq current-pos '(0 . 0))
+(while (not (wn-get (car current-pos) (cdr current-pos)))
+  (let* ((x (car current-pos))
+	 (y (cdr current-pos))
+	 (dir (vector-ref (vector-ref dirarray y) x)))
+    (wn-set x y current-way-number)
+    (setf current-way-number (+ 1 current-way-number))
+    (cond ((= dir :d)
+	   (setcdr current-pos (+ y 1)))
+	  ((= dir :u)
+	   (setcdr current-pos (- y 1)))
+	  ((= dir :l)
+	   (setcar current-pos (- x 1)))
+	  ((= dir :r)
+	   (setcar current-pos (+ x 1))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; print waynumbers
+(for-each y (drange 0 (* 2 *y*) 1)
+  (for-each x (drange 0 (* 2 *x*) 1)
+    (if (wn-get x y)
+	(print (pad-number-to-string (wn-get x y) 4))
+	(print " nil")))
+  (print "\n"))
+
+(defun tuple-lt (a b)
+  (if (= (car a) (car b))
+      (< (cdr a) (cdr b))
+      (< (car a) (car b))))
+
+(setq *all-fields*
+      (apply append (map (lambda (x)
+			   (map (lambda (y) (cons x y))
+				(drange 0 (* 2 *y*) 1)))
+			 (drange 0 (* 2 *x*) 1))))
+
+(freezeq *all-fields*)
+(defun set-apple (snake)
+  (defun remove-as (as bs)
+    (cond ((not as) bs)
+	  ((not bs) ())
+	  ((deepeq (car as) (car bs))
+	   (remove-as (cdr as) (cdr bs)))
+	  ((tuple-lt (car as) (car bs))
+	   (cons (car bs) (remove-as (cdr as) (cdr bs))))
+	  (:else
+	   (cons (car bs) (remove-as as (cdr bs))))))
+  (freezeq remove-as)
+  (let* ((ssnake (qsort tuple-lt snake))
+	 (pot-apple-fields (remove-as ssnake *all-fields*)))
+    (if pot-apple-fields
+	(random-choice pot-apple-fields)
+	())))
+
+(defun move-snake-to-pos-and-paint (newpos snake apple)
+  [*scr* move (cdar snake) (* 2 (caar snake))]
+  [*scr* print-with-attr "  " [_ncurses . A_REVERSE]]
+  (let ((rsnake (reverse snake))
+	(hc (if *circlestrat* *headcolorcircle* *headcolor*)))
+    (when (not (deepeq newpos apple))
+      [*scr* move (cdar rsnake) (* 2 (caar rsnake))]
+      [*scr* print-with-attr "  " 0])
+    [*scr* move (cdr newpos) (* 2 (car newpos))]
+    (cond ((< (car newpos) (caar snake))
+	   [*scr* print-with-attr ": " hc])
+	  ((> (car newpos) (caar snake))
+	   [*scr* print-with-attr " :" hc])
+	  (:else
+	   [*scr* print-with-attr ".." hc]))
+    
+    (if (deepeq newpos apple)
+	(cons newpos snake)
+	(cons newpos (reverse (cdr rsnake))))))
+(freezeq move-snake-to-pos-and-paint)
+
+(setq *boardsize* (* (* 2 *x*) (* 2 *y*)))
+
+(defun norm-to-tail (wn tailwn)
+  (let ((n (mod (- (+ wn *boardsize*) tailwn) *boardsize*)))
+    (if (= n 0)
+	*boardsize*
+	n)))
+(freezeq norm-to-tail)
+
+(defun find-next-move (snake apple)
+  (let* ((tailpos (car (reverse snake)))
+	 (tailwn (wn-get (car tailpos) (cdr tailpos)))
+	 (headpos (car snake))
+	 (headwn (wn-get (car headpos) (cdr headpos)))
+	 (applewn (wn-get (car apple) (cdr apple)))
+	 (moves
+	  (filter identity
+		  (list
+		   (when (> (car headpos) 0)
+		     (cons (wn-get (- (car headpos) 1) (cdr headpos))
+			   (cons (- (car headpos) 1)
+				 (cdr headpos))))
+		   (when (< (car headpos) (- (* 2 *x*) 1))
+		     (cons (wn-get (+ (car headpos) 1) (cdr headpos))
+			   (cons (+ (car headpos) 1)
+				 (cdr headpos))))
+		   (when (> (cdr headpos) 0)
+		     (cons (wn-get (car headpos) (- (cdr headpos) 1))
+			   (cons (car headpos 1)
+				 (- (cdr headpos) 1))))
+		   (when (< (cdr headpos) (- (* 2 *y*) 1))
+		     (cons (wn-get (car headpos) (+ (cdr headpos) 1))
+			   (cons (car headpos)
+				 (+ (cdr headpos) 1)))))))
+	 (moves-most-ahead (qsort (lambda (m n) (> (norm-to-tail (car m) tailwn)
+					      (norm-to-tail (car n) tailwn)))
+				  moves)))
+    (if (or *circlestrat*
+	    (and (> (norm-to-tail headwn tailwn) (norm-to-tail applewn tailwn))
+		 (!= headwn tailwn)))
+	;; (cdar moves-most-ahead)    ;; fastest?
+	(cdar (dfilter (lambda (m) (= (norm-to-tail (car m) tailwn)  ;; slower? better?
+				 (+ 1 (norm-to-tail headwn tailwn))))
+		       moves-most-ahead))
+	(cdar (dfilter (lambda (m) (>= (norm-to-tail applewn tailwn)
+				  (norm-to-tail (car m) tailwn)))
+		      moves-most-ahead)))))
+(freezeq find-next-move)
+
+(defun paint-board ()
+  (for-each y (drange 0 (* 2 *y*) 1)
+    [*scr* move y (+ (* 4 *x*) 1)]
+    [*scr* print-with-attr "|" 0])
+  [*scr* move (* 2 *y*) 0]
+  [*scr* print-with-attr (list-to-string (map (lambda () "-") (drange 0 (+ 1 (* 4 *x*)) 1))) 0]
+  [*scr* print-with-attr "+" 0])
+
+(defun paint-apple (apple)
+  [*scr* move (cdr apple) (* 2 (car apple))]
+  [*scr* print-with-attr "()" *applecolor*])
+
+(setq snake '((0 . 0))) ;; init the snake
+(setq apple (set-apple snake))  ;; the first apple
+
+(print (format "%r\n" ""))  ;; get rid of warning
+
+(setq *scr* (new screen (ncurses-init)))
+([_ncurses . start-color])
+([_NCURSES . INIT-PAIR] 1 [_NCURSES . COLOR_WHITE] [_NCURSES . COLOR_YELLOW])
+([_ncurses . init-pair] 2 [_ncurses . COLOR_BLACK] [_NCURSES . COLOR_CYAN])
+([_ncurses . init-pair] 3 [_ncurses . COLOR_GREEN] [_NCURSES . COLOR_RED])
+(setq *headcolor* ([_ncurses . color-pair] 1))
+(setq *headcolorcircle* ([_ncurses . color-pair] 2))
+(setq *applecolor* ([_ncurses . color-pair] 3))
+
+[*scr* nodelay :t]
+[*scr* erase]
+
+(paint-board)
+
+[*scr* move (* 2 (cdar snake)) (* 2 (caar snake))]
+[*scr* print-with-attr ".."  0] ;; print init snake
+(paint-apple apple)
+[*scr* refresh]
+
+(setq *circlestrat* ())
+(setq *running-avg-cycle* 0)
+(setq *num-moves-since* 0)
+(setq *num-apples* 0)
+(while :t
+  (let ((next-move (find-next-move snake apple)))    
+    (setf snake (move-snake-to-pos-and-paint next-move snake apple))
+    (setf *num-moves-since* (+ *num-moves-since* 1)) ;; count moves
+    
+    (when (deepmember (car snake) (cdr snake))
+      [*scr* nodelay ()]
+      [*scr* move (* 2 *y*) 0]
+      [*scr* print-with-attr "COLLISION!!!" 0]
+      [*scr* refresh]
+      [*scr* getch]
+      ([_ncurses . endwin])
+      (print (format "snake: %r\n" (map (lambda (p) (cons (wn-get (car p) (cdr p)) p))
+				       snake)))
+      (print (format "apple: %r wn:%r\n" apple (wn-get (car apple) (cdr apple))))
+      (throw (list 'OUCH "ouch. snake ran into herself")))
+    
+    (when (deepeq next-move apple)
+      (setf *running-avg-cycle* (/ (+ (* 4 *running-avg-cycle*)
+				      *num-moves-since*)
+				   5))
+      (setf *num-moves-since* 0)
+      (setf *num-apples* (+ 1 *num-apples*))
+      (setf *circlestrat* (or *circlestrat*
+			      (> *running-avg-cycle*
+				 (/ (- *boardsize* *num-apples*) 2))))
+      
+      (let ((newapple (set-apple snake)))
+	(when (not newapple)
+	  [*scr* nodelay ()]
+	  [*scr* move (* 2 *y*) 0]
+	  [*scr* print-with-attr "thats it!" 0]
+	  [*scr* refresh]
+	  [*scr* getch]
+	  (break))
+	(setf apple newapple))
+      (paint-apple apple))
+
+    [*scr* move (* 2 *y*) (+ (* 4 *x*) 1)]
+    [*scr* refresh]
+    (sleep *delay*)
+    (when (= (ord "q") [*scr* getch])
+      (break))))
+
+([_ncurses . endwin])
