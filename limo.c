@@ -7,6 +7,7 @@
 
 unsigned long long limo_register;
 
+// have to be global, are collected, if not.
 limo_data *globalenv;
 
 limo_data *sym_env;
@@ -18,6 +19,7 @@ limo_data *sym_underscore;
 limo_data *sym_block;
 limo_data *nil;
 
+pthread_key_t pk_dynamic_vars_key;
 pthread_key_t pk_stacktrace_key;
 pthread_key_t pk_exception_key;
 pthread_key_t pk_ljbuf_key;
@@ -34,6 +36,7 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_exception_key, NULL);
   pthread_key_create(&pk_limo_data_next_key, NULL);
   pthread_key_create(&pk_cons_next_key, NULL);
+  pthread_key_create(&pk_dynamic_vars_key, NULL);
 }
 
 static void init_syms()
@@ -88,6 +91,7 @@ void sigsegv_handler(int sig) {
 int main(int argc, char **argv)
 {
   limo_data *env;
+  limo_data *dynamic_env;  
   reader_stream *rs;
   int marked_const;
   sigset_t sigset;
@@ -116,10 +120,13 @@ int main(int argc, char **argv)
   init_syms();
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
-
+ 
   env = make_globalenv(argc, argv);
   globalenv = env;
 
+  dynamic_env = make_env(nil);
+  pk_dynamic_vars_set(dynamic_env);
+   
   signal(SIGINT, limo_repl_sigint);
   signal(SIGSEGV, sigsegv_handler);
 
@@ -175,5 +182,8 @@ int main(int argc, char **argv)
 
 #endif
   }
+
+  GC_reachable_here(dynamic_env);
+  
   return 0;
 }

@@ -173,6 +173,7 @@ extern pthread_key_t pk_exception_key;
 extern pthread_key_t pk_ljbuf_key;
 extern pthread_key_t pk_limo_data_next_key;
 extern pthread_key_t pk_cons_next_key;
+extern pthread_key_t pk_dynamic_vars_key;
 
 #define pk_ljbuf_set(VAL)      (pthread_setspecific(pk_ljbuf_key, (void *)(VAL)))
 #define pk_ljbuf_get()         ((sigjmp_buf *)pthread_getspecific(pk_ljbuf_key))
@@ -183,8 +184,10 @@ extern pthread_key_t pk_cons_next_key;
 #define pk_limo_data_next_set(VAL)  (pthread_setspecific(pk_limo_data_next_key, (void *)(VAL)))
 #define pk_limo_data_next_get()     ((void **)pthread_getspecific(pk_limo_data_next_key))
 #define pk_cons_next_set(VAL)  (pthread_setspecific(pk_cons_next_key, (void *)(VAL)))
-#define pk_cons_next_get()     ((void **)pthread_getspecific(pk_cons_next_key))
-
+#define pk_cons_next_get()       ((void **)pthread_getspecific(pk_cons_next_key))
+#define pk_dynamic_vars_set(VAL) (pthread_setspecific(pk_dynamic_vars_key, (void *)(VAL)))
+#define pk_dynamic_vars_get()    ((limo_data *)pthread_getspecific(pk_dynamic_vars_key))
+  
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)
 #define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
@@ -294,6 +297,12 @@ BUILTIN(builtin_env_setq);
 BUILTIN(builtin_env_setf);
 BUILTIN(builtin_env_getq);
 BUILTIN(builtin_env_current);
+
+
+// support for dynamic variables
+BUILTIN(builtin_get_dynamic_env);
+BUILTIN(builtin_with_dynamic_env);
+
 BUILTIN(builtin_set_finalizer);
 
 /////////////////////////////////

@@ -27,22 +27,27 @@ typedef struct LIMO_THREADING_COND {
   pthread_cond_t cond;
 } limo_threading_cond;
 
-static void *limo_threading_entry_function(void *thread_fun)
+static void *limo_threading_entry_function(void *thread_thunk)
 {
   int marked_const;
   void *make_limo_data_next = NULL;
   void *make_cons_next = NULL;
+  volatile limo_data *dynamic_env;
   
   pk_limo_data_next_set(&make_limo_data_next);
   pk_cons_next_set(&make_cons_next);
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
+  dynamic_env = make_env(CDR((limo_data *)thread_thunk));
+  pk_dynamic_vars_set(dynamic_env);
   
-  if (NULL==try_catch(make_cons((limo_data *)thread_fun, nil), make_env(nil))) {
+  if (NULL==try_catch(make_cons(CAR((limo_data *)thread_thunk), nil), make_env(nil))) {
     print_stacktrace(pk_stacktrace_get());
     writer(pk_exception_get());
     printf("\n");
   }
+
+  GC_reachable_here(dynamic_env);
 }
 
 BUILTIN(builtin_thread_create)
@@ -59,7 +64,10 @@ BUILTIN(builtin_thread_create)
   ld_ltt = make_special(sym_thread, ltt);
 
   // TODO threading-attributes -- OPTIONAL second argument!
-  if (GC_pthread_create(&ltt->pthread, NULL, limo_threading_entry_function, ld_entry_function))
+  if (GC_pthread_create(&ltt->pthread,
+			NULL,
+			limo_threading_entry_function,
+			make_cons(ld_entry_function, pk_dynamic_vars_get())))
     limo_error("Could not create new thread");
 
   return ld_ltt;

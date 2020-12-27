@@ -592,6 +592,25 @@
 (freezeq let)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  dynamic variables
+(defmacro dyn-getq (var)
+    `(env-getq (get-dynamic-env) ,var))
+(defmacro dyn-setq (var val)
+    `(env-setq (get-dynamic-env) ,var ,val))
+(defmacro dyn-setf (var val)
+    `(env-setf (get-dynamic-env) ,var ,val))
+(defmacro with-dynamic-env body
+    `(_with-dynamic-env ,`(progn ,@body)))
+(defmacro dyn-let (vars . body)
+  `(with-dynamic-env
+    ,(cons 'progn
+	   (map (lambda (x)
+		  `(dyn-setq ,(car x)
+			     ,(cadr x)))
+		vars))
+    ,@body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; objects and classes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; a class is an env.
