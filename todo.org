@@ -1,0 +1,16 @@
+* sockets
+** BIND
+** examples: simplest webserver
+** webserver-module (multithreaded/single-threaded)
+** simple jupyter-clone (rendering to .pngs?)
+
+* TODO reworking exceptions
+** exception-format (similar to status quo):
+   (throw 'exceptionsym)
+   alternative: (throw '(exceptionsym message-and-other-content))
+** TODO exception-hierarchy
+   by dictionary: key=exception-symbol, value=parent-exception
+   (defexception sym parentsym)
+** TODO (try ... (catchblock...  )
+   catchblock : (catch ((var EXCEPTIONSYM ...))) or (catch ((var (EXCEPTIONSYM ...)) ...) ...)
+   (similar to cond)
