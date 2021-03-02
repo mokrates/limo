@@ -36,6 +36,8 @@ parentheses! parentheses everywhere!
 ([_socket . bind] s ([_socket . make-sockaddr] ([_socket . inet-addr] "0.0.0.0") port))
 ([_socket . socket-listen] s 2)
 
+(print (format "simplest webserver listening on 0.0.0.0:%n\n" port))
+
 (while :forever
   (setq sc ([_socket . socket-accept] s))
   (print "connection accepted\n")
