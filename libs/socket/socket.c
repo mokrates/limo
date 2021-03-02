@@ -119,6 +119,23 @@ BUILTIN(builtin_socket_connect)
   return nil;
 }
 
+BUILTIN(builtin_socket_bind)
+{
+  limo_data *ld_sockfd, *ld_sockaddr;
+  int sockfd;
+  struct sockaddr_in *sa;
+
+  REQUIRE_ARGC("BIND", 2);
+  ld_sockfd = eval(FIRST_ARG, env);
+  ld_sockaddr = eval(SECOND_ARG, env);
+  sa = get_special(ld_sockaddr, sym_sockaddr);
+  REQUIRE_TYPE("BIND", ld_sockfd, limo_TYPE_GMPQ);
+  sockfd = GETINTFROMMPQ(ld_sockfd);
+  if (0>bind(sockfd, (struct sockaddr *)sa, sizeof *sa))
+    limo_error_errno(sym_socket);
+  return nil;  
+}
+
 BUILTIN(builtin_socket_gethostbyname)
 {
   struct hostent *he;
@@ -150,6 +167,7 @@ void limo_init_socket(limo_data *env)
   INS_SOCKET_BUILTIN(builtin_socket_inet_addr, "INET-ADDR");
   INS_SOCKET_BUILTIN(builtin_socket_make_sockaddr, "MAKE-SOCKADDR");
   INS_SOCKET_BUILTIN(builtin_socket_connect, "CONNECT");
+  INS_SOCKET_BUILTIN(builtin_socket_bind, "BIND");
   INS_SOCKET_BUILTIN(builtin_socket_gethostbyname, "GETHOSTBYNAME");
 
   INS_SOCKET_VAR(make_number_from_long_long(AF_INET), "AF_INET");

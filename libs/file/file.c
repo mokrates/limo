@@ -82,6 +82,7 @@ BUILTIN(builtin_file_write)
 {
   FILE *f;
   limo_data *str;
+  size_t ret;
 
   if (list_length(arglist) < 3)
     limo_error("(file-write FILE STRING)");
@@ -91,8 +92,8 @@ BUILTIN(builtin_file_write)
   if (str->type !=limo_TYPE_STRING)
     limo_error("(file-write FILE STRING)");
 
-  fwrite(str->data.d_string, str->string_length, 1, f);
-  return nil;
+  ret = fwrite(str->data.d_string, str->string_length, 1, f);
+  return make_number_from_long_long(ret);
 }
 
 BUILTIN(builtin_file_flush)
