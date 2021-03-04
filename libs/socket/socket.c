@@ -162,8 +162,8 @@ void limo_init_socket(limo_data *env)
   limo_socket_env = make_env(nil);
   
   INS_SOCKET_BUILTIN(builtin_socket_make_socket, "MAKE-SOCKET");
-  INS_SOCKET_BUILTIN(builtin_socket_listen, "SOCKET-LISTEN");
-  INS_SOCKET_BUILTIN(builtin_socket_accept, "SOCKET-ACCEPT");
+  INS_SOCKET_BUILTIN(builtin_socket_listen, "LISTEN");
+  INS_SOCKET_BUILTIN(builtin_socket_accept, "ACCEPT");
   INS_SOCKET_BUILTIN(builtin_socket_inet_addr, "INET-ADDR");
   INS_SOCKET_BUILTIN(builtin_socket_make_sockaddr, "MAKE-SOCKADDR");
   INS_SOCKET_BUILTIN(builtin_socket_connect, "CONNECT");

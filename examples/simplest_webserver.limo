@@ -34,12 +34,12 @@ parentheses! parentheses everywhere!
 
 (setq s ([_socket . make-socket] [_socket . af_inet] [_socket . sock_stream] 0))
 ([_socket . bind] s ([_socket . make-sockaddr] ([_socket . inet-addr] "0.0.0.0") port))
-([_socket . socket-listen] s 2)
+([_socket . listen] s 2)
 
 (print (format "simplest webserver listening on 0.0.0.0:%n\n" port))
 
 (while :forever
-  (setq sc ([_socket . socket-accept] s))
+  (setq sc ([_socket . accept] s))
   (print "connection accepted\n")
   
   (setq sf (file-fdopen sc "a+"))
