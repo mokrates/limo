@@ -1,0 +1,29 @@
+Attributions for code-snippets in limo
+--------------------------------------
+
+As the core is more or less my own, the more the language is capable
+of, more and more I steal code to make limo even more useful (you
+might think "yeah, sure", but, yeah, I really use it... a bit.)
+
+It is usually required to give credit if one steals foreign code, but
+even if it weren't, it is common courtesy to do so. So this here is
+where the credit is to be given.
+
+M. Molle
+
+======================================
+
+- string_builtins.c - builtin_string_utf8_length
+  stolen from
+  https://stackoverflow.com/questions/32936646/getting-the-string-length-on-utf-8-in-c
+
+- the dictionary-code in dict.c I copied from the python2 source code.
+
+- libs/popen
+  I use a popen3, which I adapted.
+  taken from here:
+  https://gist.github.com/mike-bourgeous/2be6c8900bf624887fe5fee4f28552ef
+  * Mike Bourgeous 
+  * https://github.com/mike-bourgeous
+  * http://www.mikebourgeous.com/
+  
