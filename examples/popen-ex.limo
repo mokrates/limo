@@ -1,0 +1,12 @@
+(defmacro repl (c)
+  `(progn
+    ,`(write ,`',c)
+    ,`(file-write stdout "-> ")
+    ,`(file-flush stdout)
+    ,`(write ,c)))
+
+(repl (mod-load "popen"))
+(repl (setq gedoens (popen "/usr/bin/cat" '("/usr/bin/cat" "/etc/passwd") () () :t ())))
+(repl (setq f (file-fdopen (cdr (assoc 'stdout gedoens)) "r")))
+(repl (for-each line (file-readlines f)
+        (write line)))

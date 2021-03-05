@@ -1,0 +1,15 @@
+(mod-load "popen")
+
+(defhelp popen
+  "BUILTIN popen
+(POPEN filename { argv or nil } { env or nil } <stdin?> <stdout?> <stderr?>)
+
+popen expects six arguments:
+filename   : the first one is the filename of the program to execute.
+argv or nil: the argv as a list. the first argument should be the same as filename.
+             set argv = () if you don't want to call with arguments
+env or nil : give a process environment. If nil, the one of the calling process is used
+stdin?, stdout? stderr?: boolean. set to true if you want a filedescriptor to read or write.
+
+returns assoclist: '((pid 123) (stdin -1) (stdout 5) (stderr -1))
+")
