@@ -70,3 +70,13 @@
     (string-split [self . _s] d))
   (defmethod format (self . rest)
     (apply format (cons [self . _s] rest))))
+
+(defun string-join (sep l)
+  (defun helper (sep l)
+    (if (not l)
+        ()
+        (dcons sep (dcons (car l) (helper sep (cdr l))))))
+        
+  (if (not l)
+      ()
+      (list-to-string (dcons (car l) (helper sep (cdr l))))))
