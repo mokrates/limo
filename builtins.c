@@ -91,7 +91,7 @@ BUILTIN(builtin_apply)
   if (list_length(arglist) ==3)
     al= eval(SECOND_ARG,env);
   else
-    al=make_nil();
+    al=nil;
 
   if (f->type == limo_TYPE_LAMBDA)
     return eval_function_call(f, make_cons(f,al), env, 0);
@@ -170,7 +170,7 @@ BUILTIN(builtin_consp)
     limo_error("ERROR: (consp EXP)");
 
   if (eval(FIRST_ARG, env)->type == limo_TYPE_CONS)
-    return make_sym(":T");
+    return sym_true;
   else
     return nil;
 }
@@ -199,7 +199,7 @@ BUILTIN(builtin_eq)
   REQUIRE_ARGC("eq", 2);
 
   if (limo_equals(eval(FIRST_ARG, env), eval(SECOND_ARG, env)))
-    return make_sym(":T");
+    return sym_true;
     else return nil;
 }
 
