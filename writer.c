@@ -132,10 +132,10 @@ void writer(limo_data *ld) // not threadsafe!
     printf("#<%s:", (ld->type==limo_TYPE_LAMBDA?"lambda":
 		     (ld->type==limo_TYPE_MACRO?"macro":
 		      "thunk")));
-    writer(CDR(ld->data.d_lambda));
-    if (CAR(ld->data.d_lambda) != globalenv) {
+    writer(CDR(ld));
+    if (CAR(ld) != globalenv) {
       printf(", env: ");
-      writer(CAR(ld->data.d_lambda));
+      writer(CAR(ld));
     }
     printf(">"); 
     break;
@@ -145,14 +145,14 @@ void writer(limo_data *ld) // not threadsafe!
       printf("#<env>");
     else {
       in_env++;
-      printf("#<env:"); writer(ld->data.d_env); printf(">");
+      printf("#<env:"); writer(ld); printf(">");
       in_env--;
     }
     break;
 
   case limo_TYPE_SPECIAL: writer_special(ld); break;
   case limo_TYPE_SPECIAL_INTERN: writer_special_intern(ld); break;
-  case limo_TYPE_VCACHE: printf("<"); writer(CDR(ld->data.d_vcache)); printf(">"); break;
+  case limo_TYPE_VCACHE: printf("<"); writer(CDR(ld)); printf(">"); break;
 
   default:
     printf("**BROKEN DATA(%i)**", ld->type);
@@ -200,10 +200,10 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
     list_put_str(dest, (ld->type==limo_TYPE_LAMBDA?"#<lambda":
 		     (ld->type==limo_TYPE_MACRO?"#<macro":
 		      "#<thunk")));
-    l_writer(dest, CDR(ld->data.d_lambda));
-    if (CAR(ld->data.d_lambda) != globalenv) {
+    l_writer(dest, CDR(ld));
+    if (CAR(ld) != globalenv) {
       list_put_str(dest, ", env: ");
-      l_writer(dest, CAR(ld->data.d_lambda));
+      l_writer(dest, CAR(ld));
     }
     list_put_str(dest, ">");
     break;
@@ -213,14 +213,14 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
       list_put_str(dest, "#<env>");
     else {
       in_env++;
-      list_put_str(dest, "#<env:"); l_writer(dest, ld->data.d_env); list_put_str(dest, ">"); 
+      list_put_str(dest, "#<env:"); l_writer(dest, ld); list_put_str(dest, ">"); 
       in_env--;
     }
     break;
 
   case limo_TYPE_SPECIAL: l_writer_special(dest, ld); break;
   case limo_TYPE_SPECIAL_INTERN: l_writer_special_intern(dest, ld); break;
-  case limo_TYPE_VCACHE: list_put_str(dest, "<"); l_writer(dest, CDR(ld->data.d_vcache)); list_put_str(dest, ">"); break;
+  case limo_TYPE_VCACHE: list_put_str(dest, "<"); l_writer(dest, CDR(ld)); list_put_str(dest, ">"); break;
 
   default:
     {

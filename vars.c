@@ -4,8 +4,8 @@
 limo_data *make_env(limo_data *up)
 {
   limo_data *env = make_limo_data();
-  env->type = limo_TYPE_ENV;
-  env->data.d_env = make_cons(up==NULL?nil:up, make_dict());
+  env = make_cons(up==NULL?nil:up, make_dict());
+  env->type = limo_TYPE_ENV;  
   return env;
 }
 
@@ -22,8 +22,8 @@ limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons
   if (env->type != limo_TYPE_ENV)
     limo_error("var_lookup: given env is no env");
 
-  limo_data *up = CAR(env->data.d_env);
-  limo_data *dict = CDR(env->data.d_env);
+  limo_data *up = CAR(env);
+  limo_data *dict = CDR(env);
   limo_data **place;
   limo_data *cons;
 
@@ -90,13 +90,13 @@ limo_data *freeze_var(limo_data *env, limo_data *name)
 void setf(limo_data *env, limo_data *name, limo_data *value)
 {
   limo_data *place = var_lookup_place(env, name);
-  if (place) 
-    CDR(place) = value;
+  assert(place);
+  CDR(place) = value;
 }
 
 void setq(limo_data *env, limo_data *name, limo_data *value)
 {
-  dict_put(CDR(env->data.d_env), name, value);
+  dict_put(CDR(env), name, value);
 }
 
 void setconstq(limo_data *env, limo_data *name, limo_data *value)  // TODO: doesn't freeze yet.
@@ -106,5 +106,5 @@ void setconstq(limo_data *env, limo_data *name, limo_data *value)  // TODO: does
 
 void unsetq(limo_data *env, limo_data *name)
 {
-  dict_remove(CDR(env->data.d_env), name);
+  dict_remove(CDR(env), name);
 }

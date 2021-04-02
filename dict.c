@@ -25,9 +25,7 @@ static inline unsigned int hash_string(char *str)
 
 inline unsigned hash(limo_data *ld)
 {
-  if (ld->type == limo_TYPE_CONST)
-    limo_error("this should not happen (hash())");
-  
+  assert (ld->type != limo_TYPE_CONST);
   if (ld->type == limo_TYPE_SYMBOL) {
     if (ld->hash != 0)
       return ld->hash;

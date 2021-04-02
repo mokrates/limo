@@ -72,7 +72,7 @@ char *rl_completer_generator(const char *text, int state)
   char *res;
 
   if (!state) {
-    lookup_pos = dict_to_list(CDR(globalenv->data.d_env));
+    lookup_pos = dict_to_list(CDR(globalenv));
     textlen = strlen(text);
   }
 

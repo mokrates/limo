@@ -6,9 +6,9 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 {
   // (#<lambda:(env . (lambda (a b) body)) args...)
   limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env;
-  lambda_env = CAR(f->data.d_lambda);
+  lambda_env = CAR(f);
   //  printf("lambda_env: "); writer(lambda_env); printf("\n");
-  lambda_list = CDR(f->data.d_lambda);
+  lambda_list = CDR(f);
   //  printf("lambda_list: "); writer(lambda_list); printf("\n");
   params = CAR(CDR(lambda_list));
   //  printf("params: "); writer(params); printf("\n");
@@ -66,8 +66,8 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 {
   // (#<macro:(env . (macro (a b) body)) args...)
   limo_data *macro_env, *macro_list, *params, *body, *arglist, *earglist, *param_env;
-  macro_env = CAR(f->data.d_lambda);
-  macro_list = CDR(f->data.d_lambda);
+  macro_env = CAR(f);
+  macro_list = CDR(f);
   params = CAR(CDR(macro_list));
   body= CAR(CDR(CDR(macro_list)));
   arglist=CDR(call);
@@ -160,17 +160,15 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     pk_stacktrace_set(make_cons(form, tmp_stacktrace));
 
     form=real_eval(form, env);
-    if (!form)
-      limo_error("eval(): wtf!");
-
+    assert(form);
     assert(form->type != limo_TYPE_CONST);
 
     if (form->type == limo_TYPE_THUNK) {
       limo_data *next_form;
       //      printf("THUNK:"); writer(form); printf("\n");
       again=1;
-      next_form= CDR(form->data.d_thunk);
-      env      = CAR(form->data.d_thunk);
+      next_form= CDR(form);
+      env      = CAR(form);
       form     = next_form;
     }
     else

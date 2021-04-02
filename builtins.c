@@ -33,8 +33,8 @@ BUILTIN(builtin_lambda)
 
   if (list_length(arglist) != 3)
     limo_error("lambda: too few arguments");
-  lambda->type = limo_TYPE_LAMBDA;
-  lambda->data.d_lambda = make_cons(env, arglist);
+  lambda = make_cons(env, arglist);
+  lambda->type = limo_TYPE_LAMBDA;  
   return lambda;
 }
 
@@ -43,8 +43,9 @@ BUILTIN(builtin_macro)
   limo_data *macro = make_nil();
   if (list_length(arglist) != 3)
     limo_error("macro: too few arguments");
-  macro->type = limo_TYPE_MACRO;
-  macro->data.d_lambda = make_cons(env, arglist);
+  
+  macro = make_cons(env, arglist);
+  macro->type = limo_TYPE_MACRO;  
   return macro;
 }
 
@@ -59,9 +60,9 @@ BUILTIN(builtin_macroexpand_1)
 
   res = real_eval(FIRST_ARG, env);
   if (res->type == limo_TYPE_THUNK) {
-    return make_cons(CDR(res->data.d_thunk),
-		     env!=CAR(res->data.d_thunk)?
-		     CAR(res->data.d_thunk):make_sym(":hidden"));
+    return make_cons(CDR(res),
+		     env!=CAR(res)?
+		     CAR(res):make_sym(":hidden"));
   }
   else
     return nil;
@@ -416,7 +417,7 @@ BUILTIN(builtin_env_extract)
   REQUIRE_ARGC("ENV-EXTRACT", 1);
   limo_data *ld = eval(FIRST_ARG, env);
   REQUIRE_TYPE("ENV-EXTRACT", ld, limo_TYPE_ENV);
-  return ld->data.d_env;
+  return make_cons(CAR(ld), CDR(ld));
 }
 
 BUILTIN(builtin_envp)

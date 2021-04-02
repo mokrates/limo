@@ -59,19 +59,16 @@ typedef struct limo_DATA {
     float d_float;
     double d_double;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env);
-    struct limo_DATA *d_lambda; // lambda, macro, env
+    struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
     void *d_special_intern;
-#define d_env d_lambda
-#define d_thunk d_lambda
-#define d_special d_lambda
-#define d_vcache d_lambda
   } data;
+  #define d_vcache d_special
   union {
     unsigned int hash;  // for symbols
     unsigned int string_length;
+    unsigned int ld_marked_const;
   };
-#define ld_marked_const hash
   limo_annotation *annotation;
 } limo_data;
 

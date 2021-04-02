@@ -61,7 +61,7 @@ limo_data *thunk_safe_cdr(limo_data *x)
   limo_data *cdr;
   cdr = (x)->data.d_cons->cdr;
   while (cdr->type == limo_TYPE_THUNK)
-    cdr = eval((cdr->data.d_thunk->data.d_cons->cdr), CAR(cdr));
+    cdr = eval(CDR(cdr), CAR(cdr));
 
   return cdr;
 }

@@ -139,10 +139,8 @@ limo_data *make_thunk(limo_data *expr, limo_data *env)
 {
 #if LIMO_TAILCALL_OPT
   limo_data *l = make_cons(env, expr);
-  limo_data *ea = make_limo_data();
-  ea->type=limo_TYPE_THUNK;
-  ea->data.d_thunk = l;
-  return ea;
+  l->type=limo_TYPE_THUNK;
+  return l;
 #else
   return eval(expr, env);
 #endif
