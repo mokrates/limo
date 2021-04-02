@@ -70,7 +70,7 @@ BUILTIN(builtin_ssdl_disablerefresh)
 /*   x=eval(FIRST_ARG, env); */
 /*   y=eval(SECOND_ARG, env); */
   
-/*   Point(mpq_get_d(*x->data.d_mpq), mpq_get_d(*y->data.d_mpq)); */
+/*   Point(mpq_get_d(*x->d_mpq), mpq_get_d(*y->d_mpq)); */
 
 /*   return make_nil(); */
 /* } */
@@ -85,9 +85,9 @@ BUILTIN(builtin_ssdl_plot)
   y=eval(SECOND_ARG, env);
   c=eval(THIRD_ARG, env);
   
-  Plot(mpq_get_d(*x->data.d_mpq), 
-       mpq_get_d(*y->data.d_mpq),
-       mpq_get_d(*c->data.d_mpq));
+  Plot(mpq_get_d(*x->d_mpq), 
+       mpq_get_d(*y->d_mpq),
+       mpq_get_d(*c->d_mpq));
 
   return make_nil();
 }
@@ -106,11 +106,11 @@ BUILTIN(builtin_ssdl_line)
   y2=eval(FIRST_ARG, env); SHIFT_ARGS();
   c=eval(FIRST_ARG, env);
   
-  Line(mpq_get_d(*x1->data.d_mpq), 
-       mpq_get_d(*y1->data.d_mpq),
-       mpq_get_d(*x2->data.d_mpq),
-       mpq_get_d(*y2->data.d_mpq),
-       mpq_get_d(*c->data.d_mpq));
+  Line(mpq_get_d(*x1->d_mpq), 
+       mpq_get_d(*y1->d_mpq),
+       mpq_get_d(*x2->d_mpq),
+       mpq_get_d(*y2->d_mpq),
+       mpq_get_d(*c->d_mpq));
 
   return make_nil();
 }
@@ -126,10 +126,10 @@ BUILTIN(builtin_ssdl_hline)
   y=eval(FIRST_ARG, env); SHIFT_ARGS();
   c=eval(FIRST_ARG, env);
   
-  HLine(mpq_get_d(*x1->data.d_mpq), 
-	mpq_get_d(*x2->data.d_mpq),
-	mpq_get_d(*y->data.d_mpq),
-	mpq_get_d(*c->data.d_mpq));
+  HLine(mpq_get_d(*x1->d_mpq), 
+	mpq_get_d(*x2->d_mpq),
+	mpq_get_d(*y->d_mpq),
+	mpq_get_d(*c->d_mpq));
 
   return make_nil();
 }
@@ -145,10 +145,10 @@ BUILTIN(builtin_ssdl_vline)
   y2=eval(FIRST_ARG, env); SHIFT_ARGS();
   c=eval(FIRST_ARG, env);
   
-  VLine(mpq_get_d(*x->data.d_mpq), 
-	mpq_get_d(*y1->data.d_mpq),
-	mpq_get_d(*y2->data.d_mpq),
-	mpq_get_d(*c->data.d_mpq));
+  VLine(mpq_get_d(*x->d_mpq), 
+	mpq_get_d(*y1->d_mpq),
+	mpq_get_d(*y2->d_mpq),
+	mpq_get_d(*c->d_mpq));
 
   return make_nil();
 }

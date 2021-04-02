@@ -192,7 +192,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
       limo_data *f = eval(CAR(ld), env);
       switch (f->type) {
       case limo_TYPE_BUILTIN:
-	return f->data.d_builtin(ld, env); 
+	return f->d_builtin(ld, env); 
 
       case limo_TYPE_MACRO:
 	return eval_macro_call(f, ld, env);
@@ -208,7 +208,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
     return ld;
 
   case limo_TYPE_SYMBOL:
-    if (ld->data.d_string[0] == ':')
+    if (ld->d_string[0] == ':')
       return ld;
     else {
       res=var_lookup(env, ld, &marked_constant);

@@ -10,17 +10,17 @@ void list_put_str(limo_data ***dest, char *str)
 void l_cons_writer(limo_data ***dest, limo_data *ld)
 {
   list_put_str(dest, "(");
-  while (ld->type == limo_TYPE_CONS && ld->data.d_cons) {
-    l_writer(dest, ld->data.d_cons->car);
-    if (ld->data.d_cons->cdr) {
-      if (ld->data.d_cons->cdr->type != limo_TYPE_CONS) {
+  while (ld->type == limo_TYPE_CONS && ld->d_cons) {
+    l_writer(dest, CAR(ld));
+    if (CDR(ld)) {
+      if (CDR(ld)->type != limo_TYPE_CONS) {
 	list_put_str(dest, " . ");
-	l_writer(dest, ld->data.d_cons->cdr);
+	l_writer(dest, CDR(ld));
 	break;
       }
       else {
-	ld=ld->data.d_cons->cdr;
-	if (ld->data.d_cons)
+	ld=CDR(ld);
+	if (ld->d_cons)
 	  list_put_str(dest, " ");
       }
     }
@@ -31,17 +31,17 @@ void l_cons_writer(limo_data ***dest, limo_data *ld)
 void cons_writer(limo_data *ld)
 {
   printf("(");
-  while (ld->type == limo_TYPE_CONS && ld->data.d_cons) {
-    writer(ld->data.d_cons->car);
-    if (ld->data.d_cons->cdr) {
-      if (ld->data.d_cons->cdr->type != limo_TYPE_CONS) {
+  while (ld->type == limo_TYPE_CONS && ld->d_cons) {
+    writer(CAR(ld));
+    if (CDR(ld)) {
+      if (CDR(ld)->type != limo_TYPE_CONS) {
 	printf(" . ");
-	writer(ld->data.d_cons->cdr);
+	writer(CDR(ld));
 	break;
       }
       else {
-	ld=ld->data.d_cons->cdr;
-	if (ld->data.d_cons)
+	ld=CDR(ld);
+	if (ld->d_cons)
 	  printf(" ");
       }
     }
@@ -51,7 +51,7 @@ void cons_writer(limo_data *ld)
 
 void l_string_writer(limo_data ***dest, limo_data *ld)
 {
-  char *s = ld->data.d_string;
+  char *s = ld->d_string;
   int i;
   char cbuf[3] = "\0\0\0";
   list_put_str(dest, "\"");
@@ -74,7 +74,7 @@ void l_string_writer(limo_data ***dest, limo_data *ld)
 
 void string_writer(limo_data *ld)
 {
-  char *s = ld->data.d_string;
+  char *s = ld->d_string;
   int i;
   printf("\"");
   for (i=0; i<ld->hash; ++i) {
@@ -110,8 +110,8 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_STRING: string_writer(ld); break;
   case limo_TYPE_GMPQ: number_writer(ld); break;
   case limo_TYPE_CONS: cons_writer(ld); break;
-  case limo_TYPE_SYMBOL: printf("%s", ld->data.d_string); break;
-  case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->data.d_builtin); break;
+  case limo_TYPE_SYMBOL: printf("%s", ld->d_string); break;
+  case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->d_builtin); break;
   case limo_TYPE_DICT:
     if (in_env)
       printf("#<dict>");
@@ -123,7 +123,7 @@ void writer(limo_data *ld) // not threadsafe!
     break;
 
   case limo_TYPE_CONST:
-    printf("[%s]", CDR(ld)->data.d_string);
+    printf("[%s]", CDR(ld)->d_string);
     break;
 
   case limo_TYPE_THUNK:
@@ -168,12 +168,12 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
   case limo_TYPE_STRING: l_string_writer(dest, ld); break;
   case limo_TYPE_GMPQ: l_number_writer(dest, ld); break;
   case limo_TYPE_CONS: l_cons_writer(dest, ld); break;
-  case limo_TYPE_SYMBOL: list_put_str(dest, ld->data.d_string); break;
+  case limo_TYPE_SYMBOL: list_put_str(dest, ld->d_string); break;
   case limo_TYPE_BUILTIN:
     {
       char buf[20];
       list_put_str(dest, "#<builtin:");
-      snprintf(buf, 20, "%p", ld->data.d_builtin);
+      snprintf(buf, 20, "%p", ld->d_builtin);
       list_put_str(dest, buf);
       list_put_str(dest, ">");
     }
@@ -190,7 +190,7 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
 
   case limo_TYPE_CONST:
     list_put_str(dest, "[");
-    list_put_str(dest, CDR(ld)->data.d_string);
+    list_put_str(dest, CDR(ld)->d_string);
     list_put_str(dest, "]");
     break;
 

@@ -30,11 +30,11 @@ inline unsigned hash(limo_data *ld)
     if (ld->hash != 0)
       return ld->hash;
     else
-      return (ld->hash = hash_string(ld->data.d_string));
+      return (ld->hash = hash_string(ld->d_string));
   }
   // don't store the hash in ld->hash because we use that for the string-length
   else if (ld->type == limo_TYPE_STRING)
-    return hash_string(ld->data.d_string);
+    return hash_string(ld->d_string);
   else
     throw(make_cons(make_string("data is not hashable"), ld));
 }
@@ -43,7 +43,7 @@ limo_data *make_dict(void)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_DICT; 
-  ld->data.d_dict = make_dict_size(1);
+  ld->d_dict = make_dict_size(1);
   return ld;
 }
 
@@ -71,11 +71,11 @@ limo_dict *make_dict_size(int minused)
 
 void dict_resize(limo_data *dict)
 {
-  limo_dict *olddict=dict->data.d_dict;
+  limo_dict *olddict=dict->d_dict;
   limo_dict *newdict=make_dict_size(olddict->used);
   int i;
 
-  dict->data.d_dict = newdict;
+  dict->d_dict = newdict;
   for (i=0; i<olddict->size; ++i)
     if (olddict->store[i] != NULL)
       dict_put_cons(dict, olddict->store[i]);
@@ -83,7 +83,7 @@ void dict_resize(limo_data *dict)
 
 void dict_check_resize(limo_data *dict)
 {
-  if (3 * (dict->data.d_dict->used) > 2*dict->data.d_dict->size)
+  if (3 * (dict->d_dict->used) > 2*dict->d_dict->size)
     dict_resize(dict);
 }
 
@@ -98,7 +98,7 @@ void dict_put_cons(limo_data *dict, limo_data *cons)
 
   ld_place = dict_get_place(dict, CAR(cons));
   if (*ld_place == NULL) {
-    dict->data.d_dict->used++;
+    dict->d_dict->used++;
     *ld_place = cons;
   }
   else if (CDR(*ld_place) -> type == limo_TYPE_VCACHE) {
@@ -121,7 +121,7 @@ limo_data **dict_get_place(limo_data *dict, limo_data *key)
   int i=0;
   unsigned int h = hash(key);
   unsigned int perturb = h;
-  limo_dict *d = dict->data.d_dict;
+  limo_dict *d = dict->d_dict;
 #define PERTURB_SHIFT 5;
   
   while (1) {
@@ -144,7 +144,7 @@ void dict_remove(limo_data *dict, limo_data *key)
   place = dict_get_place(dict, key);
   if (place !=NULL) {
     (*place) = NULL;
-    dict->data.d_dict->used--;
+    dict->d_dict->used--;
 
     // dict_resize MUST be done, or else items, which should have been stored in the same bucket as *key
     // are unfindable after removal of this. SERIOUSLY hard to find bug!
@@ -155,7 +155,7 @@ void dict_remove(limo_data *dict, limo_data *key)
 limo_data *dict_to_list(limo_data *dict)
 {
   limo_data *res=make_nil();
-  limo_dict *d = dict->data.d_dict;
+  limo_dict *d = dict->d_dict;
   int i;
   for (i=0; i<d->size; ++i)
     if (d->store[i] != NULL)

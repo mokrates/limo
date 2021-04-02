@@ -33,7 +33,7 @@ BUILTIN(builtin_fd_read)
   ld_res = make_limo_data();
   ld_res->type = limo_TYPE_STRING;
   ld_res->string_length = res;
-  ld_res->data.d_string = buf;
+  ld_res->d_string = buf;
 
   return ld_res;
 }
@@ -50,7 +50,7 @@ BUILTIN(builtin_fd_write)
   REQUIRE_TYPE("FD-WRITE", ld_buf, limo_TYPE_STRING);
 
   res = write(GETINTFROMMPQ(ld_fd),
-	      ld_buf->data.d_string,
+	      ld_buf->d_string,
 	      ld_buf->string_length);
   
   if (res < 0) limo_error_errno(sym_fd);
@@ -67,7 +67,7 @@ BUILTIN(builtin_fd_open)
   ld_flags = eval(SECOND_ARG, env);
   REQUIRE_TYPE("FD-OPEN", ld_pathname, limo_TYPE_STRING);
   REQUIRE_TYPE("FD-OPEN", ld_flags, limo_TYPE_GMPQ);
-  res = open(ld_pathname->data.d_string, GETINTFROMMPQ(ld_flags));
+  res = open(ld_pathname->d_string, GETINTFROMMPQ(ld_flags));
   if (res < 0) limo_error_errno(sym_fd);
   return make_number_from_long_long(res);
 }
@@ -118,7 +118,7 @@ BUILTIN(builtin_fd_poll)
   for (i=0; i<pollfdlist_length; ++i,CDR(ld_cursor)=make_cons(nil, nil), ld_cursor=CDR(ld_cursor))
     CAR(ld_res) = make_number_from_long_long(pfds[i].revents);
   
-  ld_cursor->data.d_cons=NULL;
+  ld_cursor->d_cons=NULL;
   return ld_res;
 }
 

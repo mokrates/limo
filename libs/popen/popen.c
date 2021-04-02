@@ -181,7 +181,7 @@ BUILTIN(builtin_popen)
     l = list_length(ld_argv);
     ca_argv = GC_malloc((l+1) * sizeof (char *));
     for (i=0; i<l; ++i, ld_argv=CDR(ld_argv))
-      ca_argv[i]=CAR(ld_argv)->data.d_string;
+      ca_argv[i]=CAR(ld_argv)->d_string;
     ca_argv[i] = NULL;
   }
   if (!is_nil(ld_env)) {
@@ -189,11 +189,11 @@ BUILTIN(builtin_popen)
     l = list_length(ld_env);
     ca_env = GC_malloc((l+1) * sizeof (char *));
     for (i=0; i<l; ++i, ld_env=CDR(ld_env))
-      ca_env[i]=CAR(ld_env)->data.d_string;
+      ca_env[i]=CAR(ld_env)->d_string;
     ca_env[i] = NULL;
   }
 
-  ret = popen3(ld_filename->data.d_string,
+  ret = popen3(ld_filename->d_string,
                ca_argv,
                ca_env,
                is_nil(ld_wstdin)?NULL:&out_stdin,

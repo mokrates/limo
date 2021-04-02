@@ -283,17 +283,17 @@ limo_data *limpy_list_reader(reader_stream *rs, int right_bracket)
 
   while (1) {
     if (c == right_bracket) {  // emacs
-      (*ld_into)->data.d_cons = NULL;
+      (*ld_into)->d_cons = NULL;
       break;
     }
     else
-      (*ld_into)->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
+      (*ld_into)->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
       
     limpy_ungettoken(c, token_ld);
 
-    (*ld_into)->data.d_cons->car = limpy_assignment_reader(rs);
-    (*ld_into)->data.d_cons->cdr = make_limo_data();
-    //    ld_into = &((*ld_into)->data.d_cons->cdr);
+    (*ld_into)->d_cons->car = limpy_assignment_reader(rs);
+    (*ld_into)->d_cons->cdr = make_limo_data();
+    //    ld_into = &((*ld_into)->d_cons->cdr);
     ld_into = &CDR(*ld_into);
     (*ld_into)->type = limo_TYPE_CONS;
 
@@ -690,17 +690,17 @@ limo_data *limpy_block_reader(reader_stream *rs)
 
   while (1) {
     if (c == '}') {
-      (*ld_into)->data.d_cons = NULL;
+      (*ld_into)->d_cons = NULL;
       break;
     }
     else
-      (*ld_into)->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
+      (*ld_into)->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
       
     limpy_ungettoken(c, token_ld);
 
-    (*ld_into)->data.d_cons->car = limpy_statement_reader(rs);
-    (*ld_into)->data.d_cons->cdr = make_limo_data();
-    //    ld_into = &((*ld_into)->data.d_cons->cdr);
+    (*ld_into)->d_cons->car = limpy_statement_reader(rs);
+    (*ld_into)->d_cons->cdr = make_limo_data();
+    //    ld_into = &((*ld_into)->d_cons->cdr);
     ld_into = &CDR(*ld_into);
     (*ld_into)->type = limo_TYPE_CONS;
 

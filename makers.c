@@ -33,9 +33,9 @@ limo_data *make_nil(void)
 /* limo_data *make_cons(limo_data *car, limo_data *cdr) */
 /* { */
 /*   limo_data *ld = make_nil(); */
-/*   ld->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons)); */
-/*   ld->data.d_cons->car = car; */
-/*   ld->data.d_cons->cdr = cdr; */
+/*   ld->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons)); */
+/*   ld->d_cons->car = car; */
+/*   ld->d_cons->cdr = cdr; */
 /*   return ld; */
 /* } */
 
@@ -51,9 +51,9 @@ limo_data *make_cons(limo_data *car, limo_data *cdr)
   cons = (limo_cons *)*make_cons_next;
   *make_cons_next = GC_NEXT(*make_cons_next);
 
-  ld->data.d_cons = cons;
-  ld->data.d_cons->car = car;
-  ld->data.d_cons->cdr = cdr;
+  ld->d_cons = cons;
+  ld->d_cons->car = car;
+  ld->d_cons->cdr = cdr;
   return ld;
 }
 
@@ -82,13 +82,13 @@ limo_data *make_sym(char *name) // interned // TODO: use dict to speed up.
   }
   
   for (is=interned_symbols; 
-       !is_nil(is) && strcmp(cp, CAR(is)->data.d_string); 
+       !is_nil(is) && strcmp(cp, CAR(is)->d_string); 
        is=CDR(is));
 
   if (is_nil(is)) {
     ld = make_limo_data();
     ld->type=limo_TYPE_SYMBOL;
-    ld->data.d_string = cp;
+    ld->d_string = cp;
     ld->hash = next_symbol_identity;
     
     ++next_symbol_identity;
@@ -120,7 +120,7 @@ limo_data *make_sym_uninterned(char *name)
   
   ld = make_limo_data();
   ld->type=limo_TYPE_SYMBOL;
-  ld->data.d_string = cp;
+  ld->d_string = cp;
   ld->hash = 0;
     
   return ld;
@@ -130,7 +130,7 @@ limo_data *make_builtin(limo_builtin f)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_BUILTIN;
-  ld->data.d_builtin=f;
+  ld->d_builtin=f;
 
   return ld;
 }
@@ -155,7 +155,7 @@ limo_data *make_string(char *msg)
 {
   limo_data *str = make_limo_data();
   str->type = limo_TYPE_STRING;
-  str->data.d_string = GC_strdup(msg);
+  str->d_string = GC_strdup(msg);
   str->hash = strlen(msg);
   return str;
 }

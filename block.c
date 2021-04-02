@@ -27,7 +27,7 @@ BUILTIN(builtin_block)
   // of the BLOCK form, and return-fromed to, and that gives 
   //a segfault. hence: invalidating
   // (setq x (block foo foo)) (return-from x) ; BOOM!
-  CAR(special_jb->data.d_special) = make_nil(); 
+  CAR(special_jb->d_special) = make_nil(); 
 
   return res;
 }

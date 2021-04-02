@@ -283,7 +283,7 @@ BUILTIN(builtin_ncmenu_new_item)
   // cannot use GC_strdup here or even just use the strings
   // the ITEM-members aren't searched for references, so this would get collected.
   // freeing is done in the finalizer
-  item = new_item(strdup(ld_name->data.d_string), strdup(ld_desc->data.d_string)); 
+  item = new_item(strdup(ld_name->d_string), strdup(ld_desc->d_string)); 
   if (!item)
     throw(make_cons(sym_ncmenu_error, make_string("could not create item")));
   ld_result = make_special(sym_ncmenu_item, item);

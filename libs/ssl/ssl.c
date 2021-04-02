@@ -100,7 +100,7 @@ BUILTIN(builtin_ssl_ctx_use_certificate_file)
   ctx = get_special(ld_ctx, sym_sslctx);
   REQUIRE_TYPE("SSL-CTX-USE-CERTIFICATE-FILE", ld_filename, limo_TYPE_STRING);
   REQUIRE_TYPE("SSL-CTX-USE-CERTIFICATE-FILE", ld_type, limo_TYPE_GMPQ);
-  if (1 != SSL_CTX_use_certificate_file(ctx, ld_filename->data.d_string, GETINTFROMMPQ(ld_type)))
+  if (1 != SSL_CTX_use_certificate_file(ctx, ld_filename->d_string, GETINTFROMMPQ(ld_type)))
     throw(make_cons(sym_ssl, make_string("couldn't assign certificate file")));
   return nil;
 }
@@ -118,7 +118,7 @@ BUILTIN(builtin_ssl_use_privatekey_file)
   ctx = get_special(ld_ctx, sym_sslctx);
   REQUIRE_TYPE("SSL-CTX-USE-PRIVATEKEY-FILE", ld_filename, limo_TYPE_STRING);
   REQUIRE_TYPE("SSL-CTX-USE-PRIVATEKEY-FILE", ld_type, limo_TYPE_GMPQ);
-  if (1 != SSL_CTX_use_PrivateKey_file(ctx, ld_filename->data.d_string, GETINTFROMMPQ(ld_type)))
+  if (1 != SSL_CTX_use_PrivateKey_file(ctx, ld_filename->d_string, GETINTFROMMPQ(ld_type)))
     throw(make_cons(sym_ssl, make_string("couldn't assign privatekey file")));
   return nil;
 }
@@ -146,7 +146,7 @@ BUILTIN(builtin_ssl_read)
   ld_res = make_limo_data();
   ld_res->type = limo_TYPE_STRING;
   ld_res->string_length = res;
-  ld_res->data.d_string = buf;
+  ld_res->d_string = buf;
 
   return ld_res;
 }
@@ -164,7 +164,7 @@ BUILTIN(builtin_ssl_write)
   REQUIRE_TYPE("SSL-WRITE", ld_buf, limo_TYPE_STRING);
 
   res = SSL_write(ssl,
-		  ld_buf->data.d_string,
+		  ld_buf->d_string,
 		  ld_buf->string_length);
   
   if (res < 0)

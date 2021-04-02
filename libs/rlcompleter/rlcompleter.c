@@ -16,8 +16,8 @@ static char *rlcompleter_gen(const char *text, int state)
   }
   
   while (!is_nil(lookup_list)) {
-    res = (char *)malloc(strlen(CAR(lookup_list)->data.d_string)+1); // yes, malloc
-    strcpy(res, CAR(lookup_list)->data.d_string);
+    res = (char *)malloc(strlen(CAR(lookup_list)->d_string)+1); // yes, malloc
+    strcpy(res, CAR(lookup_list)->d_string);
     lookup_list= CDR(lookup_list);
     return res;
   }
@@ -43,7 +43,7 @@ BUILTIN(builtin_set_rlcompleter)
   REQUIRE_TYPE("RL-COMPLETER", ldrlc, limo_TYPE_CONS);
   REQUIRE_TYPE("RL-COMPLETER", CDR(ldrlc), limo_TYPE_STRING);
 
-  rl_completer_word_break_characters = CDR(ldrlc)->data.d_string;
+  rl_completer_word_break_characters = CDR(ldrlc)->d_string;
   if (CAR(ldrlc)->type == limo_TYPE_SPECIAL)
     rl_completion_entry_function = get_special(CAR(ldrlc), sym_rlcompleter);
   else {

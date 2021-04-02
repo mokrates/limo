@@ -30,7 +30,7 @@ BUILTIN(builtin_sdl_ttf_openfont)
   REQUIRE_ARGC("SDL-TTF-OPENFONT", 2);
   ld_file = eval(FIRST_ARG, env);
   ld_ptsize=eval(SECOND_ARG, env);
-  filename = ld_file->data.d_string;
+  filename = ld_file->d_string;
   ptsize = GETINTFROMMPQ(ld_ptsize);
   if (!(ttf_fnt = TTF_OpenFont(filename, ptsize)))
     throw(make_cons(sym_sdl_error, make_string("SDL-TTF-OPENFONT: could not open font-file")));
@@ -47,7 +47,7 @@ BUILTIN(builtin_sdl_ttf_sizetext)
   REQUIRE_ARGC("SDL-TTF-SIZETEXT", 2);
   ld_font = eval(FIRST_ARG, env);
   ld_text = eval(SECOND_ARG, env);
-  text = ld_text->data.d_string;
+  text = ld_text->d_string;
   font = get_special(ld_font, sym_sdl_font);
   if (TTF_SizeText(font, text, &x, &y))
     throw(make_cons(sym_sdl_error, make_string("SDL-TTF-SIZETEXT error")));
@@ -67,7 +67,7 @@ BUILTIN(builtin_sdl_ttf_rendertext_blended)
   ld_text = eval(SECOND_ARG, env);
   ld_color= eval(THIRD_ARG, env);
   font = get_special(ld_font, sym_sdl_font);
-  text = ld_text->data.d_string;
+  text = ld_text->d_string;
   color= *(SDL_Color *)get_special(ld_color, sym_sdl_color);
   ss_dest = TTF_RenderText_Blended(font, text, color);
   if (!ss_dest)

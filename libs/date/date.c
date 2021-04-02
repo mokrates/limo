@@ -62,7 +62,7 @@ BUILTIN(builtin_date_strftime)
 
   out = (char *)GC_malloc_atomic(200);
   tm = ld2structtm(ld_tm_time);
-  strftime(out, 200, ld_format->data.d_string, tm);
+  strftime(out, 200, ld_format->d_string, tm);
   return make_string(out);
 }
 

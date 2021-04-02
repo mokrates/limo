@@ -19,7 +19,7 @@ BUILTIN(builtin_file_open)
       mode->type != limo_TYPE_STRING)
     limo_error("(FILE-OPEN filename mode)");
 
-  f = fopen(filename->data.d_string, mode->data.d_string);
+  f = fopen(filename->d_string, mode->d_string);
   if (f == NULL) {
     char buf[512];
     strerror_r(errno, buf, 512);
@@ -41,7 +41,7 @@ BUILTIN(builtin_file_fdopen)
   REQUIRE_TYPE("FILE-FDOPEN", fd, limo_TYPE_GMPQ);
   REQUIRE_TYPE("FILE-FDOPEN", mode, limo_TYPE_STRING);
 
-  f = fdopen(GETINTFROMMPQ(fd), mode->data.d_string);
+  f = fdopen(GETINTFROMMPQ(fd), mode->d_string);
   if (f == NULL) {
     char buf[512];
     strerror_r(errno, buf, 512);
@@ -92,7 +92,7 @@ BUILTIN(builtin_file_write)
   if (str->type !=limo_TYPE_STRING)
     limo_error("(file-write FILE STRING)");
 
-  ret = fwrite(str->data.d_string, str->string_length, 1, f);
+  ret = fwrite(str->d_string, str->string_length, 1, f);
   return make_number_from_long_long(ret);
 }
 

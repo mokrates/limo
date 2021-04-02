@@ -241,7 +241,7 @@ BUILTIN(builtin_setcar)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS || cons->data.d_cons == NULL)
+  if (cons->type != limo_TYPE_CONS || cons->d_cons == NULL)
     limo_error("ERROR: (setcar CONS value)");
 
   CAR(cons) = value;
@@ -255,7 +255,7 @@ BUILTIN(builtin_setcdr)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS || cons->data.d_cons == NULL)
+  if (cons->type != limo_TYPE_CONS || cons->d_cons == NULL)
     limo_error("ERROR: (setcdr CONS value)");
 
   CDR(cons) = value;
@@ -316,7 +316,7 @@ BUILTIN(builtin_load)
   if (filename->type != limo_TYPE_STRING)
     limo_error("load arg must be a string");
 
-  load_limo_file(filename->data.d_string, env);
+  load_limo_file(filename->d_string, env);
   return nil;
 }
 
@@ -328,7 +328,7 @@ BUILTIN(builtin_mod_isinline)
 
   struct INLINE_MODLIST_ITEM *item;
   for (item=inline_mod_funs; item->name != NULL; ++item)
-    if (!strcmp(item->name, modname->data.d_string))
+    if (!strcmp(item->name, modname->d_string))
       return sym_true;
 
   return make_nil();
@@ -342,7 +342,7 @@ BUILTIN(builtin_mod_loadinline)
 
   struct INLINE_MODLIST_ITEM *item;
   for (item=inline_mod_funs; item->name != NULL; ++item)
-    if (!strcmp(item->name, modname->data.d_string)) {
+    if (!strcmp(item->name, modname->d_string)) {
       (item->fun)(env);
       return sym_true;
     }
@@ -366,12 +366,12 @@ BUILTIN(builtin_loaddll)
   if (initfunction->type != limo_TYPE_STRING)
     limo_error("initfunction must be a string");
 
-  handle = dlopen(filename->data.d_string, RTLD_LAZY);
+  handle = dlopen(filename->d_string, RTLD_LAZY);
 
   if (!handle)
     limo_error("dll load error: %s", dlerror());
   
-  limo_dll_init = dlsym(handle, initfunction->data.d_string);
+  limo_dll_init = dlsym(handle, initfunction->d_string);
   if (!limo_dll_init)
     limo_error("dll start error: %s", dlerror());
   (*limo_dll_init)(env);
@@ -404,7 +404,7 @@ BUILTIN(builtin_gc_setmax)
   limo_data *ld = eval(FIRST_ARG, env);
   
   if (ld->type == limo_TYPE_GMPQ) {
-    double n=mpq_get_d(*ld->data.d_mpq);
+    double n=mpq_get_d(*ld->d_mpq);
     GC_set_max_heap_size(1024*n);
     return nil;
   }
@@ -439,7 +439,7 @@ BUILTIN(builtin_usleep)
   limo_data *ld = eval(FIRST_ARG, env);
 
   if (ld->type == limo_TYPE_GMPQ)
-    usleep(mpq_get_d(*ld->data.d_mpq));
+    usleep(mpq_get_d(*ld->d_mpq));
   else
     limo_error("(usleep SECONDS) [2]");
 
@@ -459,9 +459,9 @@ BUILTIN(builtin_string_concat)
 
   limo_data *res = make_limo_data();
   res->type = limo_TYPE_STRING;
-  res->data.d_string = (char *)GC_malloc(str1->hash + str2->hash + 1);
-  memcpy(res->data.d_string, str1->data.d_string, str1->hash);
-  memcpy(res->data.d_string + str1->hash, str2->data.d_string, str2->hash);
+  res->d_string = (char *)GC_malloc(str1->hash + str2->hash + 1);
+  memcpy(res->d_string, str1->d_string, str1->hash);
+  memcpy(res->d_string + str1->hash, str2->d_string, str2->hash);
   res->hash = str1->hash + str2->hash;
   return res;
 }
@@ -475,7 +475,7 @@ BUILTIN(builtin_make_sym)
   if (str1->type != limo_TYPE_STRING)
     limo_error("(make-sym STR1)");
 
-  return make_sym(str1->data.d_string);
+  return make_sym(str1->d_string);
 }
 
 BUILTIN(builtin_make_sym_uninterned)
@@ -487,7 +487,7 @@ BUILTIN(builtin_make_sym_uninterned)
   if (str1->type != limo_TYPE_STRING)
     limo_error("(make-sym STR1)");
 
-  return make_sym_uninterned(str1->data.d_string);  
+  return make_sym_uninterned(str1->d_string);  
 }
 
 BUILTIN(builtin_get_annotation)
@@ -510,7 +510,7 @@ BUILTIN(builtin_read_string)
   if (str->type != limo_TYPE_STRING)
     limo_error("given arg is no STRING");
 
-  return reader(limo_rs_from_string(str->data.d_string));
+  return reader(limo_rs_from_string(str->d_string));
 }
 
 BUILTIN(builtin_symbolp)
@@ -536,7 +536,7 @@ BUILTIN(builtin_symbol_to_string)
   if (ld->type != limo_TYPE_SYMBOL)
     limo_error("(symbol-to-string SYMBOL)");
       
-  return make_string(ld->data.d_string);
+  return make_string(ld->d_string);
 }
 
 BUILTIN(builtin_freezeq)

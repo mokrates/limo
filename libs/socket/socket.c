@@ -99,7 +99,7 @@ BUILTIN(builtin_socket_inet_addr)
   REQUIRE_ARGC("INET-ADDR", 1);
   ld_in = eval(FIRST_ARG, env);
   REQUIRE_TYPE("INET-ADDR", ld_in, limo_TYPE_STRING);
-  return make_number_from_long_long(inet_addr(ld_in->data.d_string));
+  return make_number_from_long_long(inet_addr(ld_in->d_string));
 }
 
 BUILTIN(builtin_socket_connect)
@@ -145,7 +145,7 @@ BUILTIN(builtin_socket_gethostbyname)
   ld_hostname = eval(FIRST_ARG, env);
   REQUIRE_TYPE("GETHOSTBYNAME", ld_hostname, limo_TYPE_STRING);
 
-  he = gethostbyname(ld_hostname->data.d_string);
+  he = gethostbyname(ld_hostname->d_string);
 
   if (!he) throw(make_cons(sym_socket, make_string("couldn't resolve hostname")));
 

@@ -5,7 +5,7 @@ inline int (is_nil)(limo_data *ld)
 {
   if (!ld)
     limo_error("null pointer (is_nil)");
-  return ld->type == limo_TYPE_CONS && !ld->data.d_cons;
+  return ld->type == limo_TYPE_CONS && !ld->d_cons;
 }
 
 inline int limo_equals(limo_data *a, limo_data *b)
@@ -19,7 +19,7 @@ inline int limo_equals(limo_data *a, limo_data *b)
   switch (a->type) {
   case limo_TYPE_SYMBOL:
     if (a->hash == 0 || b->hash == 0)
-      return !strcmp(a->data.d_string, b->data.d_string);
+      return !strcmp(a->d_string, b->d_string);
     else
       return a->hash == b->hash;
 
@@ -27,10 +27,10 @@ inline int limo_equals(limo_data *a, limo_data *b)
     if (a->hash != b->hash)
       return 0;
     else
-      return !strncmp(a->data.d_string, b->data.d_string, a->hash);
+      return !strncmp(a->d_string, b->d_string, a->hash);
     
   case limo_TYPE_CONS:
-    return a->data.d_cons == b->data.d_cons;
+    return a->d_cons == b->d_cons;
 
   case limo_TYPE_GMPQ:
     return !mpq_cmp(LIMO_MPQ(a), LIMO_MPQ(b));
@@ -59,7 +59,7 @@ char *limo_strdup(char *in)
 limo_data *thunk_safe_cdr(limo_data *x)
 {
   limo_data *cdr;
-  cdr = (x)->data.d_cons->cdr;
+  cdr = (x)->d_cons->cdr;
   while (cdr->type == limo_TYPE_THUNK)
     cdr = eval(CDR(cdr), CAR(cdr));
 

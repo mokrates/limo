@@ -77,9 +77,9 @@ char *rl_completer_generator(const char *text, int state)
   }
 
   while (!is_nil(lookup_pos)) {
-    if (!strncasecmp(CAR(CAR(lookup_pos))->data.d_string, text, textlen)) {
-      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->data.d_string)+1); // yes, malloc
-      strcpy(res, CAR(CAR(lookup_pos))->data.d_string);
+    if (!strncasecmp(CAR(CAR(lookup_pos))->d_string, text, textlen)) {
+      res = (char *)malloc(strlen(CAR(CAR(lookup_pos))->d_string)+1); // yes, malloc
+      strcpy(res, CAR(CAR(lookup_pos))->d_string);
       lookup_pos= CDR(lookup_pos);
       return res;
     }
@@ -255,18 +255,18 @@ limo_data *read_list(reader_stream *f)
     if (c == EOF)
       limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
     if (c == ')' || c==']') { // ( for emacs
-      (*ld_into)->data.d_cons = NULL;
+      (*ld_into)->d_cons = NULL;
       break;
     }
     else
-      (*ld_into)->data.d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
+      (*ld_into)->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
       
     limo_ungetc(c, f);
-    (*ld_into)->data.d_cons->car = reader(f);
+    (*ld_into)->d_cons->car = reader(f);
 
     c=read_skip_space_comments(f);
     if (c=='.') { // pair
-      (*ld_into)->data.d_cons->cdr = reader(f);
+      (*ld_into)->d_cons->cdr = reader(f);
       c=read_skip_space_comments(f);
       if (c != ')' && c != ']')
 	limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
@@ -274,8 +274,8 @@ limo_data *read_list(reader_stream *f)
     }
     else {
       limo_ungetc(c, f);
-      (*ld_into)->data.d_cons->cdr = make_limo_data();
-      ld_into = &((*ld_into)->data.d_cons->cdr);
+      (*ld_into)->d_cons->cdr = make_limo_data();
+      ld_into = &((*ld_into)->d_cons->cdr);
       (*ld_into)->type = limo_TYPE_CONS;
     }
     c=read_skip_space_comments(f);
@@ -330,7 +330,7 @@ limo_data *read_sym_num(reader_stream *f)
     return make_sym(buf);
 }
 
-// strings (ld->data.d_string) has a buffer which is stringlen+1 bytes long
+// strings (ld->d_string) has a buffer which is stringlen+1 bytes long
 // and is zero-terminated. BUT in ld->hash (in union with ld->string_length),
 // the stringlength is saved and
 // strings can contain \0
@@ -370,8 +370,8 @@ limo_data *read_string(reader_stream *f)
   buf[i]='\0';
   ld->type = limo_TYPE_STRING;
   ld->string_length = i;
-  ld->data.d_string = (char *)GC_malloc(i + 1);
-  memcpy(ld->data.d_string, buf, i+1);
+  ld->d_string = (char *)GC_malloc(i + 1);
+  memcpy(ld->d_string, buf, i+1);
   return ld;
 }
 

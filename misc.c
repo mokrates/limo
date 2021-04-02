@@ -9,7 +9,7 @@ BUILTIN(builtin_system)
   REQUIRE_ARGC("system", 1);
   if (command->type != limo_TYPE_STRING)
     limo_error("system takes a STRING got something different");
-  return make_number_from_long_long(system(command->data.d_string));
+  return make_number_from_long_long(system(command->d_string));
 }
 
 BUILTIN(builtin_time)

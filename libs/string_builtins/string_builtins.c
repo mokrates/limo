@@ -17,10 +17,10 @@ BUILTIN(builtin_string_nth)
       str->type != limo_TYPE_STRING)
     limo_error("(string-nth N STRING)");
 
-  i = (int)mpq_get_d(*n->data.d_mpq);
+  i = (int)mpq_get_d(*n->d_mpq);
   if (i<0 || i>str->hash)
     limo_error("string-nth: out of bounds");
-  *buf = str->data.d_string[i];
+  *buf = str->d_string[i];
   return make_string(buf);
 }
 
@@ -56,7 +56,7 @@ BUILTIN(builtin_ord)
   ld = eval(FIRST_ARG, env);
   if (ld->type != limo_TYPE_STRING)
     limo_error("(ORD string)");
-  return make_number_from_long_long((unsigned char)ld->data.d_string[0]);
+  return make_number_from_long_long((unsigned char)ld->d_string[0]);
 }
 
 BUILTIN(builtin_chr)
@@ -71,7 +71,7 @@ BUILTIN(builtin_chr)
   if (n->type != limo_TYPE_GMPQ)
     limo_error("(CHR number)");
 
-  i = (int)mpq_get_d(*n->data.d_mpq);
+  i = (int)mpq_get_d(*n->d_mpq);
   *buf = (char)i;
   str = make_string(buf);
   str->hash=1;
@@ -92,7 +92,7 @@ BUILTIN(builtin_string_utf8_length) {
   if (str->type != limo_TYPE_STRING)
     limo_error("(string-length STRING)");
 
-  s = str->data.d_string;
+  s = str->d_string;
   while (*s) {
     count += (*s++ & 0xC0) != 0x80;
   }

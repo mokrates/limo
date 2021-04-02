@@ -69,9 +69,9 @@ BUILTIN(builtin_regex_match)
   ngroups= GETINTFROMMPQ(ldngroups);
   pmatch = GC_malloc(ngroups * sizeof (regmatch_t));
 
-  if (ret = regcomp(&preg, ldpattern->data.d_string, cflags))
+  if (ret = regcomp(&preg, ldpattern->d_string, cflags))
     regex_error(ret, &preg);
-  if (ret = regexec(&preg, ldstring->data.d_string, ngroups, pmatch, eflags))
+  if (ret = regexec(&preg, ldstring->d_string, ngroups, pmatch, eflags))
     result = nil;
   else {
     int i;
@@ -85,9 +85,9 @@ BUILTIN(builtin_regex_match)
         int matchlen = pmatch[i].rm_eo - pmatch[i].rm_so;
         match = make_limo_data();
         match->type = limo_TYPE_STRING;
-        match->data.d_string = (char *)GC_malloc(matchlen + 1);
-        memcpy(match->data.d_string, ldstring->data.d_string + pmatch[i].rm_so, matchlen);
-        match->data.d_string[matchlen] = '\0';
+        match->d_string = (char *)GC_malloc(matchlen + 1);
+        memcpy(match->d_string, ldstring->d_string + pmatch[i].rm_so, matchlen);
+        match->d_string[matchlen] = '\0';
         match->hash = matchlen;
       }
       (*cursor) = make_cons(match, NULL);

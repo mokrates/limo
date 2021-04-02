@@ -21,7 +21,7 @@ BUILTIN(builtin_make_vector)
   if (len->type != limo_TYPE_GMPQ)
     limo_error("(make-vector LENGTH)");
 
-  i = (unsigned long)mpq_get_d(*len->data.d_mpq);
+  i = (unsigned long)mpq_get_d(*len->d_mpq);
 
   v = GC_malloc(sizeof (struct VECTOR));
   v->length = i;

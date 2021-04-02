@@ -62,7 +62,7 @@ typedef struct limo_DATA {
     struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
     void *d_special_intern;
-  } data;
+  };
   #define d_vcache d_special
   union {
     unsigned int hash;  // for symbols
@@ -97,8 +97,8 @@ extern limo_data *nil;
 extern limo_data *traceplace;
 extern int limo_rl_inited;
 
-#define CAR(x) ((x)->data.d_cons->car)
-#define CDR(x) ((x)->data.d_cons->cdr)
+#define CAR(x) ((x)->d_cons->car)
+#define CDR(x) ((x)->d_cons->cdr)
 #define TSCDR(x) (thunk_safe_cdr(x))
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env)
@@ -193,7 +193,7 @@ extern pthread_key_t pk_dynamic_vars_key;
   
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)
-#define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->data.d_cons)
+#define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->d_cons)
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);
 char *limo_strdup(char *str);
@@ -328,9 +328,9 @@ void file_builtins(limo_data *env);
 
 ////////////////////////////////////
 // numbers
-#define LIMO_MPQ(x) (*((x)->data.d_mpq))
-#define GETINTFROMMPQ(mpq)     ((long long)mpq_get_d(*(mpq)->data.d_mpq))
-#define GETDOUBLEFROMMPQ(mpq)  (mpq_get_d(*(mpq)->data.d_mpq))
+#define LIMO_MPQ(x) (*((x)->d_mpq))
+#define GETINTFROMMPQ(mpq)     ((long long)mpq_get_d(*(mpq)->d_mpq))
+#define GETDOUBLEFROMMPQ(mpq)  (mpq_get_d(*(mpq)->d_mpq))
 char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);

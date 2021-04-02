@@ -13,7 +13,7 @@ limo_data *make_vcache(limo_data *cons)
 {
   limo_data *res=make_limo_data();
   res->type = limo_TYPE_VCACHE;
-  res->data.d_vcache = cons;
+  res->d_vcache = cons;
   return res;
 }
 
@@ -36,15 +36,15 @@ limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons
     //setq(env, name, make_vcache(cons));
 
     *place = make_cons(CAR(cons), make_vcache(cons));
-    dict->data.d_dict->used++;
+    dict->d_dict->used++;
     dict_check_resize(dict);
     // printf("adding to cache - returning: "); writer(cons); printf("\n");
     return cons;
   }
 
   if ((*place != NULL) && (CDR(*place) -> type) == limo_TYPE_VCACHE) {
-    //    printf("cached - returning: "); writer(CDR(*place)->data.d_vcache); printf("\n");
-    return CDR(*place) -> data.d_vcache;
+    //    printf("cached - returning: "); writer(CDR(*place)->d_vcache); printf("\n");
+    return CDR(*place) -> d_vcache;
   }
 
   if (*place==NULL)
