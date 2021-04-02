@@ -142,8 +142,14 @@ BUILTIN(builtin_int)
 limo_data *make_number(void)
 {
   limo_data *res = make_nil();
+  void **make_gmpq_next = pk_gmpq_next_get();
+
+  if (!*make_gmpq_next)
+    *make_gmpq_next = GC_malloc_many(sizeof (mpq_t));
+  
   res->type=limo_TYPE_GMPQ;
-  res->data.d_mpq = (mpq_t *)GC_malloc(sizeof (mpq_t));
+  res->data.d_mpq = (mpq_t *)*make_gmpq_next;
+  *make_gmpq_next = GC_NEXT(*make_gmpq_next);
 
   mpq_init(LIMO_MPQ(res)); // initializes to 0/1
   return res;

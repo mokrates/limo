@@ -53,8 +53,13 @@ limo_dict *make_dict_size(int minused)
 {
   int size = DICT_INIT_SIZE;
   limo_dict *d;
+  void **make_dict_next = pk_dict_next_get();
 
-  d=(limo_dict *)GC_malloc(sizeof (limo_dict));
+  if (!*make_dict_next)
+    *make_dict_next = GC_malloc_many(sizeof (limo_dict));
+
+  d = (limo_dict *)*make_dict_next;
+  *make_dict_next = GC_NEXT(*make_dict_next);
 
   while (size < 3*minused)
     size<<=1;

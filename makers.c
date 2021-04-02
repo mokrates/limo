@@ -15,7 +15,7 @@ limo_data *make_limo_data(void)
   limo_data *result;
   void **make_limo_data_next = pk_limo_data_next_get();
   
-  if (*make_limo_data_next == NULL)
+  if (!*make_limo_data_next)
     *make_limo_data_next = GC_malloc_many(sizeof (limo_data));
 
   result = (limo_data *)*make_limo_data_next;

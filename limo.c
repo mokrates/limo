@@ -25,9 +25,13 @@ pthread_key_t pk_exception_key;
 pthread_key_t pk_ljbuf_key;
 pthread_key_t pk_limo_data_next_key;
 pthread_key_t pk_cons_next_key;
+pthread_key_t pk_dict_next_key;
+pthread_key_t pk_gmpq_next_key;
 
 void *make_limo_data_next = NULL;
 void *make_cons_next = NULL;
+void *make_dict_next = NULL;
+void *make_gmpq_next = NULL;
 
 static void init_pthread_keys(void)
 {
@@ -36,6 +40,8 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_exception_key, NULL);
   pthread_key_create(&pk_limo_data_next_key, NULL);
   pthread_key_create(&pk_cons_next_key, NULL);
+  pthread_key_create(&pk_dict_next_key, NULL);
+  pthread_key_create(&pk_gmpq_next_key, NULL);  
   pthread_key_create(&pk_dynamic_vars_key, NULL);
 }
 
@@ -116,6 +122,8 @@ int main(int argc, char **argv)
   init_pthread_keys();
   pk_limo_data_next_set(&make_limo_data_next);
   pk_cons_next_set(&make_cons_next);
+  pk_dict_next_set(&make_dict_next);
+  pk_gmpq_next_set(&make_gmpq_next);
 
   init_syms();
   pk_stacktrace_set(nil);

@@ -173,6 +173,8 @@ extern pthread_key_t pk_exception_key;
 extern pthread_key_t pk_ljbuf_key;
 extern pthread_key_t pk_limo_data_next_key;
 extern pthread_key_t pk_cons_next_key;
+extern pthread_key_t pk_dict_next_key;
+extern pthread_key_t pk_gmpq_next_key;
 extern pthread_key_t pk_dynamic_vars_key;
 
 #define pk_ljbuf_set(VAL)      (pthread_setspecific(pk_ljbuf_key, (void *)(VAL)))
@@ -185,6 +187,10 @@ extern pthread_key_t pk_dynamic_vars_key;
 #define pk_limo_data_next_get()     ((void **)pthread_getspecific(pk_limo_data_next_key))
 #define pk_cons_next_set(VAL)  (pthread_setspecific(pk_cons_next_key, (void *)(VAL)))
 #define pk_cons_next_get()       ((void **)pthread_getspecific(pk_cons_next_key))
+#define pk_dict_next_set(VAL)  (pthread_setspecific(pk_dict_next_key, (void *)(VAL)))
+#define pk_dict_next_get()       ((void **)pthread_getspecific(pk_dict_next_key))
+#define pk_gmpq_next_set(VAL)  (pthread_setspecific(pk_gmpq_next_key, (void *)(VAL)))
+#define pk_gmpq_next_get()       ((void **)pthread_getspecific(pk_gmpq_next_key))
 #define pk_dynamic_vars_set(VAL) (pthread_setspecific(pk_dynamic_vars_key, (void *)(VAL)))
 #define pk_dynamic_vars_get()    ((limo_data *)pthread_getspecific(pk_dynamic_vars_key))
   
