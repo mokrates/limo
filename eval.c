@@ -87,7 +87,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
     setq(param_env, params, arglist);
 
 #if STATIC_MACROEX
-  body = list_dup(body);
+  //  body = list_dup(body);     // don't really know what this was for.
 #endif
 
   limo_data *res = eval(body, param_env);
@@ -143,6 +143,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
   int again=1;
   limo_data *tmp_stacktrace = pk_stacktrace_get();
+  limo_data *stacktrace_cons;
 
   if (limo_register) {        // TODO: here is a check of "things". could be used to signal Ctrl-c
     if (limo_register & LR_SIGINT) {
@@ -156,9 +157,9 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     }
   }
 
+  stacktrace_cons = make_cons(form, tmp_stacktrace);
+  pk_stacktrace_set(stacktrace_cons);
   while (again) {
-    pk_stacktrace_set(make_cons(form, tmp_stacktrace));
-
     form=real_eval(form, env);
     assert(form);
     assert(form->type != limo_TYPE_CONST);
@@ -170,6 +171,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
       next_form= CDR(form);
       env      = CAR(form);
       form     = next_form;
+      CAR(stacktrace_cons) = form;
     }
     else
       again=0;
