@@ -220,7 +220,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                  "AtkComponent *" "GtkMenuToolButton *" "GtkHeaderBar *" "GtkMenuButton *"
                  "GtkActionable *" "GtkListBox *" "const GString *"
                  "GtkNativeDialog *" "GtkFileChooser *" "const GtkTargetEntry *"
-                 "GRWLock *" "GtkStatusbar *" "GtkFrame *" "GDBusMethodInvocation *"
+                 "GRWLock *" "GtkStatusbar *" "GtkStatusIcon *" "GtkFrame *" "GDBusMethodInvocation *"
                  "const GdkPixbufFormat *" "GClosure *" "GtkScale *" "const volatile gint *"
                  "AtkEditableText *" "AtkRegistry *" "void *"
                  "GSimpleAsyncResult *" "GtkAllocation *" "GDBusObjectManagerClient *"
@@ -498,7 +498,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 (for-each next-line (progress-bar-wt (file-readlines stdin) 80 49000)
   (setf last-line line)
   (setf line (string-strip next-line))
-  (cond ((= line "extern")  ;; ignore the deprecated stuff
+  (cond ((string-endswith line "extern")  ;; ignore the deprecated stuff
          (setq function-def ())
          (while :t
            (setq line (string-strip (file-readline stdin)))
@@ -516,7 +516,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
              (break)))
          (process-fn-def function-def))))
 
-(print (format "%r\n" (map (lambda (x) (car x)) (dict-to-list missing-types))))
+(print (format "missing types: %r\n" (map (lambda (x) (car x)) (dict-to-list missing-types))))
 (output-file processed-fns)
 
 (print "\n")

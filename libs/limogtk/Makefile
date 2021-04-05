@@ -1,6 +1,6 @@
 LIBNAME=limogtk
 OBJ = $(LIBNAME).o
-CFLAGS += -Wno-discarded-qualifiers -g -I../.. `pkg-config gtk+-3.0 --cflags` -fPIC
+CFLAGS += -Wno-deprecated-declarations -Wno-discarded-qualifiers -g -I../.. `pkg-config gtk+-3.0 --cflags` -fPIC
 CC=gcc
 
 $(LIBNAME).so: $(OBJ) Makefile

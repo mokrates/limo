@@ -84,6 +84,47 @@ BUILTIN(builtin_get_error)
 #include "_gtk-functions.h"
 #include "gtk-marshall.h"
 
+static gboolean limo_g_timeout_cb(limo_data *closure)
+{
+  return !is_nil(eval(CAR(closure), CDR(closure)));
+}
+
+BUILTIN(builtin_g_timeout_add)
+{
+  limo_data *ld_interval;  // in msecs
+  limo_data *ld_fun;
+  limo_data *closure;
+  int event_source;
+
+  REQUIRE_ARGC("G-TIMEOUT-ADD", 2);
+  ld_interval = eval(FIRST_ARG, env);
+  ld_fun = eval(SECOND_ARG, env);
+  REQUIRE_TYPE("G-TIMEOUT-ADD", ld_interval, limo_TYPE_GMPQ);
+  REQUIRE_TYPE("G-TIMEOUT-ADD", ld_fun, limo_TYPE_LAMBDA);
+
+  closure = make_cons(make_cons(ld_fun, nil), env);
+  event_source = g_timeout_add(GETINTFROMMPQ(ld_interval), (GSourceFunc)limo_g_timeout_cb, closure);
+  return make_cons(make_number_from_long_long(event_source), closure);   // should be saved by caller to prevent collection
+}
+
+BUILTIN(builtin_g_timeout_add_seconds)
+{
+  limo_data *ld_interval;  // in msecs
+  limo_data *ld_fun;
+  limo_data *closure;
+  int event_source;
+
+  REQUIRE_ARGC("G-TIMEOUT-ADD-SECONDS", 2);
+  ld_interval = eval(FIRST_ARG, env);
+  ld_fun = eval(SECOND_ARG, env);
+  REQUIRE_TYPE("G-TIMEOUT-ADD-SECONDS", ld_interval, limo_TYPE_GMPQ);
+  REQUIRE_TYPE("G-TIMEOUT-ADD-SECONDS", ld_fun, limo_TYPE_LAMBDA);
+
+  closure = make_cons(make_cons(ld_fun, nil), env);
+  event_source = g_timeout_add_seconds(GETINTFROMMPQ(ld_interval), (GSourceFunc)limo_g_timeout_cb, closure);
+  return make_cons(make_number_from_long_long(event_source), closure);   // should be saved by caller to prevent collection
+}
+
 void limo_init_limogtk(limo_data *env)
 {
   limo_data *limo_limogtk_env;
@@ -95,6 +136,8 @@ void limo_init_limogtk(limo_data *env)
   INS_LIMOGTK_BUILTIN(builtin_g_application_run, "G-APPLICATION-RUN");
   INS_LIMOGTK_BUILTIN(builtin_g_signal_connect_simple, "G-SIGNAL-CONNECT-SIMPLE");
   INS_LIMOGTK_BUILTIN(builtin_g_signal_connect, "G-SIGNAL-CONNECT");
+  INS_LIMOGTK_BUILTIN(builtin_g_timeout_add, "G-TIMEOUT-ADD");
+  INS_LIMOGTK_BUILTIN(builtin_g_timeout_add, "G-TIMEOUT-ADD-SECONDS");
   INS_LIMOGTK_BUILTIN(builtin_make_gtk_text_iter, "MAKE-GTK-TEXT-ITER");
   INS_LIMOGTK_BUILTIN(builtin_make_errorpp, "MAKE-ERRORPP");
   INS_LIMOGTK_BUILTIN(builtin_get_error, "GET-ERROR");
