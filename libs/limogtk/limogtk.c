@@ -137,7 +137,7 @@ void limo_init_limogtk(limo_data *env)
   INS_LIMOGTK_BUILTIN(builtin_g_signal_connect_simple, "G-SIGNAL-CONNECT-SIMPLE");
   INS_LIMOGTK_BUILTIN(builtin_g_signal_connect, "G-SIGNAL-CONNECT");
   INS_LIMOGTK_BUILTIN(builtin_g_timeout_add, "G-TIMEOUT-ADD");
-  INS_LIMOGTK_BUILTIN(builtin_g_timeout_add, "G-TIMEOUT-ADD-SECONDS");
+  INS_LIMOGTK_BUILTIN(builtin_g_timeout_add_seconds, "G-TIMEOUT-ADD-SECONDS");
   INS_LIMOGTK_BUILTIN(builtin_make_gtk_text_iter, "MAKE-GTK-TEXT-ITER");
   INS_LIMOGTK_BUILTIN(builtin_make_errorpp, "MAKE-ERRORPP");
   INS_LIMOGTK_BUILTIN(builtin_get_error, "GET-ERROR");
