@@ -512,6 +512,16 @@
       (setnth (- n 1) (cdr l) v)))
 (freezeq setnth)
 
+(defmacro incf (v . i)
+  (if i
+      `(setf ,v ,`(+ ,v ,(car i)))
+      `(setf ,v ,`(+ ,v 1))))
+
+(defmacro decf (v . i)
+  (if i
+      `(setf ,v ,`(- ,v ,(car i)))
+      `(setf ,v ,`(- ,v 1))))
+
 (setq _place-setters (make-dict))
 (freezeq _place-setters)
 (defmacro setplace (k v)

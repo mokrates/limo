@@ -1,0 +1,6 @@
+(import "progbar.limo")
+
+(for-each i (progress-bar-w (range 0 5 1) 80)
+  (for-each j (progress-bar-w (range 0 5 1) 80)
+    (for-each k (progress-bar-w (range 0 5 1) 80)
+      (sleep 1))))

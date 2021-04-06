@@ -35,11 +35,18 @@
              (print (format "%s[F" (chr 27))))) ;; go up
          (setq thisepoch (car (time)))
          (dcons (car it) (progress-bar-x (cdr it) width pbc total thisepoch (+ pos 1))))
-        ()))
+        (progn
+	 (decf progbarcounter)
+	 ())))
+  
   (defun progress-bar-wt (it width total)
-    (progress-bar-x it width 0 total 0 0))
+    (let ((pbc progbarcounter))
+      (incf progbarcounter)
+      (progress-bar-x it width pbc total 0 0)))
   
   (defun progress-bar-w (it width)
-    (progress-bar-x it width 0 (list-length it) 0 0))
+    (let ((pbc progbarcounter))
+      (incf progbarcounter)
+      (progress-bar-x it width pbc (list-length it) 0 0)))
   
   (list progress-bar-wt progress-bar-w)))
