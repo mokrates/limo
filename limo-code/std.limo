@@ -580,10 +580,17 @@
 	((consp x) (string-concat "(" (list-to-string x)))))
 (freezeq repr)
 
+(defun dict (alist)
+  (setq nd (make-dict))
+  (for-each p alist
+    (dict-set nd (car p) (cdr p)))
+  nd)
+(freezeq dict)
+
 (defun dict-copy (d)
   (setq nd (make-dict))
   (for-each p (dict-to-list d)
-	    (dict-set nd (car p) (cdr p)))
+    (dict-set nd (car p) (cdr p)))
   nd)
 (freezeq dict-copy)
 
