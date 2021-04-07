@@ -1,0 +1,8 @@
+(defun random-byte (n)
+  (with-file-open "/dev/urandom" "r" f
+    (mod (ord (file-getc f)) n)))
+
+(defun random-short (n)
+  (mod (+ (* 255 (random-byte 256))
+	  (random-byte 256))
+       n))
