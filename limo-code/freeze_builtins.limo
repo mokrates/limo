@@ -3,7 +3,6 @@
 (freezeq QUOTE)
 (freezeq SETQ)
 (freezeq UNSETQ)
-(freezeq SETF)
 (freezeq SETCAR)
 (freezeq SETCDR)
 (freezeq IF)

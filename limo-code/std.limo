@@ -524,11 +524,17 @@
 
 (setq _place-setters (make-dict))
 (freezeq _place-setters)
+
+(setq _setf setf)
+(freezeq _setf)
 (defmacro setplace (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
-	(:else `(setf ,k ,v))))
-(freezeq setplace)
+	(:else `(_setf ,k ,v))))
+(setf setf setplace)
+(unsetq setplace)
+(freezeq setf)
+
 
 (defun register-place-setter (g s)
   (dict-set _place-setters g s))
@@ -537,6 +543,7 @@
 (register-place-setter 'car 'setcar)
 (register-place-setter 'cdr 'setcdr)
 (register-place-setter 'dict-getvalue 'dict-set)
+(register-place-setter 'nth 'setnth)
 
 (defun dict-getvalue (d k)
   (cdr (dict-get d k)))
@@ -646,16 +653,22 @@
     ,`(setq ,classname ,`(make-env ,parentclass))
     ,@(map (lambda (method)
 	     (progn
-	      (if (and (consp method)
-		       (eq (car method) 'defmethod))
-		  `(env-setq ,classname ,(cadr method)
-			     ,`(lambda ,(caddr method) ,`(progn ,@(cdddr method))))
-		  (throw "method-definition must be (defmethod methodname (args) body)"))))
+	      (cond ((and (consp method)
+			  (eq (car method) 'defmethod))
+		     `(env-setq ,classname ,(cadr method)
+				,`(lambda ,(caddr method) ,`(progn ,@(cdddr method)))))
+		    ((and (consp method)
+			  (eq (car method) 'defprop))
+		     `(env-setq ,classname ,(cadr method)
+				,`(lambda (self . x)
+				    ,`(if x
+					  ,`(setmember ,(cons 'bracket (cons 'self (caddr method))) (car x))
+					  ,(cons 'bracket (cons 'self (caddr method)))))))
+		    (:else (throw "method-definition must be (defmethod methodname (args) body)")))))
 	   methods)))
 (freezeq defclass)
 
 ;;; (setmember [object . member] value)
-;;; sadly doesn't work with setplace
 (defmacro setmember (br val)
   `(env-setq ,(cadr br) ,(cddr br) ,val))
 (freezeq setmember)
@@ -693,6 +706,11 @@
 	    (instancep up c))
 	())))
 (freezeq instancep)
+
+(defmacro _prop-set args
+  (cons 'bracket args))
+(register-place-setter 'bracket '_prop-set)
+	 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; end of classes/objects
