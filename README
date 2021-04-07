@@ -1,31 +1,27 @@
-  ╭────────────────╮
-  │                │  
-  │                │
-  │     ╲          │  
-  │      ╲  (λ)    │  
-  │      │╲~~│     │  
-  │      │ ╲ │     │  
-  │      ╰───╯     │ 
-  │                │
-  │                │
-  ╰────────────────╯
+   _ _                \           
+  | (_)_ __ ___   ___  \  (λ)     
+  | | | '_ ` _ \ / _ \ |\~~|      
+  | | | | | | | | (_) || \ |      
+  |_|_|_| |_| |_|\___/ |___|      
+
                   
-                  
-written by M. "mokrates" Molle
+written by Moritz Molle
 
 Licensed under GPL (v3) (applies to all files in this tarball)
 http://www.gnu.org/licenses/gpl.html
 
-**************************************
+____
 
 for the impatient:
-$ bash build.sh
+$ bash build.sh bin
 builds and installs limo into ~/.local/bin and ~/.local/lib
 
-$ make limo-almost-static
+Installing systemwide:
+$ make 
 $ make install
 builds and installs into /usr/local/
 
+## Custom prefix
 You can define a prefix where limo should be installed by giving make
 a INSTALL_PREFIX:
 $ make clean
@@ -34,9 +30,12 @@ $ make INSTALL_PREFIX=/usr/local/ install
 please be aware that the INSTALL_PREFIX should be given to all the
 make targets.
 
-It it advisable to always make clean before every build.
+It it advisable to always make clean before every build. build.sh does this.
 
-**************************************
+build.sh:
+build.sh is _really_ simple, I recommend to modify it to your needs and use that.
+
+***************************************
 
 dependencies:
 
@@ -57,13 +56,25 @@ library, add it to inlined.mods
 
 Library dependencies:
 ncurses: ncurses
-ncmenu: ncurses ncmenu
+ncmenu: ncurses ncmenu (if you inline ncmenu, you have also have to inline ncurses)
 sdl: sdl
 simplesdl: sdl
+limogtk: gtk3
 
-NCMENU
-If you build ncmenu, you have to inline or not inline it just like
-ncurses. If you don't limo segfaults.
+limogtk
+=======
+Not built by default. This is very dirty stuff.
+1. You need a working limo installed to build limogtk
+2. this takes a while. The scripts generate C code from the gtk header files.
+
+~/limo$ cd libs/limogtk
+~/limo/libs/limogtk$ make clean
+~/limo/libs/limogtk$ make
+~/limo/libs/limogtk$ cd ../..
+
+   ~/limo$ make install
+or ~/limo$ bash build.sh
+
 
 Building on MAC OS X
 ====================
@@ -73,6 +84,10 @@ You have to use the limo-wsl or limo-almost-static target.
 Building on Windows Subsystem for Linux (WSL)
 =============================================
 You have to use the limo-wsl or limo-almost-static target.
+
+Attributions and Licenses
+=========================
+As not 100% of the code is mine, please have a look at attributions.txt
 
 **************************************
 
@@ -98,3 +113,36 @@ dcons/#<thunk>	: #<thunk> are instances of a type which cannot be instatiated by
 		  argument, packs the second into an #<thunk> and cons'es those two.
 		  this way the cdr of the cons only gets evaluated, when cdr() is called on the
 		  cons. this is limo's way of implementing iterators.
+
+There's tons of other stuff:
+language:
+- tailcall optimization
+- multithreading
+- objects/classes
+- bignums/quotients
+- macros
+
+simple libraries:
+- simplest networking (sockets)
+- simple graphics (sdl/gtk/ncurses)
+
+EXAMPLES
+========
+
+Tetris
+------
+You can play tetris
+limo examples/tetris.limo
+
+Snake
+-----
+You can see snake beat itself:
+limo examples/autosnake2.limo 10 10
+
+mandelbrot
+----------
+The usual mandelbrot fractal rendered with sdl
+
+more
+----
+just see the examples/-directory.

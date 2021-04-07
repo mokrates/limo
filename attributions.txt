@@ -7,7 +7,7 @@ might think "yeah, sure", but, yeah, I really use it... a bit.)
 
 It is usually required to give credit if one steals foreign code, but
 even if it weren't, it is common courtesy to do so. So this here is
-where the credit is to be given.
+where the credit is given.
 
 M. Molle
 
@@ -18,12 +18,16 @@ M. Molle
   https://stackoverflow.com/questions/32936646/getting-the-string-length-on-utf-8-in-c
 
 - the dictionary-code in dict.c I copied from the python2 source code.
+  http://www.laurentluce.com/posts/python-dictionary-implementation/
 
 - libs/popen
   I use a popen3, which I adapted.
   taken from here:
   https://gist.github.com/mike-bourgeous/2be6c8900bf624887fe5fee4f28552ef
+  This is, as the site states, in the public domain.
   * Mike Bourgeous 
   * https://github.com/mike-bourgeous
   * http://www.mikebourgeous.com/
   
+- libs/sdl/DejavuSansMono.ttf
+  See libs/sdl/Font.license
