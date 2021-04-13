@@ -142,3 +142,38 @@ Accessor function for association lists. Examples:
 λimo > (assoc 'bla '((\"key\" . \"value\") (:foo . :bar)))
 -> ()
 ")
+
+(defhelp setq
+  "BUILTIN setq
+Assign to variable in current scope.
+
+Cannot be used if a variable under the same name defined in an enclosing scope
+has been read in the current scope. Returns assigned value.
+
+Examples:
+(setq foo 123)
+foo
+-> 123
+
+(setq bar (+ 3 4))
+bar
+-> 7
+")
+
+(defhelp setf
+  "MACRO setf
+Assign to existing variable or place.
+To define places to assign to, check REGISTER-PLACE-SETTER
+
+Examples:
+(setq foo 5)
+(setf foo 123)
+foo
+-> 123
+
+(setq foo '(1 2 3 4 5))
+(setf (nth 2 foo) 'hallo)
+foo
+->
+(1 2 HALLO 4 5)
+")
