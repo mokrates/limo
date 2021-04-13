@@ -28,10 +28,10 @@ returns the complete file in a dynamic list of lines
 
 (defmacro with-file-open (filename mode f . body)
   `(finally
-    ,`(progn
-       ,`(setq ,f ,`(file-open ,filename ,mode))
+    (progn
+       (setq ,f (file-open ,filename ,mode))
        ,@body)
-    ,`(file-close ,f)))
+    (file-close ,f)))
 
 (defhelp with-file-open
   "MACRO (with-file-open filename mode f . body)

@@ -24,7 +24,7 @@
 	      (setf argv (cdr argv))
 	      (setf executelist (append
                                  executelist
-                                 (list `(print ,`(format "%r\n" ,(read-string (car argv)))))))
+                                 (list `(print (format "%r\n" ,(read-string (car argv)))))))
 	      (setf argv (cdr argv)))
 	     ((eq "-i" (car argv))
 	      (setf argv (cdr argv))

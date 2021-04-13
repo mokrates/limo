@@ -7,7 +7,7 @@
 (setq _turtle-textinitp ())
 (defmacro _turtle-with-text body
   `(if _turtle-textinitp
-       ,`(progn ,@body)
+       (progn ,@body)
        (throw "please call (TURTLE-TEXTINIT) to init turtle textfunctions")))
 
 (setq _turtle-x 240)

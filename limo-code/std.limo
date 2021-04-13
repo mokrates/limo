@@ -27,13 +27,13 @@
 
 (defmacro assert (x)
   `(if ,x :t 
-       ,`(throw ,`(list 'ASSERT_FAIL ,`(quote ,x)))))
+       (throw (list 'ASSERT_FAIL (quote ,x)))))
 (freezeq assert)
 
 (defmacro asserteq (x y)
   (try
-   `(assert ,`(deepeq ,x ,y))
-   `(write ,`(list 'asserteq_failed ,x ,y))))
+   `(assert (deepeq ,x ,y))
+   `(write (list 'asserteq_failed ,x ,y))))
 (freezeq asserteq)
 
 (setq _import_path (string-concat ".:" _limo-prefix))
@@ -41,19 +41,19 @@
 (defmacro import (name)
   (defmacro _import (name pathlist)
     (if pathlist
-	`(if ,`(try
-		,`(load ,`(string-concat ,(car pathlist) ,`(string-concat "/" ,name)))
+	`(if (try
+		(load (string-concat ,(car pathlist) (string-concat "/" ,name)))
 		:failed)
-	     ,`(,_import ,name ,(cdr pathlist))
-	     ,`())
-	`(throw ,`(format "could not import %s" ,name))))
+	     (,_import ,name ,(cdr pathlist))
+	     ())
+	`(throw (format "could not import %s" ,name))))
   `(,_import ,name ,(string-split _import_path ":")))
 
 (defmacro mod-load (name)
-  `(if ,`(mod-isinline ,name)
-       ,`(mod-loadinline ,name)
-       ,`(loaddll ,`(string-concat ,`(string-concat _limo-prefix ,name) ".so")
-		  ,`(string-concat "limo_init_" ,name))))
+  `(if (mod-isinline ,name)
+       (mod-loadinline ,name)
+       (loaddll (string-concat (string-concat _limo-prefix ,name) ".so")
+		  (string-concat "limo_init_" ,name))))
 
 (defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)
@@ -133,7 +133,7 @@
 ;; 		     (helper (cdr l))))))
 ;;   (undyn (cons append (helper l))))
 
-;; a try at a deep quasiquote. because those ,` are not good!
+;; a try at a deep quasiquote. because those ,`s are not good!
 (defmacro quasiquote (l)  
   (defun helper (l)
     (cond ((not l)         ; end of list
@@ -161,9 +161,9 @@
 ; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))
 (defmacro limo-loop x
   `(progn
-    ,`(defun recur ,(car x)
+    (defun recur ,(car x)
 	,@(cddr x))
-    ,`(recur ,@(cadr x))))
+    (recur ,@(cadr x))))
 (freezeq limo-loop)
 
 ; loop/recur
@@ -175,9 +175,9 @@
     (if args (cons (cadr args) (rvals (cddr args))) ()))
 
   `(progn
-    ,`(defun recur ,(lvals (car x))
+    (defun recur ,(lvals (car x))
 	,@(cdr x))
-    ,`(recur ,@(rvals (car x)))))
+    (recur ,@(rvals (car x)))))
 (freezeq loop)
 
 (defun dmap (f a)
@@ -318,9 +318,9 @@
 
 (defmacro switch (s . items)
   (when items
-	`(if ,`(eq ,s ,(caar items)) 
-	     ,`(progn ,@(cdar items))
-	     ,`(switch ,s ,@(cdr items)))))
+	`(if (eq ,s ,(caar items)) 
+	     (progn ,@(cdar items))
+	     (switch ,s ,@(cdr items)))))
 (freezeq switch)
 
 (defun * os
@@ -425,7 +425,7 @@
 (freezeq dappend)
 
 (defmacro scope x
-  `(,`(lambda () ,`(progn ,@x))))
+  `((lambda () (progn ,@x))))
 (freezeq scope)
 
 (setq warn-once
@@ -440,22 +440,22 @@
   (setq it (gensym))
   (setq recur (gensym))
   `(progn
-    ,`(defun ,recur ,`(,it)
-	,`(when ,it 
-		,`(setq ,x ,`(car ,it)) 
+    (defun ,recur (,it)
+	(when ,it 
+		(setq ,x (car ,it)) 
 		,@body
-		,`(,recur ,`(cdr ,it))))
-    ,`(,recur ,l)))
+		(,recur (cdr ,it))))
+    (,recur ,l)))
 (freezeq for-each)
 
 (defmacro for-list (x l . body)
   (setq recur (gensym))
   `(progn
-    ,`(defun ,recur ,`(,x)
-	,`(when ,x 
+    (defun ,recur (,x)
+	(when ,x 
 		,@body
-		,`(,recur ,`(cdr ,x))))
-    ,`(,recur ,l)))
+		(,recur (cdr ,x))))
+    (,recur ,l)))
 (freezeq for-list)
 
 (defun qsort (lt l) 
@@ -490,29 +490,29 @@
 (defmacro unify (l v)       ; destructuring assignment.
   (setq index (gensym))
   `(progn
-    ,`(setq ,index ,v)
+    (setq ,index ,v)
     ,@(loop (l l akku ())
 	    (if l 
 		(recur (cdr l) 
 		       (append akku
-			       `(,`(setq ,(car l) ,`(car ,index))
-				 ,`(setq ,index ,`(cdr ,index)))))
+			       `((setq ,(car l) (car ,index))
+				 (setq ,index (cdr ,index)))))
 		akku))
-    ,`(unsetq ,index)))
+    (unsetq ,index)))
 (freezeq unify)
 
 (defmacro unifyf (l v)       ; destructuring assignment.
   (setq index (gensym))
   `(progn
-    ,`(setq ,index ,v)
+    (setq ,index ,v)
     ,@(loop (l l akku ())
 	    (if l 
 		(recur (cdr l) 
 		       (append akku
-			       `(,`(setf ,(car l) ,`(car ,index))
-				 ,`(setf ,index ,`(cdr ,index)))))
+			       `((setf ,(car l) (car ,index))
+				 (setf ,index (cdr ,index)))))
 		akku))
-    ,`(unsetq ,index)))
+    (unsetq ,index)))
 (freezeq unifyf)
 
 (defun assoc (name l)
@@ -529,7 +529,7 @@
 (freezeq member)
 
 ;;(defmacro set (k v)         ; TODO: this doesn't work yet.
-;;  `(setq ,`(eval ,k) ,v))
+;;  `(setq (eval ,k) ,v))
 ;;(freezeq set)
 
 (defun setnth (n l v)
@@ -540,13 +540,13 @@
 
 (defmacro incf (v . i)
   (if i
-      `(setf ,v ,`(+ ,v ,(car i)))
-      `(setf ,v ,`(+ ,v 1))))
+      `(setf ,v (+ ,v ,(car i)))
+      `(setf ,v (+ ,v 1))))
 
 (defmacro decf (v . i)
   (if i
-      `(setf ,v ,`(- ,v ,(car i)))
-      `(setf ,v ,`(- ,v 1))))
+      `(setf ,v (- ,v ,(car i)))
+      `(setf ,v (- ,v 1))))
 
 (setq _place-setters (make-dict))
 (freezeq _place-setters)
@@ -637,7 +637,7 @@
 (freezeq let*)
 
 (defmacro let (lblock . body)
-  `(,`(lambda ,(map (lambda (x) (car x)) lblock) ,`(progn ,@body))
+  `((lambda ,(map (lambda (x) (car x)) lblock) (progn ,@body))
     ,@(map (lambda (x) (cadr x)) lblock)))
 (freezeq let)
 
@@ -650,7 +650,7 @@
 (defmacro dyn-setf (var val)
     `(env-setf (get-dynamic-env) ,var ,val))
 (defmacro with-dynamic-env body
-    `(_with-dynamic-env ,`(progn ,@body)))
+    `(_with-dynamic-env (progn ,@body)))
 (defmacro dyn-let (vars . body)
   `(with-dynamic-env
     ,(cons 'progn
@@ -670,25 +670,25 @@
 
 (defmacro class (parentclass . methods)
   `(with-gensym (classname)
-       ,`(defclass ,classname ,parentclass . ,methods)
+       (defclass ,classname ,parentclass . ,methods)
      ,classname))
 (freezeq class)
 
 (defmacro defclass (classname parentclass . methods)
   `(progn
-    ,`(setq ,classname ,`(make-env ,parentclass))
+    (setq ,classname (make-env ,parentclass))
     ,@(map (lambda (method)
 	     (progn
 	      (cond ((and (consp method)
 			  (eq (car method) 'defmethod))
 		     `(env-setq ,classname ,(cadr method)
-				,`(lambda ,(caddr method) ,`(progn ,@(cdddr method)))))
+				(lambda ,(caddr method) (progn ,@(cdddr method)))))
 		    ((and (consp method)
 			  (eq (car method) 'defprop))
 		     `(env-setq ,classname ,(cadr method)
-				,`(lambda (self . x)
-				    ,`(if x
-					  ,`(setmember ,(cons 'bracket (cons 'self (caddr method))) (car x))
+				(lambda (self . x)
+				    (if x
+					  (setmember ,(cons 'bracket (cons 'self (caddr method))) (car x))
 					  ,(cons 'bracket (cons 'self (caddr method)))))))
 		    (:else (throw "method-definition must be (defmethod methodname (args) body)")))))
 	   methods)))
@@ -707,7 +707,7 @@
 ;; so this is the definition:
 (defmacro bracket (o . args)
   (if (consp args) ; method-call
-      `(,`(env-getq ,o ,(car args)) ,o ,@(cdr args))
+      `((env-getq ,o ,(car args)) ,o ,@(cdr args))
       `(env-getq ,o ,args)))
 (freezeq bracket)
 
@@ -750,10 +750,10 @@
 (defmacro timerun code
   (setq t1 (gensym))
   (setq t2 (gensym))
-  `(progn ,`(setq ,t1 (utime))
+  `(progn (setq ,t1 (utime))
 	  ,@code
-	  ,`(setq ,t2 (utime))
-	  ,`(- ,t2 ,t1)))
+	  (setq ,t2 (utime))
+	  (- ,t2 ,t1)))
 (freezeq timerun)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,9 +1,9 @@
 (defmacro repl (c)
   `(progn
-    ,`(write ,`',c)
-    ,`(file-write stdout "-> ")
-    ,`(file-flush stdout)
-    ,`(write ,c)))
+    (write ',c)
+    (file-write stdout "-> ")
+    (file-flush stdout)
+    (write ,c)))
 
 (repl (mod-load "popen"))
 (repl (setq gedoens (popen "/usr/bin/cat" '("/usr/bin/cat" "/etc/passwd") () () :t ())))

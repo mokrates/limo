@@ -2,13 +2,13 @@
 
 (defmacro compr x
   (pmatch x
-	  ((,x for ,y in ,z) `(map ,`(lambda ,`(,y) ,x) ,z))
-	  ((,x for ,y in ,z if ,c) `(filter ,`(lambda ,`(,y) ,c) ,`(map ,`(lambda ,`(,y) ,x) ,z)))))
+	  ((,x for ,y in ,z) `(map (lambda (,y) ,x) ,z))
+	  ((,x for ,y in ,z if ,c) `(filter (lambda (,y) ,c) (map (lambda (,y) ,x) ,z)))))
 
 (defmacro dcompr x
   (pmatch x
-	  ((,x for ,y in ,z) `(dmap ,`(lambda ,`(,y) ,x) ,z))
-	  ((,x for ,y in ,z if ,c) `(dfilter ,`(lambda ,`(,y) ,c) ,`(dmap ,`(lambda ,`(,y) ,x) ,z)))))
+	  ((,x for ,y in ,z) `(dmap (lambda (,y) ,x) ,z))
+	  ((,x for ,y in ,z if ,c) `(dfilter (lambda (,y) ,c) (dmap (lambda (,y) ,x) ,z)))))
 
 (defhelp compr
   "MACRO compr

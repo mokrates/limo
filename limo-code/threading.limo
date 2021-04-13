@@ -63,7 +63,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 
 ;;;;;;; cool stuff ;;;;;;;
 (defmacro synchronized (mut . body)
-  `(finally ,`(progn ,`[,mut lock] ,@body) ,`[,mut unlock]))
+  `(finally (progn [,mut lock] ,@body) [,mut unlock]))
 
 ;;;; queue-lock
 ;; a FIFO for thread-communication

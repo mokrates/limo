@@ -10,18 +10,18 @@
  (asserteq ((comp reverse reverse) '(a b c)) '(a b c)) ;; comp
  (asserteq (dmap (lambda (x) (cons 'a x)) '(a b c))
 	   '((a . a) (a . b) (a . c)))
- 
+
  (asserteq (dzip2 '(a b c) '(d e f))
 	   '((a . d) (b . e) (c . f)))
- 
+
  (asserteq (dzipn '(a b c) '(d e f) '(g h i))
 	   '((a d g) (b e h) (c f i)))
  (asserteq (switch 'foo ('bar 'baz) ('foo 'furz))
 	   'furz)
- 
+
  (asserteq (range 0 3 1) '(0 1 2))
  (asserteq (drange 0 3 1) '(0 1 2))
  (asserteq (undyn (drange 0 3 1)) (range 0 3 1))
- 
+
  (asserteq (list-length (drange 0 3 1)) 3)
  )

@@ -32,7 +32,7 @@
 (freezeq limpy-assignf)
 
 (defmacro limpy-defun (name params . body)
-  `(setq ,name ,`(lambda ,params ,`(block _return ,`(progn ,@body)))))
+  `(setq ,name (lambda ,params (block _return (progn ,@body)))))
 (freezeq limpy-defun)
 
 (defmacro return x
@@ -44,15 +44,15 @@
 (defmacro while (condition . body)
   (with-gensym (fun)
 	       `(block _break
-		       ,`(progn
-			  ,`(defun ,fun ()
-			      ,`(if ,condition
-				    ,`(progn ,`(block _continue
-						      ,`(progn
+		       (progn
+			  (defun ,fun ()
+			      (if ,condition
+				    (progn (block _continue
+						      (progn
 							 ,@body))
-					     ,`(,fun))
+					     (,fun))
 				    ()))
-			  ,`(,fun)))))
+			  (,fun)))))
 (freezeq while)
 
 (defmacro break x
@@ -72,13 +72,13 @@
 (defmacro limpy-gen (thecons compound lval li)
   (with-gensym (f args)
 	       `(scope 
-		 ,`(defun ,f ,`(,args)
-		     ,`(when ,args 
-			     ,`(limpy-assignq ,lval 
-					      ,`(car ,args))
-			     ,`(,thecons ,compound 
-					 ,`(,f ,`(cdr ,args)))))
-		 ,`(,f ,li))))
+		 (defun ,f (,args)
+		     (when ,args 
+			     (limpy-assignq ,lval 
+					      (car ,args))
+			     (,thecons ,compound 
+					 (,f (cdr ,args)))))
+		 (,f ,li))))
 (freezeq limpy-gen)
 
 ;; %[ x for y in z if c ]
@@ -88,9 +88,9 @@
 	       `(limpy-gen ,thecons 
 			   ,compound 
 			   ,lval 
-			   ,`(dfilter ,`(lambda ,`(,args) 
-					  ,`(progn
-					     ,`(limpy-assignq ,lval ,args)
+			   (dfilter (lambda (,args) 
+					  (progn
+					     (limpy-assignq ,lval ,args)
 					     ,condition)) ,li))))
 (freezeq limpy-gen-cond)
 
