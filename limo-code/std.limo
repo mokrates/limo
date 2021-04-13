@@ -148,10 +148,10 @@
 	   (dcons (cadar l) (helper (cdr l))))
           
 	  ((consp (car l))
-           (dcons (list 'list (cons 'append (undyn (helper (car l)))))
+           (dcons (list list (cons append (undyn (helper (car l)))))
                   (helper (cdr l))))
           (:t
-           (dcons (list 'list (list 'quote (car l)))  ; just a symbol to be quoted
+           (dcons (list list (list quote (car l)))  ; just a symbol to be quoted
                   (helper (cdr l))))))
   (undyn (dcons append (helper l))))
 
