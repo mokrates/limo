@@ -126,6 +126,18 @@ BUILTIN(builtin_cos)
   return make_number_from_double(cos(make_double_from_number(eval(FIRST_ARG, env))));
 }
 
+BUILTIN(builtin_atan)
+{
+  REQUIRE_ARGC("ATAN", 1);
+  return make_number_from_double(atan(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
+BUILTIN(builtin_asin)
+{
+  REQUIRE_ARGC("ASIN", 1);
+  return make_number_from_double(asin(make_double_from_number(eval(FIRST_ARG, env))));
+}
+
 BUILTIN(builtin_power)
 {
   REQUIRE_ARGC("POWER", 2);
@@ -212,6 +224,8 @@ struct { char *name; limo_builtin f; } number_builtin_array[] = {
   { "MPQ_DENOMINATOR", builtin_mpq_denominator },
   { "SIN", builtin_sin },
   { "COS", builtin_cos },
+  { "ATAN", builtin_atan },
+  { "ASIN", builtin_asin },
   { "POWER", builtin_power },
   { "INT", builtin_int }
 };

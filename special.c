@@ -54,7 +54,7 @@ void l_writer_special_intern(limo_data ***dest, limo_data *expr)
   char buf[20];
   list_put_str(dest, "#<special_intern:");
   snprintf(buf, 20, "%p", expr->d_special_intern);
-  list_put_str(buf);
+  list_put_str(dest, buf);
   list_put_str(dest, ">");
 }
 
