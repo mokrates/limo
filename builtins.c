@@ -265,6 +265,7 @@ BUILTIN(builtin_setcdr)
 BUILTIN(builtin_try)
 {
   limo_data *res;
+  limo_data *rethrow;
 
   if (list_length(arglist) != 3)
     limo_error("(try <TRY> <CATCH>)");
@@ -272,9 +273,15 @@ BUILTIN(builtin_try)
   res = try_catch(FIRST_ARG, env);
   if (!res) {
     limo_data *exception = pk_exception_get();
+    limo_data *rethrow   = make_nil();
     env = make_env(env);
     setq(env, make_sym("_EXCEPTION"), exception?exception:nil);
-    return make_thunk(SECOND_ARG, env);
+    setq(env, make_sym("_RETHROW"), rethrow);
+    res = eval(SECOND_ARG, env);
+    if (res == rethrow) // not any nil - THIS nil.
+      throw(exception);
+    else
+      return res;
   }
 }
 
@@ -296,7 +303,7 @@ BUILTIN(builtin_finally)
 BUILTIN(builtin_throw)
 {
   if (list_length(arglist) != 2)
-    limo_error("(try <TRY> <CATCH>)");
+    limo_error("(throw <EXCEPTION>");
   
   throw(eval(FIRST_ARG, env));
 }

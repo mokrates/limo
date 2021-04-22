@@ -9,7 +9,7 @@
 (load (string-concat _limo-prefix "file.limo"))
 (load (string-concat _limo-prefix "limpy.limo"))
 (load (string-concat _limo-prefix "rlcompleter.limo"))
-
+(load (string-concat _limo-prefix "exceptions.limo"))
 
 ################################
 
