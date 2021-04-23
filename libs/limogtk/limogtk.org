@@ -1,0 +1,66 @@
+#+TITLE: LimoGTK
+
+* LimoGTK
+** What is this
+   I wanted to have a windowing toolkit for limo and GTK is the only
+   one around in plain C.  So this is what I took.  The limogtk
+   library is (at the moment, but probably this won't change in the
+   near future) generated in a very dirty way by a script which just
+   regex-parses the gtk header files and constructs limo glue code.
+   So in this documentation I mostly document what I have tested to be
+   working and how to use it.
+   There will be many functions that are not documented here.  I
+   cannot say if those work.
+
+   generally: see gtk3 documentation for what these functions do
+
+** simple glade example and basic boilerplate
+#+BEGIN_SRC limo
+ (mod-load "limogtk")
+ ([_gtk . gtk-init])
+
+ (setq builder ([_gtk . gtk-builder-new-from-file] "example.glade"))
+ (setq main-window ([_gtk . gtk-builder-get-object] builder "window_main"))
+ (setq quit-button ([_gtk . gtk-builder-get-object] builder "button_quit"))
+ (setq quit-gcsave ;; to save from GC 
+       ([_gtk . g-signal-connect] 
+        quit-button "clicked" (lambda () ([_gtk . gtk-main-quit])) 0))
+ ([_gtk . gtk-window-present] main-window)
+ ([_gtk . gtk-main]))
+#+END_SRC
+** Caveats
+*** Garbage Collection
+    Many functions take limo objects and place them into GTK objects.
+    There the Boehm Collector which limo uses loses track of those objects
+    if there isn't another reference held to those objects.  So some
+    functions require you to "hold on to objects" so that the GC doesn't
+    collect them while they're still used.
+** handwritten gluefunctions
+**** get-error
+     unclear if this works correctly
+**** make-errorpp
+     unclear if this works correctly
+**** make-gtk-text-iter
+**** g-signal-connect
+     -> save return value from GC
+**** g-timeout-add-seconds
+     -> save return value from GC
+**** g-timeout-add
+     -> save return value from GC
+** generated and tested functions
+**** gtk-init
+**** gtk-main-quit
+**** gtk-window-present
+**** gtk-text-view-get-buffer
+**** gtk-text-buffer-get-start-iter
+**** gtk-text-buffer-get-end-iter
+**** gtk-text-buffer-get-text
+**** gtk-entry-get-text
+**** gtk-entry-set-text
+**** gtk-text-buffer-insert
+**** gtk-text-buffer-insert-markup
+**** gtk-text-buffer-insert-pixbuf
+     unclear if this works correctly
+**** gtk-status-icon-new-from-stock
+**** gtk-status-icon-set-tooltip-text
+**** gtk-status-icon-set-visible

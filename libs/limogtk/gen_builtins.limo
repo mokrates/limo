@@ -501,19 +501,19 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
   (cond ((string-endswith line "extern")  ;; ignore the deprecated stuff
          (setq function-def ())
          (while :t
-           (setq line (string-strip (file-readline stdin)))
+           (setf line (string-strip (file-readline stdin)))
            (setf function-def (append function-def (list line)))
-           (when (string-endswith line ");")
+           (when (string-endswith line ";")
              (break)))
          (process-fn-def function-def))
 
-        ((string-startswith line "cairo_")
+        ((and (string-startswith line "cairo_") (member "(" (string-to-list line)))
          (setq function-def (list (format "%s %s" (string-strip last-line) line)))
          (while :t
-           (setq line (string-strip (file-readline stdin)))
-           (setf function-def (append function-def (list line)))
-           (when (string-endswith line ");")
-             (break)))
+           (when (string-endswith line ";")
+             (break))
+           (setf line (string-strip (file-readline stdin)))
+           (setf function-def (append function-def (list line))))
          (process-fn-def function-def))))
 
 (print (format "missing types: %r\n" (map (lambda (x) (car x)) (dict-to-list missing-types))))
