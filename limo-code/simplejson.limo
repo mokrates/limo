@@ -53,7 +53,7 @@
 	    ((eq (car s) "]")
 	     ())                 ;; do nothing
 	    (:else
-	     (throw (list 'json-error "broken list syntax")))))
+	     (throw (list 'json-error (format "broken list syntax. found '%s'" (car s)))))))
     (setf s (cdr s))    ;; skip closing bracket
     (reverse res))
   
@@ -71,16 +71,17 @@
       (skip-whitespace)
       (setq val (load-object))
       (dict-set res key val)
+      (skip-whitespace)
       (cond ((eq (car s) ",")
 	     (setf s (cdr s))   ;; skip ,
 	     (skip-whitespace))
 	    ((eq (car s) "}")
 	     ())                 ;; do nothing
 	    (:else
-	     (throw (list 'json-error "broken list syntax")))))
+	     (throw (list 'json-error (format "broken object syntax. found '%s'" (car s)))))))
     (setf s (cdr s)) 
     res)
-
+  
   (defun load-keyword (kw val)
     (for-each c (string-to-list kw)
       (unless (eq (car s) c)
