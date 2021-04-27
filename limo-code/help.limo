@@ -177,3 +177,11 @@ foo
 ->
 (1 2 HALLO 4 5)
 ")
+
+(defhelp set-finalizer
+  "BUILTIN (set-finalizer <obj> <fin>)
+Register a finalizer to be executed when obj is collected by
+the garbage collector. Returns the last finalizer set.
+Function fin doesn't get any arguments (use a closure if you
+need any data there)
+")

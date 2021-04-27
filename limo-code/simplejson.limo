@@ -21,10 +21,11 @@
     (setf s (cdr s))    ;; skipping "\""
     (while (not (eq (car s) "\""))
       (cond ((eq (car s) "\\")
-	     (setf res (cons (cadr s)
-			     (cons (car s)
-				   res)))
-	     (setf s (cddr s)))
+             (setf s (cdr s))
+	     (setf res (cons (car s)
+                             (cons "\\"
+                                   res)))
+             (setf s (cdr s)))
 	    (:else 
 	     (setf res (cons (car s) res))
 	     (setf s (cdr s)))))
@@ -175,3 +176,12 @@ reads a json-object from s as follows
 o: json-convertible limo-object
 converts a limo-object into a json-string.
 see \(help json-loads\)")
+
+
+
+;;##################
+
+;; im string:
+;; "  -> ende string
+;; \" -> "\\\" (reader -> "\"")
+;; \x -> "\\\x" (reader -> "\x")
