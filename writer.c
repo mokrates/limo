@@ -60,7 +60,7 @@ void l_string_writer(limo_data ***dest, limo_data *ld)
     case '\r': list_put_str(dest, "\\r"); break;
     case '\t': list_put_str(dest, "\\t"); break;
     case '\n': list_put_str(dest, "\\n"); break;
-    case '\\': list_put_str(dest, "\\"); break;
+    case '\\': list_put_str(dest, "\\\\"); break;
     case '\0': list_put_str(dest, "\\0"); break;
     case '"': list_put_str(dest, "\\\""); break;
     default:
@@ -82,7 +82,7 @@ void string_writer(limo_data *ld)
     case '\r': printf("\\r"); break;
     case '\t': printf("\\t"); break;
     case '\n': printf("\\n"); break;
-    case '\\': printf("\\"); break;
+    case '\\': printf("\\\\"); break;
     case '\0': printf("\\0"); break;
     case '"': printf("\\\""); break;
     default: printf("%c", *s);
