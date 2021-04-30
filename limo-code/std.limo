@@ -78,16 +78,18 @@
 
 (defun undyn (l)               ; this undyn doesn't reverse twice.
   (defun helper (l last)
-    (if (not l)
-	(setcdr last ())
-	(progn (setcdr last (cons (car l) ()))
-	       (helper (cdr l) (cdr last)))))
+    (cond ((not l) (setcdr last ()))
+          ((not (consp l)) (setcdr last l))
+          (:else
+           (setcdr last (cons (car l) ()))
+           (helper (cdr l) (cdr last)))))
   (if (not l)
       ()
       (progn (setq start (cons (car l) ()))
 	     (helper (cdr l) start)
 	     start)))
 (freezeq undyn)
+
 
 (defun deepeq (x y)
   (cond ((and (consp x) x)  ;; cons and not empty
@@ -138,10 +140,15 @@
   (defun helper (l)
     (cond ((not l)         ; end of list
 	   ())
+          
+          ((not (consp l)) ;; dotpair
+           (list (cons 'quote (cons l ()))))
+          
 	  ((and (consp (car l))  ; comma
 		(car l)
 		(eq (caar l) 'comma))
-	   (dcons (list 'list (cadar l)) (helper (cdr l))))  
+	   (dcons (list 'list (cadar l)) (helper (cdr l))))
+          
 	  ((and (consp (car l))  ; splice
 		(car l)
 		(eq (caar l) 'splice))
@@ -154,8 +161,8 @@
            (dcons (list list (list quote (car l)))  ; just a symbol to be quoted
                   (helper (cdr l))))))
   (undyn (dcons append (helper l))))
-
 (freezeq quasiquote)
+
 
 ; limo-loop/recur
 ; ex: (limo-loop (a b ...) (start-a start-b ...) body: (if endp returnval (recur next-a next-b)))

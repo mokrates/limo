@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #define __USE_GNU
 #include <unistd.h>
 #include <fcntl.h>
@@ -209,8 +210,28 @@ BUILTIN(builtin_popen)
                                                  make_nil()))));
 }
 
+BUILTIN(builtin_popen_wait)
+{
+  limo_data *ld_pid;
+  pid_t pid, res;
+  int stat_loc;
+  char buf[512];
+
+  REQUIRE_ARGC("POPEN-WAIT", 1);
+  ld_pid = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("POPEN-WAIT", ld_pid, limo_TYPE_GMPQ);
+  pid = GETINTFROMMPQ(ld_pid);
+
+  res = waitpid(pid, &stat_loc, 0);
+  if (-1 == res) {
+    strerror_r(errno, buf, 512);
+    throw(make_cons(make_sym("WAIT"), make_cons(make_string(buf), nil)));
+  }
+  return make_number_from_long_long(WEXITSTATUS(stat_loc));
+}
 
 void limo_init_popen(limo_data *env)
 {
   INSBUILTIN(builtin_popen, "popen");
+  INSBUILTIN(builtin_popen_wait, "popen-wait");
 }

@@ -79,10 +79,12 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
     (setmember [self . _getnext] [self . _queue])
     (setmember [self . _putnext] [self . _queue])
     (setmember [self . _finish] nil))
+  
   (defmethod finish (self)
     (synchronized [self . _mutex]
       (setmember [self . _finish] :t)
       [[self . _cond] broadcast]))
+  
   (defmethod has-next (self)
     (synchronized [self . _mutex]
       (while
@@ -92,12 +94,14 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
       (if (eq [self . _putnext] [self . _getnext])
 	  (not [self . _finish])
 	  :t)))
+  
   (defmethod put (self item)
     (synchronized [self . _mutex]
       (setcar [self . _putnext] item)
       (setcdr [self . _putnext] (cons () ()))
       (setmember [self . _putnext] (cdr [self . _putnext]))
       [[self . _cond] broadcast]))
+  
   (defmethod get-or-end (self end-marker)
     (synchronized [self . _mutex]
       (while
@@ -111,6 +115,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 	   (setq ret (car [self . _getnext]))
 	   (setmember [self . _getnext] (cdr [self . _getnext]))
 	   ret))))
+  
   (defmethod get (self)
     (synchronized [self . _mutex]
       (while (eq [self . _putnext] [self . _getnext])
