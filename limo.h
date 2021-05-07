@@ -21,6 +21,7 @@
 extern unsigned long long limo_register;
 #define LR_SIGINT         (1<<0)
 #define LR_TRACE          (1<<1)
+#define LR_OPTDISABLE     (1<<2)
 
 #define limo_TYPE_EMPTY   0
 #define limo_TYPE_SYMBOL  1
@@ -267,6 +268,7 @@ BUILTIN(builtin_gc_enable);
 BUILTIN(builtin_gc_disable);
 BUILTIN(builtin_gc_collect);
 BUILTIN(builtin_gc_setmax);
+BUILTIN(builtin_opt_disable);
 BUILTIN(builtin_env_extract);
 BUILTIN(builtin_envp);
 BUILTIN(builtin_usleep);

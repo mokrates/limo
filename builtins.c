@@ -107,14 +107,16 @@ BUILTIN(builtin_progn)
 
   if (is_nil(arglist)) {
 #if STATIC_MACROEX
-    *orig_arglist = *make_nil();
+    if (!(limo_register & LR_OPTDISABLE))
+      *orig_arglist = *make_nil();
 #endif // STATIC_MACROEX
     return arglist;
   }
 
   if (arglist->type == limo_TYPE_CONS && is_nil(CDR(arglist))) {
 #if STATIC_MACROEX
-    *orig_arglist = *CAR(arglist);
+    if (!(limo_register & LR_OPTDISABLE))    
+      *orig_arglist = *CAR(arglist);
 #endif
     return make_thunk(CAR(arglist), env);
   }   
@@ -417,6 +419,17 @@ BUILTIN(builtin_gc_setmax)
   }
   else
     limo_error("(gcsetmax KiloBytes) (2)");
+}
+
+BUILTIN(builtin_opt_disable)
+{
+  if (2 == list_length(arglist) &&
+      is_nil(eval(FIRST_ARG, env)))
+    limo_register &= ~LR_OPTDISABLE;
+  else
+    limo_register |= LR_OPTDISABLE;
+
+  return nil;
 }
 
 BUILTIN(builtin_env_extract)

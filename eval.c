@@ -87,13 +87,15 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
     setq(param_env, params, arglist);
 
 #if STATIC_MACROEX
+  //if (!(limo_register & LR_OPTDISABLE))
   //  body = list_dup(body);     // don't really know what this was for.
 #endif
 
   limo_data *res = eval(body, param_env);
 
 #if STATIC_MACROEX
-  *call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
+  if (!(limo_register & LR_OPTDISABLE))
+    *call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
 #endif
   return make_thunk(res, env);
 }
@@ -215,14 +217,16 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
     else {
       res=var_lookup(env, ld, &marked_constant);
 #if STATIC_CONSTEX_HARD
-      if (marked_constant)
-	(*ld) = *res;      
+      if (!(limo_register & LR_OPTDISABLE))      
+        if (marked_constant)
+          (*ld) = *res;      
 #elif STATIC_CONSTEX
       if (res->type == limo_TYPE_CONST)  // this can happen to parameters of macros.
-	res=CAR(res);
-	  
-      if (marked_constant)
-	(*ld) = *make_const(ld_dup(ld), res);
+        res=CAR(res);
+      
+      if (!(limo_register & LR_OPTDISABLE))
+        if (marked_constant)
+          (*ld) = *make_const(ld_dup(ld), res);
 #endif
       return res;
     }

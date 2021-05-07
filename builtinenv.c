@@ -34,6 +34,7 @@ struct { char *name; limo_builtin f; } builtin_array[] = {
   { "GCENABLE", builtin_gc_enable },
   { "GCDISABLE", builtin_gc_disable },
   { "GCCOLLECT", builtin_gc_collect},
+  { "OPTDISABLE", builtin_opt_disable },
   { "GCSETMAX", builtin_gc_setmax},
   { "ENV-EXTRACT", builtin_env_extract },
   { "ENVP", builtin_envp },
