@@ -108,7 +108,7 @@ BUILTIN(builtin_progn)
   if (is_nil(arglist)) {
 #if STATIC_MACROEX
     if (!(limo_register & LR_OPTDISABLE))
-      *orig_arglist = *make_nil();
+      (*orig_arglist).optimized = make_nil();
 #endif // STATIC_MACROEX
     return arglist;
   }

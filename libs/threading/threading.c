@@ -35,6 +35,7 @@ static void *limo_threading_entry_function(void *thread_thunk)
   void *make_dict_next = NULL;
   void *make_gmpq_next = NULL;
   volatile limo_data *dynamic_env;
+  limo_data *null_env;
   
   pk_limo_data_next_set(&make_limo_data_next);
   pk_cons_next_set(&make_cons_next);
@@ -43,15 +44,18 @@ static void *limo_threading_entry_function(void *thread_thunk)
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
   dynamic_env = make_env(CDR((limo_data *)thread_thunk));
-  pk_dynamic_vars_set(dynamic_env);
-  
-  if (NULL==try_catch(make_cons(CAR((limo_data *)thread_thunk), nil), make_env(nil))) {
+  null_env = make_env(nil);
+  pk_dynamic_vars_set(dynamic_env);  
+  if (NULL==try_catch(make_cons(CAR((limo_data *)thread_thunk), nil), null_env)) {
+    printf("\nUNHANDLED EXCEPTION CAUGHT IN THREAD\n");    
     print_stacktrace(pk_stacktrace_get());
     writer(pk_exception_get());
     printf("\n");
   }
 
   GC_reachable_here(dynamic_env);
+  GC_reachable_here(thread_thunk);
+  GC_reachable_here(null_env);
 }
 
 BUILTIN(builtin_thread_create)

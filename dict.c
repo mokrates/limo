@@ -71,14 +71,16 @@ limo_dict *make_dict_size(int minused)
 
 void dict_resize(limo_data *dict)
 {
+  limo_data new = *dict;
   limo_dict *olddict=dict->d_dict;
   limo_dict *newdict=make_dict_size(olddict->used);
   int i;
 
-  dict->d_dict = newdict;
+  new.d_dict = newdict;
   for (i=0; i<olddict->size; ++i)
     if (olddict->store[i] != NULL)
-      dict_put_cons(dict, olddict->store[i]);
+      dict_put_cons(&new, olddict->store[i]);
+  dict->d_dict = newdict;
 }
 
 void dict_check_resize(limo_data *dict)

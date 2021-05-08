@@ -95,7 +95,8 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 
 #if STATIC_MACROEX
   if (!(limo_register & LR_OPTDISABLE))
-    *call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
+    call->optimized = res;
+  //*call = *res;  // modifying the actual call, so the macro doesn't have to be evaled again.
 #endif
   return make_thunk(res, env);
 }
@@ -188,6 +189,9 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
   limo_data *res;
   int marked_constant;
 
+  while (ld->optimized)
+    ld = ld->optimized;
+
   switch (ld->type) {
   case limo_TYPE_CONS:
     if (is_nil(ld))
@@ -226,7 +230,8 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
       
       if (!(limo_register & LR_OPTDISABLE))
         if (marked_constant)
-          (*ld) = *make_const(ld_dup(ld), res);
+          //ld->optimized = make_const(ld_dup(ld), res);
+          ld->optimized = res;
 #endif
       return res;
     }
