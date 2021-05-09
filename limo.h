@@ -71,6 +71,7 @@ typedef struct limo_DATA {
     unsigned int ld_marked_const;
   };
   limo_annotation *annotation;
+  struct limo_DATA *optimized;
 } limo_data;
 
 typedef struct limo_CONS {
