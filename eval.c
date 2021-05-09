@@ -230,8 +230,8 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
       
       if (!(limo_register & LR_OPTDISABLE))
         if (marked_constant)
-          //ld->optimized = make_const(ld_dup(ld), res);
-          ld->optimized = res;
+          ld->optimized = make_const(ld_dup(ld), res);
+          //ld->optimized = res;
 #endif
       return res;
     }

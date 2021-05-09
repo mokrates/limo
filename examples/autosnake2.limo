@@ -335,48 +335,50 @@
 (setq *running-avg-cycle* 0)
 (setq *num-moves-since* 0)
 (setq *num-apples* 0)
-(while :t
-  (let ((next-move (find-next-move snake apple)))    
-    (setf snake (move-snake-to-pos-and-paint next-move snake apple))
-    (setf *num-moves-since* (+ *num-moves-since* 1)) ;; count moves
-    
-    (when (deepmember (car snake) (cdr snake))
-      [*scr* nodelay ()]
-      [*scr* move (* 2 *y*) 0]
-      [*scr* print-with-attr "COLLISION!!!" 0]
-      [*scr* refresh]
-      [*scr* getch]
-      ([_ncurses . endwin])
-      (print (format "snake: %r\n" (map (lambda (p) (cons (wn-get (car p) (cdr p)) p))
-				       snake)))
-      (print (format "apple: %r wn:%r\n" apple (wn-get (car apple) (cdr apple))))
-      (throw (list 'OUCH "ouch. snake ran into herself")))
-    
-    (when (deepeq next-move apple)
-      (setf *running-avg-cycle* (/ (+ (* 4 *running-avg-cycle*)
-				      *num-moves-since*)
-				   5))
-      (setf *num-moves-since* 0)
-      (setf *num-apples* (+ 1 *num-apples*))
-      (setf *circlestrat* (or *circlestrat*
-			      (> *running-avg-cycle*
-				 (/ (- *boardsize* *num-apples*) 2))))
-      
-      (let ((newapple (set-apple snake)))
-	(when (not newapple)
-	  [*scr* nodelay ()]
-	  [*scr* move (* 2 *y*) 0]
-	  [*scr* print-with-attr "thats it!" 0]
-	  [*scr* refresh]
-	  [*scr* getch]
-	  (break))
-	(setf apple newapple))
-      (paint-apple apple))
 
-    [*scr* move (* 2 *y*) (+ (* 4 *x*) 1)]
-    [*scr* refresh]
-    (sleep *delay*)
-    (when (= (ord "q") [*scr* getch])
-      (break))))
+(finally 
+ (while :t
+   (let ((next-move (find-next-move snake apple)))    
+     (setf snake (move-snake-to-pos-and-paint next-move snake apple))
+     (setf *num-moves-since* (+ *num-moves-since* 1)) ;; count moves
+     
+     (when (deepmember (car snake) (cdr snake))
+       [*scr* nodelay ()]
+       [*scr* move (* 2 *y*) 0]
+       [*scr* print-with-attr "COLLISION!!!" 0]
+       [*scr* refresh]
+       [*scr* getch]
+       ([_ncurses . endwin])
+       (print (format "snake: %r\n" (map (lambda (p) (cons (wn-get (car p) (cdr p)) p))
+                                         snake)))
+       (print (format "apple: %r wn:%r\n" apple (wn-get (car apple) (cdr apple))))
+       (throw (list 'OUCH "ouch. snake ran into herself")))
+     
+     (when (deepeq next-move apple)
+       (setf *running-avg-cycle* (/ (+ (* 4 *running-avg-cycle*)
+                                       *num-moves-since*)
+                                    5))
+       (setf *num-moves-since* 0)
+       (setf *num-apples* (+ 1 *num-apples*))
+       (setf *circlestrat* (or *circlestrat*
+                               (> *running-avg-cycle*
+                                  (/ (- *boardsize* *num-apples*) 2))))
+       
+       (let ((newapple (set-apple snake)))
+         (when (not newapple)
+           [*scr* nodelay ()]
+           [*scr* move (* 2 *y*) 0]
+           [*scr* print-with-attr "thats it!" 0]
+           [*scr* refresh]
+           [*scr* getch]
+           (break))
+         (setf apple newapple))
+       (paint-apple apple))
 
-([_ncurses . endwin])
+     [*scr* move (* 2 *y*) (+ (* 4 *x*) 1)]
+     [*scr* refresh]
+     (sleep *delay*)
+     (when (= (ord "q") [*scr* getch])
+       (break))))
+
+ ([_ncurses . endwin]))
