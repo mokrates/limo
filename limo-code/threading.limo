@@ -73,7 +73,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 
 (defclass queue-lock ()
   (defmethod init (self)
-    (setmember [self . _mutex] (new mutex))
+    (setmember [self . _mutex] (new mutex :recursive))
     (setmember [self . _cond] (new condition-lock))
     (setmember [self . _queue] (cons () ()))
     (setmember [self . _getnext] [self . _queue])
