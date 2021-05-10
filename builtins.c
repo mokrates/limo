@@ -108,7 +108,7 @@ BUILTIN(builtin_progn)
   if (is_nil(arglist)) {
 #if STATIC_MACROEX
     if (!(limo_register & LR_OPTDISABLE))
-      (*orig_arglist).optimized = make_nil();
+      orig_arglist->optimized = make_nil();
 #endif // STATIC_MACROEX
     return arglist;
   }
@@ -116,7 +116,7 @@ BUILTIN(builtin_progn)
   if (arglist->type == limo_TYPE_CONS && is_nil(CDR(arglist))) {
 #if STATIC_MACROEX
     if (!(limo_register & LR_OPTDISABLE))    
-      *orig_arglist = *CAR(arglist);
+      orig_arglist->optimized = CAR(arglist);
 #endif
     return make_thunk(CAR(arglist), env);
   }   
