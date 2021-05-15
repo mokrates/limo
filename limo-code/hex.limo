@@ -5,6 +5,8 @@
         (setq hexdigit-d (dict (map (lambda (x y) (cons x y))
                                     hexdigits
                                     (drange 0 16 1))))
+        (for-each kvp '(("A" . 10) ("B" . 11) ("C" . 12) ("D" . 13) ("E" . 14) ("F" . 15))
+          (dict-set hexdigit-d (car kvp) (cdr kvp)))
 
         (defun from-hex (hex)
           (setq res 0)
