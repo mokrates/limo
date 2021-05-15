@@ -41,7 +41,7 @@ for Example
 
 ")
       (if (dict-has-key _help-dict (reprn (address-of (car sym))))
-	  (print (dict-getvalue _help-dict (reprn (address-of (car sym)))))
+	  (print (string-concat (dict-getvalue _help-dict (reprn (address-of (car sym)))) "\n"))
 	  (print "Sorry, there is no help on this topic, but there probably should be!\n"))))
 
 ;;;;;;;;;;;;;;;;; help for stuff
