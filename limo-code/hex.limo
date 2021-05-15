@@ -1,0 +1,26 @@
+(unify (from-hex to-hex)
+       (scope
+
+        (setq hexdigits (string-to-list "0123456789abcdef"))
+        (setq hexdigit-d (dict (map (lambda (x y) (cons x y))
+                                    hexdigits
+                                    (drange 0 16 1))))
+
+        (defun from-hex (hex)
+          (setq res 0)
+          (for-each c (string-to-list hex)
+            (setf res (* 16 res))
+            (incf res (dict-getvalue hexdigit-d c)))
+          res)
+
+        (defun to-hex (num)
+          (setq hex "")
+          (while (!= num 0)
+            (unify (d rest) (idivmod num 16))
+            (setf hex (string-concat (nth rest hexdigits) hex))
+            (setf num d))
+          (if (> (string-length hex) 0)
+              hex
+              "0"))
+
+        (list from-hex to-hex)))
