@@ -7,6 +7,27 @@
 (defun defhelp (sym helpstr)
   (dict-set _help-dict (reprn (address-of sym)) helpstr))
 
+;; new defmacro and defun with docstring.
+(setq defmacro 
+      (macro (name args . body)
+        (if (stringp (car body))
+            `(progn 
+              (setq ,name (macro ,args ,(cons 'progn body)))
+              (defhelp ,name ,(car body))
+              ,name)
+            `(setq ,name (macro ,args ,(cons 'progn body))))))
+(freezeq defmacro)
+
+(setq defun
+      (macro (name args . body)
+        (if (stringp (car body))
+            `(progn 
+              (setq ,name (lambda ,args ,(cons 'progn body)))
+              (defhelp ,name ,(car body))
+              ,name)
+            `(setq ,name (lambda ,args ,(cons 'progn body))))))
+(freezeq defun)
+
 ;; use this to ask for help
 (defun help sym
   (if (not sym)
