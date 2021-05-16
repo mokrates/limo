@@ -1,0 +1,46 @@
+(unify (to-base64 from-base64)
+       (scope
+        (setq b64code (string-to-list "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"))
+        (setq b64rev (make-dict))
+        (for-each n (drange 0 64 1)
+          (dict-set b64rev (nth n b64code) n))
+        (dict-set b64rev "=" 0)
+
+        ;; aaaaaa aabbbb bbbbcc cccccc
+        ;; 123456 781234 567812 345678
+        (defun to-base64 (s)
+          (setq res "")
+          (setq rpadding (mod (string-length s) 3))
+          (setq padding (if (= 0 rpadding) 0 (- 3 rpadding)))
+          (setf s (string-concat s (list-to-string (map (lambda (x) (chr 0)) (drange 0 padding 1)))))
+          (while (!= s "")
+            (setq chrs (string-to-list (string-slice s 0 3)))
+            (unify (an bn cn) (map (lambda (x) (ord x)) chrs))
+            (setf res
+                  (string-concat res
+                                 (nth (idiv an 4) b64code)
+                                 (nth (+ (* (mod an 4) 16) (idiv bn 16)) b64code)
+                                 (nth (+ (* 4 (mod bn 16)) (idiv cn 64)) b64code)
+                                 (nth (mod cn 64) b64code)))
+            (setf s (string-slice s 3 -1)))
+          (setf res (string-slice res 0 (- (string-length res) padding)))
+          (setf res (string-concat res (list-to-string (map (lambda (x) "=") (drange 0 padding 1)))))
+          res)
+
+        (defun from-base64 (s)
+          (setf s (filter (lambda (x) (member x (cons "=" b64code))) (string-to-list s)))
+          (when (!= (mod (list-length s) 4) 0)
+            (throw '(base64 "wrong padding")))
+          (setq res "")
+          (setq padding (reduce + (map (lambda (x) (if (= x "=") 1 0)) s)))
+          (setq cs (map (lambda (x) (dict-getvalue b64rev x)) s))
+          (while cs
+            (unify (a b c d) cs)
+            (setf res (string-concat res
+                                     (chr (+ (* a 4) (idiv b 16)))
+                                     (chr (+ (* 16 (mod b 16)) (idiv c 4)))
+                                     (chr (+ (* 64 (mod c 4)) d))))
+            (setf cs (list-slice cs 4 -1)))
+          (string-slice res 0 (- (string-length res) padding)))
+        
+        (list to-base64 from-base64)))
