@@ -5,7 +5,7 @@
 BUILTIN(builtin_string_nth)
 {
   char buf[3]="\0\0";
-  limo_data *n, *str;
+  limo_data *n, *str, *res;
   int i;
 
   if (list_length(arglist) != 3)
@@ -18,10 +18,15 @@ BUILTIN(builtin_string_nth)
     limo_error("(string-nth N STRING)");
 
   i = (int)mpq_get_d(*n->d_mpq);
-  if (i<0 || i>str->hash)
+  if (i<0 || i>=str->string_length)
     limo_error("string-nth: out of bounds");
-  *buf = str->d_string[i];
-  return make_string(buf);
+  res = make_limo_data();
+  res->string_length = 1;
+  res->type = limo_TYPE_STRING;
+  res->d_string = GC_malloc_atomic(2);
+  res->d_string[1] = '\0';
+  res->d_string[0] = str->d_string[i];
+  return res;
 }
 
 BUILTIN(builtin_string_length)
@@ -35,7 +40,7 @@ BUILTIN(builtin_string_length)
   if (str->type != limo_TYPE_STRING)
     limo_error("(string-length STRING)");
 
-  return make_number_from_long_long(str->hash);
+  return make_number_from_long_long(str->string_length);
 }
 
 BUILTIN(builtin_stringp)
@@ -74,7 +79,7 @@ BUILTIN(builtin_chr)
   i = (int)mpq_get_d(*n->d_mpq);
   *buf = (char)i;
   str = make_string(buf);
-  str->hash=1;
+  str->string_length=1;
   return str;
 }
 
