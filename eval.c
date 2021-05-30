@@ -150,7 +150,6 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 
 limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
-  int again=1;
   limo_data *tmp_stacktrace = pk_stacktrace_get();
   limo_data *stacktrace_cons;
 
@@ -173,7 +172,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 
   stacktrace_cons = make_cons(form, tmp_stacktrace);
   pk_stacktrace_set(stacktrace_cons);
-  while (again) {
+  for (;;) {
     form=real_eval(form, env, &thunk);
     assert(form);
     assert(form->type != limo_TYPE_CONST);
@@ -181,18 +180,17 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     if (form->type == limo_TYPE_THUNK) {
       limo_data *next_form;
       //      printf("THUNK:"); writer(form); printf("\n");
-      again=1;
       next_form= CDR(form);
       env      = CAR(form);
       form     = next_form;
       CAR(stacktrace_cons) = form;
     }
-    else
-      again=0;
+    else {
+        pk_stacktrace_set(tmp_stacktrace);
+	return form;
+    }
   }
 
-  pk_stacktrace_set(tmp_stacktrace);
-  return form;
 }
 
 limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
@@ -211,7 +209,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
       limo_data *f = eval(CAR(ld), env);
       switch (f->type) {
       case limo_TYPE_BUILTIN:
-	return f->d_builtin(ld, env); 
+	return f->d_builtin(ld, env, thunk_place); 
 
       case limo_TYPE_MACRO:
 	return eval_macro_call(f, ld, env);

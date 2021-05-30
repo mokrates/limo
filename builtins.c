@@ -60,9 +60,7 @@ BUILTIN(builtin_macroexpand_1)
 
   res = real_eval(FIRST_ARG, env, NULL);
   if (res->type == limo_TYPE_THUNK) {
-    return make_cons(CDR(res),
-		     env!=CAR(res)?
-		     CAR(res):make_sym(":hidden"));
+    return CDR(res);
   }
   else
     return nil;
@@ -118,7 +116,7 @@ BUILTIN(builtin_progn)
     if (!(limo_register & LR_OPTDISABLE))    
       orig_arglist->optimized = CAR(arglist);
 #endif
-    return make_thunk(CAR(arglist), env);
+    RETURN_THUNK(CAR(arglist), env);
   }   
 
   while (arglist->type == limo_TYPE_CONS && !is_nil(CDR(arglist))) {
@@ -128,7 +126,7 @@ BUILTIN(builtin_progn)
   if (arglist->type != limo_TYPE_CONS)
     limo_error("(progn ...)");
 
-  return make_thunk(CAR(arglist), env);
+  RETURN_THUNK(CAR(arglist), env);
 }
 
 BUILTIN(builtin_if)
@@ -143,9 +141,9 @@ BUILTIN(builtin_if)
   ldelse = CAR(CDR(CDR(CDR(arglist))));
 
   if (is_nil(cond))
-    return make_thunk(ldelse, env);
+    RETURN_THUNK(ldelse, env);
   else
-    return make_thunk(ldthen, env);
+    RETURN_THUNK(ldthen, env);
 }
 
 BUILTIN(builtin_list)

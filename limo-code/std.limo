@@ -318,8 +318,11 @@
 
 (defmacro cond l   ;; used by quasiquote
   (if l
-      (list 'if (caar l) (cons 'progn (apply list (cdar l)))
-	    (cons 'cond (cdr l)))
+      (if (or (= (caar l) :t) (= (caar l) :else))
+	  (cons 'progn (apply list (cdar l)))
+	  (list 'if (caar l)
+		(cons 'progn (apply list (cdar l)))
+		(cons 'cond (cdr l))))
       ()))
 (freezeq cond)
 

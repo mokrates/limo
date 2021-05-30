@@ -59,7 +59,7 @@ typedef struct limo_DATA {
     mpq_t *d_mpq; // int
     float d_float;
     double d_double;
-    struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env);
+    struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env, struct limo_DATA *thunk_place);
     struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
     void *d_special_intern;
@@ -103,7 +103,7 @@ extern int limo_rl_inited;
 #define CDR(x) ((x)->d_cons->cdr)
 #define TSCDR(x) (thunk_safe_cdr(x))
 
-#define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env)
+#define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
 
 #define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
 #define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
@@ -149,7 +149,7 @@ limo_data *make_nil();
 limo_data *make_cons(limo_data *, limo_data *);
 limo_data *make_sym(char *);
 limo_data *make_sym_uninterned(char *);
-typedef limo_data *(*limo_builtin)(limo_data *, limo_data *);
+typedef limo_data *(*limo_builtin)(limo_data *, limo_data *, limo_data *);
 limo_data *make_builtin(limo_builtin);
 limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
@@ -355,8 +355,11 @@ limo_data *make_const(limo_data *name, limo_data *val);
 
 void segfault(void);  // segfault to generate a stacktrace. selfmade debug stopping-point
 
+#define RETURN_THUNK(_car, _cdr) if (thunk_place) { CDR(thunk_place)=_car; CAR(thunk_place)=_cdr; return thunk_place; } else return make_thunk(_car, _cdr)
+
 #include "limpy.h"
 
 #ifdef LIMO_MAKE_EXECUTABLE
 extern char *limo_program_cstr;
 #endif
+
