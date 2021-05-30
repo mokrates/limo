@@ -12,8 +12,9 @@
 (while (!= (setq line (file-readline stdin)) "")
   (setf line (string-strip line))
   (when (= (string-slice line 0 (string-length "typedef enum")) "typedef enum")
-    (while (!= (progn
-                (setq line (string-strip (file-readline stdin)))
-                (string-nth 0 line)) "}")
+    (while (progn
+            (setq line (string-strip (file-readline stdin)))
+            (or (= line "")
+                (!= (string-nth 0 line) "}")))
       (when (!= "{" line)
         (put-identifier (format "%s\n" line))))))

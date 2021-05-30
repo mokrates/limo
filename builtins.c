@@ -58,7 +58,7 @@ BUILTIN(builtin_macroexpand_1)
     limo_error("(macroexpand-1 (MACROFORM ...))");
   }
 
-  res = real_eval(FIRST_ARG, env);
+  res = real_eval(FIRST_ARG, env, NULL);
   if (res->type == limo_TYPE_THUNK) {
     return make_cons(CDR(res),
 		     env!=CAR(res)?
@@ -95,7 +95,7 @@ BUILTIN(builtin_apply)
     al=nil;
 
   if (f->type == limo_TYPE_LAMBDA)
-    return eval_function_call(f, make_cons(f,al), env, 0);
+    return eval_function_call(f, make_cons(f,al), env, 0, NULL);
   else if (f->type == limo_TYPE_BUILTIN)
     limo_error("calling APPLY with builtins is unsupported, please wrap in a lambda");
 }

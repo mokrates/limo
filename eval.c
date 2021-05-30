@@ -2,7 +2,7 @@
 #include "limo.h"
 #include <assert.h>
 
-limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args)
+limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args, limo_data *thunk_place)
 {
   // (#<lambda:(env . (lambda (a b) body)) args...)
   limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env;
@@ -59,7 +59,13 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 
   //  printf("env: "); writer(param_env); printf("\n");
 
-  return make_thunk(body, param_env);
+  if (thunk_place) {
+    CDR(thunk_place) = body;
+    CAR(thunk_place) = param_env;
+    return thunk_place;
+  }
+  else 
+    return make_thunk(body, param_env);
 }
 
 limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
@@ -148,6 +154,11 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   limo_data *tmp_stacktrace = pk_stacktrace_get();
   limo_data *stacktrace_cons;
 
+  limo_data thunk;
+  limo_cons thunk_cons;
+  thunk.type = limo_TYPE_THUNK;
+  thunk.d_cons = &thunk_cons;
+
   if (limo_register) {        // TODO: here is a check of "things". could be used to signal Ctrl-c
     if (limo_register & LR_SIGINT) {
       limo_register &= ~LR_SIGINT;
@@ -163,7 +174,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   stacktrace_cons = make_cons(form, tmp_stacktrace);
   pk_stacktrace_set(stacktrace_cons);
   while (again) {
-    form=real_eval(form, env);
+    form=real_eval(form, env, &thunk);
     assert(form);
     assert(form->type != limo_TYPE_CONST);
 
@@ -184,7 +195,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   return form;
 }
 
-limo_data *real_eval(limo_data *ld, limo_data *env)
+limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
 {
   limo_data *res;
   int marked_constant;
@@ -206,7 +217,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env)
 	return eval_macro_call(f, ld, env);
 
       case limo_TYPE_LAMBDA:
-	return eval_function_call(f, ld, env, 1);
+	return eval_function_call(f, ld, env, 1, thunk_place);
 
       default: limo_error("expected a callable. didn't get one");
       }

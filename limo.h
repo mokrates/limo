@@ -316,12 +316,12 @@ BUILTIN(builtin_set_finalizer);
 BUILTIN(builtin_system);
 BUILTIN(builtin_time);
 
-limo_data *real_eval(limo_data *form, limo_data *env);
+limo_data *real_eval(limo_data *form, limo_data *env, limo_data *thunk_place);
 limo_data *eval(limo_data *form, limo_data *env);
 limo_data *ld_dup(limo_data *list);
 limo_data *list_dup(limo_data *list);
 limo_data *list_eval(limo_data *form, limo_data *env);
-limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args);
+limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args, limo_data *thunk_place);
 
 ////////////////////////////////////
 // special builtins for types
