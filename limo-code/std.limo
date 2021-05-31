@@ -18,6 +18,43 @@
 (setq nil ())
 (freezeq nil)
 
+;;;;;;;;;;;; if optimization
+(setq _if if)
+(defmacro if (cond then else)
+  (_if (consp cond)
+       (_if cond
+            (_if (eq (car cond) 'not)
+                 (list 'if (cadr cond) else then)
+                 (_if (eq (car cond) 'or)
+                      (_if (cdr cond)
+                           (list 'if
+                                 (cadr cond)
+                                 then
+                                 (_if (cddr cond)
+                                      (list 'if
+                                            (cons 'or (cddr cond))
+                                            then
+                                            else)
+                                      else))
+                           else)
+                      (_if (eq (car cond) 'and)
+                           (_if (cdr cond)
+                                (list 'if
+                                      (cadr cond)
+                                      (_if (cddr cond)
+                                           (list 'if
+                                                 (cons 'and (cddr cond))
+                                                 then
+                                                 else)
+                                           then)
+                                      else)
+                                then)
+                           (list _if cond then else))))
+            else)
+       (list _if cond then else)))
+ ;;;;;;;;;
+
+
 ;; scheme style 'define'
 (defmacro define x
   (if (consp (car x)) ;; a function
