@@ -106,7 +106,10 @@ extern int limo_rl_inited;
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
 
 #define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
-#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
+//#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
+#define REQUIRE_ARGC(fun, n)    do { int _ra_i; limo_data *_ra_al; for (_ra_i=0, _ra_al=arglist; !is_nil(_ra_al); _ra_al=CDR(_ra_al), ++_ra_i) \
+								     ; \
+    if (_ra_i < (n+1)) limo_error(fun " - at least " #n " arguments expected."); } while (0)
 
 #define LIMO_UNGETC_BUF 20
 typedef struct limo_READER_STREAM {

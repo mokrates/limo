@@ -33,7 +33,7 @@ BUILTIN(builtin_vector_len)
 {
   limo_data *vector;
 
-  REQUIRE_ARGC("VECTOR-LEN", 1)
+  REQUIRE_ARGC("VECTOR-LEN", 1);
   vector = eval(FIRST_ARG, env);
   return make_number_from_long_long(((struct VECTOR *)get_special(vector, sym_vector))->length);
 }

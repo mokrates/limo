@@ -8,9 +8,7 @@ BUILTIN(builtin_quote)
 
 BUILTIN(builtin_setq)
 {
-  if (list_length(arglist) != 3)
-    limo_error("builtin_setq: (setq name value)");
-
+  REQUIRE_ARGC("SETQ", 2);
   limo_data *name = CAR(CDR(arglist));
   limo_data *value = eval(CAR(CDR(CDR(arglist))), env);
   setq(env, name, value);
@@ -19,9 +17,7 @@ BUILTIN(builtin_setq)
 
 BUILTIN(builtin_unsetq)
 {
-  if (list_length(arglist) != 2)
-    limo_error("(unsetq VARNAME");
-
+  REQUIRE_ARGC("UNSETQ", 1);
   limo_data *name = FIRST_ARG;
   unsetq(env, name);
   return nil;
@@ -31,8 +27,7 @@ BUILTIN(builtin_lambda)
 {
   limo_data *lambda = make_nil();
 
-  if (list_length(arglist) != 3)
-    limo_error("lambda: too few arguments");
+  REQUIRE_ARGC("LAMBDA", 2);
   lambda = make_cons(env, arglist);
   lambda->type = limo_TYPE_LAMBDA;  
   return lambda;
@@ -41,9 +36,7 @@ BUILTIN(builtin_lambda)
 BUILTIN(builtin_macro)
 {
   limo_data *macro = make_nil();
-  if (list_length(arglist) != 3)
-    limo_error("macro: too few arguments");
-  
+  REQUIRE_ARGC("MACRO", 2);
   macro = make_cons(env, arglist);
   macro->type = limo_TYPE_MACRO;  
   return macro;
@@ -53,11 +46,7 @@ BUILTIN(builtin_macroexpand_1)
 {
   limo_data *res;
 
-  if (list_length(arglist) != 2 ||
-      FIRST_ARG->type!=limo_TYPE_CONS) {
-    limo_error("(macroexpand-1 (MACROFORM ...))");
-  }
-
+  REQUIRE_ARGC("MACROEXPAND-1", 1);
   res = real_eval(FIRST_ARG, env, NULL);
   if (res->type == limo_TYPE_THUNK) {
     return CDR(res);
@@ -81,9 +70,7 @@ BUILTIN(builtin_eval)
 
 BUILTIN(builtin_apply)
 {
-  if (list_length(arglist) < 2)
-    limo_error("apply need at least one arg");
-
+  REQUIRE_ARGC("APPLY", 1);
   limo_data *f = eval(FIRST_ARG, env);
   limo_data *al;
 
@@ -133,9 +120,7 @@ BUILTIN(builtin_if)
 {
   limo_data *cond, *ldthen, *ldelse;
 
-  if (list_length(arglist) != 4)
-    limo_error("builtin_if: (if cond then else)");
-  
+  REQUIRE_ARGC("IF", 3);
   cond = eval(CAR(CDR(arglist)), env);
   ldthen = CAR(CDR(CDR(arglist)));
   ldelse = CAR(CDR(CDR(CDR(arglist))));
@@ -154,7 +139,6 @@ BUILTIN(builtin_list)
 BUILTIN(builtin_cons)
 {
   REQUIRE_ARGC("cons", 2);
-
   return make_cons(eval(CAR(CDR(arglist)),env),
 		   eval(CAR(CDR(CDR(arglist))), env));
 }
@@ -167,8 +151,7 @@ BUILTIN(builtin_dcons)
 
 BUILTIN(builtin_consp)
 {
-  if (list_length(arglist) != 2)
-    limo_error("ERROR: (consp EXP)");
+  REQUIRE_ARGC("CONSP", 1);
 
   if (eval(FIRST_ARG, env)->type == limo_TYPE_CONS)
     return sym_true;
@@ -178,6 +161,7 @@ BUILTIN(builtin_consp)
 
 BUILTIN(builtin_car)
 {
+  REQUIRE_ARGC("car", 1);
   limo_data *ld = eval(FIRST_ARG, env);
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
     limo_error("error: (car CONS!=nil)");
@@ -267,9 +251,7 @@ BUILTIN(builtin_try)
   limo_data *res;
   limo_data *rethrow;
 
-  if (list_length(arglist) != 3)
-    limo_error("(try <TRY> <CATCH>)");
-  
+  REQUIRE_ARGC("TRY", 2);
   res = try_catch(FIRST_ARG, env);
   if (!res) {
     limo_data *exception = pk_exception_get();
@@ -289,9 +271,7 @@ BUILTIN(builtin_finally)
 {
   limo_data *res;
 
-  if (list_length(arglist) != 3)
-    limo_error("(finally <TRY> <FINALLY>)");
-  
+  REQUIRE_ARGC("FINALLY", 2);  
   res = try_catch(FIRST_ARG, env);
   eval(SECOND_ARG, env);
   if (!res)
@@ -302,9 +282,7 @@ BUILTIN(builtin_finally)
 
 BUILTIN(builtin_throw)
 {
-  if (list_length(arglist) != 2)
-    limo_error("(throw <EXCEPTION>");
-  
+  REQUIRE_ARGC("THROW", 1);
   throw(eval(FIRST_ARG, env));
 }
 
@@ -466,9 +444,7 @@ BUILTIN(builtin_usleep)
 
 BUILTIN(builtin_string_concat)
 {
-  if (list_length(arglist) != 3)
-    limo_error("(string-concat STR1 STR2)");
-
+  REQUIRE_ARGC("STRING-CONCAT", 2);
   limo_data *str1 = eval(FIRST_ARG, env);
   limo_data *str2 = eval(SECOND_ARG, env);
   if (str1->type != limo_TYPE_STRING ||
@@ -486,9 +462,7 @@ BUILTIN(builtin_string_concat)
 
 BUILTIN(builtin_make_sym)
 {
-  if (list_length(arglist) != 2)
-    limo_error("(make-sym STR)");
-
+  REQUIRE_ARGC("MAKE-SYM", 1);
   limo_data *str1 = eval(FIRST_ARG, env);
   if (str1->type != limo_TYPE_STRING)
     limo_error("(make-sym STR1)");
@@ -498,12 +472,10 @@ BUILTIN(builtin_make_sym)
 
 BUILTIN(builtin_make_sym_uninterned)
 {
-  if (list_length(arglist) != 2)
-    limo_error("(make-sym STR)");
-
+  REQUIRE_ARGC("MAKE-SYM-UNINTERNED", 1);
   limo_data *str1 = eval(FIRST_ARG, env);
   if (str1->type != limo_TYPE_STRING)
-    limo_error("(make-sym STR1)");
+    limo_error("(make-sym-uninterned STR1)");
 
   return make_sym_uninterned(str1->d_string);  
 }
