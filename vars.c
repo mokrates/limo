@@ -3,8 +3,7 @@
 
 limo_data *make_env(limo_data *up)
 {
-  limo_data *env = make_limo_data();
-  env = make_cons(up==NULL?nil:up, make_dict());
+  limo_data *env = make_cons(up==NULL?nil:up, make_dict());
   env->type = limo_TYPE_ENV;  
   return env;
 }
