@@ -78,8 +78,14 @@ typedef struct limo_CONS {
   limo_data *car, *cdr;
 } limo_cons;
 
+#define DI_CACHE 1
+typedef struct limo_DICT_ITEM {
+  int flags;
+  limo_data *cons;
+} limo_dict_item;
+
 typedef struct limo_DICT {
-  limo_data **store;
+  limo_dict_item *store;
   int size;
   int used;
 } limo_dict;
@@ -212,9 +218,10 @@ limo_data *make_dict(void);
 limo_dict *make_dict_size(int minused);
 void dict_check_resize(limo_data *dict);
 void dict_resize(limo_data *dict);
-void dict_put_cons(limo_data *dict, limo_data *cons);
+void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags);
+#define dict_put_cons(a, b) dict_put_cons_ex((a), (b), 0)
 void dict_put(limo_data *dict, limo_data *key, limo_data *value);
-limo_data **dict_get_place(limo_data *dict, limo_data *key);
+limo_dict_item *dict_get_place(limo_data *dict, limo_data *key);
 void dict_remove(limo_data *dict, limo_data *key);
 limo_data *dict_to_list(limo_data *dict);
 

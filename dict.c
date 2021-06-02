@@ -62,8 +62,8 @@ limo_dict *make_dict_size(int minused)
   while (size < 3*minused)
     size<<=1;
 
-  d->store = (limo_data **)GC_malloc(size * sizeof (limo_data *));
-  memset(d->store, 0, size * sizeof (limo_data *));
+  d->store = (limo_data **)GC_malloc(size * sizeof (limo_dict_item));
+  memset(d->store, 0, size * sizeof (limo_dict_item));
   d->size = size;
   d->used = 0;
   return d;
@@ -78,8 +78,8 @@ void dict_resize(limo_data *dict)
 
   new.d_dict = newdict;
   for (i=0; i<olddict->size; ++i)
-    if (olddict->store[i] != NULL)
-      dict_put_cons(&new, olddict->store[i]);
+    if (olddict->store[i].cons != NULL)
+      dict_put_cons_ex(&new, olddict->store[i].cons,olddict->store[i].flags);
   dict->d_dict = newdict;
 }
 
@@ -89,9 +89,9 @@ void dict_check_resize(limo_data *dict)
     dict_resize(dict);
 }
 
-void dict_put_cons(limo_data *dict, limo_data *cons)
+void dict_put_cons_ex(limo_data *dict, limo_data *cons, int cache)
 {
-  limo_data **ld_place;
+  limo_dict_item *ld_place;
 
   if (dict->type != limo_TYPE_DICT)
     limo_error("dict_put(): didn't get a dict.");
@@ -99,15 +99,15 @@ void dict_put_cons(limo_data *dict, limo_data *cons)
   dict_check_resize(dict);
 
   ld_place = dict_get_place(dict, CAR(cons));
-  if (*ld_place == NULL) {
+  if (ld_place->cons == NULL) {
     dict->d_dict->used++;
-    *ld_place = cons;
+    ld_place->cons = cons;
   }
-  else if (CDR(*ld_place) -> type == limo_TYPE_VCACHE) {
+  else if (ld_place->flags & DI_CACHE) {
       throw(make_cons(make_string("local variable referenced before assignment"), CAR(cons)));
   }
   else   // reuse existing cons
-    CDR(*ld_place) = CDR(cons);
+    CDR(ld_place->cons) = CDR(cons);
 }
 
 void dict_put(limo_data *dict, limo_data *key, limo_data *value)
@@ -115,11 +115,8 @@ void dict_put(limo_data *dict, limo_data *key, limo_data *value)
   dict_put_cons(dict, make_cons(key, value));
 }
 
-limo_data **dict_get_place(limo_data *dict, limo_data *key)
+limo_dict_item *dict_get_place(limo_data *dict, limo_data *key)
 {
-  //  if (dict->type != limo_TYPE_DICT)
-  //limo_error("dict_get_place(): didn't get a dict.");
-  
   int i=0;
   unsigned int h = hash(key);
   unsigned int perturb = h;
@@ -129,8 +126,8 @@ limo_data **dict_get_place(limo_data *dict, limo_data *key)
   while (1) {
     i = ((i<<2) + i + perturb + 1) % d->size;   // 5i + 1 (perturb gets eventually zero)
 
-    if (d->store[i] == NULL ||
-	limo_equals(key, CAR(d->store[i])))
+    if (d->store[i].cons == NULL ||
+	limo_equals(key, CAR(d->store[i].cons)))
       return &d->store[i];   // WILL be found!
     
     perturb >>= PERTURB_SHIFT;
@@ -141,11 +138,11 @@ limo_data **dict_get_place(limo_data *dict, limo_data *key)
 
 void dict_remove(limo_data *dict, limo_data *key)
 {
-  limo_data **place;
+  limo_dict_item *place;
 
   place = dict_get_place(dict, key);
-  if (place !=NULL) {
-    (*place) = NULL;
+  if (place->cons !=NULL) {
+    place->cons = NULL;
     dict->d_dict->used--;
 
     // dict_resize MUST be done, or else items, which should have been stored in the same bucket as *key
@@ -160,8 +157,8 @@ limo_data *dict_to_list(limo_data *dict)
   limo_dict *d = dict->d_dict;
   int i;
   for (i=0; i<d->size; ++i)
-    if (d->store[i] != NULL)
-      res = make_cons(d->store[i], res);
+    if (d->store[i].cons != NULL)
+      res = make_cons(d->store[i].cons, res);
 
   return res;
 }
@@ -177,7 +174,7 @@ BUILTIN(builtin_dict_get)
 {
   limo_data *dict;
   limo_data *key;
-  limo_data **res;
+  limo_data *res;
 
   if (list_length(arglist) != 3)
     limo_error("(dict-get DICT KEY)");
@@ -187,10 +184,10 @@ BUILTIN(builtin_dict_get)
     limo_error("(dict-get DICT KEY)");
 
   key = eval(SECOND_ARG, env);
-  res = dict_get_place(dict, key);
-  if (*res == NULL)
+  res = dict_get_place(dict, key)->cons;
+  if (res == NULL)
     throw(make_cons(make_string("Could not find key"), key));
-  return *res;
+  return res;
 }
 
 BUILTIN(builtin_dict_set)
@@ -210,7 +207,7 @@ BUILTIN(builtin_dict_set)
   value = eval(THIRD_ARG, env);
 
   dict_put(dict, key, value);
-  return nil;
+  return value;
 }
 
 
@@ -235,7 +232,7 @@ BUILTIN(builtin_dict_has_key)
 {
   limo_data *dict;
   limo_data *key;
-  limo_data **res;
+  limo_dict_item *res;
 
   if (list_length(arglist) != 3)
     limo_error("(dict-has-key DICT KEY)");
@@ -246,7 +243,7 @@ BUILTIN(builtin_dict_has_key)
 
   key = eval(SECOND_ARG, env);
   res = dict_get_place(dict, key);
-  if (*res == NULL)
+  if (res->cons == NULL)
     return nil;
   else
     return sym_true;

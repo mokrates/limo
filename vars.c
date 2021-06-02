@@ -8,13 +8,13 @@ limo_data *make_env(limo_data *up)
   return env;
 }
 
-limo_data *make_vcache(limo_data *cons)
-{
-  limo_data *res=make_limo_data();
-  res->type = limo_TYPE_VCACHE;
-  res->d_vcache = cons;
-  return res;
-}
+/* limo_data *make_vcache(limo_data *cons) */
+/* { */
+/*   limo_data *res=make_limo_data(); */
+/*   res->type = limo_TYPE_VCACHE; */
+/*   res->d_vcache = cons; */
+/*   return res; */
+/* } */
 
 limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons from the dict
 {
@@ -23,41 +23,39 @@ limo_data *var_lookup_place(limo_data *env, limo_data *name) // returns the cons
 
   limo_data *up = CAR(env);
   limo_data *dict = CDR(env);
-  limo_data **place;
+  limo_dict_item *place;
   limo_data *cons;
 
   place=dict_get_place(dict, name);
-  if (*place == NULL && !is_nil(up)) {
+  if (place->cons == NULL && !is_nil(up)) {
     cons = var_lookup_place(up, name);
-    if (cons == NULL)
-      throw(make_cons(make_string("variable not bound"), name));
 
-    //setq(env, name, make_vcache(cons));
+    // probably useless:
+    /* if (cons == NULL) */
+    /*   throw(make_cons(make_string("variable not bound"), name)); */
 
-    *place = make_cons(CAR(cons), make_vcache(cons));
+    place->cons = cons;
+    place->flags = DI_CACHE;
     dict->d_dict->used++;
     dict_check_resize(dict);
-    // printf("adding to cache - returning: "); writer(cons); printf("\n");
     return cons;
   }
 
-  if ((*place != NULL) && (CDR(*place) -> type) == limo_TYPE_VCACHE) {
-    //    printf("cached - returning: "); writer(CDR(*place)->d_vcache); printf("\n");
-    return CDR(*place) -> d_vcache;
-  }
+  /* if ((*place != NULL) && (CDR(*place) -> type) == limo_TYPE_VCACHE) { */
+  /*   //    printf("cached - returning: "); writer(CDR(*place)->d_vcache); printf("\n"); */
+  /*   return CDR(*place) -> d_vcache; */
+  /* } */
 
-  if (*place==NULL)
+  if (place->cons==NULL)
     throw(make_cons(make_string("Variable not bound"), name));
 
   //  printf("found locally - returning: "); writer(*place); printf("\n");
-  return *place;
+  return place->cons;
 }
 
 limo_data *var_lookup(limo_data *env, limo_data *name, int *constant)
 {
   limo_data *place;
-
-  assert(name->type != limo_TYPE_CONST);
 
   place = var_lookup_place(env, name);
 
