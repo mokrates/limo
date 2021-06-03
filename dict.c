@@ -6,6 +6,37 @@
 #include "limo.h"
 #include <assert.h>
 
+inline int limo_equals(limo_data *a, limo_data *b)
+{
+  if (a==b)
+    return 1;
+
+  if (a->type != b->type)
+    return 0;
+
+  switch (a->type) {
+  case limo_TYPE_SYMBOL:
+    if (a->hash == 0 || b->hash == 0)
+      return !strcmp(a->d_string, b->d_string);
+    else
+      return a->hash == b->hash;
+
+  case limo_TYPE_STRING:
+    if (a->hash != b->hash)
+      return 0;
+    else
+      return !strncmp(a->d_string, b->d_string, a->hash);
+    
+  case limo_TYPE_CONS:
+    return a->d_cons == b->d_cons;
+
+  case limo_TYPE_GMPQ:
+    return !mpq_cmp(LIMO_MPQ(a), LIMO_MPQ(b));
+  }
+    
+  return 0;
+}
+
 static inline unsigned int hash_string(char *str)
 {
   int len = strlen(str);
