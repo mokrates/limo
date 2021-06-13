@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   init_syms();
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
-  pk_finallystack_set(nil);
+  pk_finallystack_set(NULL);
  
   env = make_globalenv(argc, argv);
   globalenv = env;

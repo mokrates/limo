@@ -271,15 +271,21 @@ BUILTIN(builtin_try)
 BUILTIN(builtin_finally)
 {
   limo_data *res;
-  limo_data *finallystack_before = pk_finallystack_get();
-
+  limo_finally_stack_item *finallystack_before = pk_finallystack_get();
+  limo_finally_stack_item *new_finallystack_item;
+  
   REQUIRE_ARGC("FINALLY", 2);
 
-  pk_finallystack_set(make_cons(make_thunk(SECOND_ARG, env), pk_finallystack_get()));
+  new_finallystack_item = (limo_finally_stack_item *)GC_malloc(sizeof (limo_finally_stack_item));
+  new_finallystack_item->next = finallystack_before;
+  new_finallystack_item->dynenv = pk_dynamic_vars_get();
+  new_finallystack_item->exc_buf = pk_ljbuf_get();
+  new_finallystack_item->thunk = make_thunk(SECOND_ARG, env);
+  pk_finallystack_set(new_finallystack_item);
   
   res = eval(FIRST_ARG, env);  // jump-targets are responsible to execute finallies in case of jumps (exception/return-from)
 
-  assert(CDR(pk_finallystack_get()) == finallystack_before);
+  assert(pk_finallystack_get()->next == finallystack_before);
   pk_finallystack_set(finallystack_before);
   eval(SECOND_ARG, env);
   

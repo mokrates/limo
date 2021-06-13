@@ -19,8 +19,8 @@ void print_stacktrace(limo_data *s)
 limo_data *try_catch(limo_data *try, limo_data *env)
 {
   sigjmp_buf *ljstacksafe;  // here the bufs get stacked
-  limo_data *finallystack_before;
-  limo_data *fs_cur;
+  limo_finally_stack_item *finallystack_before;
+  limo_finally_stack_item *fs_cur;
   sigjmp_buf ljbuf;
   limo_data *res;
 
@@ -33,8 +33,10 @@ limo_data *try_catch(limo_data *try, limo_data *env)
 
     // execute finallies
     while ((fs_cur = pk_finallystack_get()) != finallystack_before) {
-      eval(CAR(CAR(fs_cur)), CDR(CAR(fs_cur)));  // evaluate top finally
-      pk_finallystack_set(CDR(fs_cur));          // pop top finally
+      assert(fs_cur->exc_buf == &ljbuf);
+      pk_dynamic_vars_set(fs_cur->dynenv);
+      pk_finallystack_set(fs_cur->next);          // pop top finally      
+      eval(CDR(fs_cur->thunk), CAR(fs_cur->thunk));  // evaluate top finally
     }
     
     return NULL;

@@ -90,6 +90,15 @@ typedef struct limo_DICT {
   int used;
 } limo_dict;
 
+typedef struct limo_FINALLY_STACK_ITEM {
+  limo_data *dynenv;
+  sigjmp_buf *exc_buf;
+  limo_data *thunk;
+  // backtrace?
+  
+  struct limo_FINALLY_STACK_ITEM *next;
+} limo_finally_stack_item;
+
 extern limo_data *globalenv;
 extern limo_data *interned_symbols;
 
@@ -193,7 +202,7 @@ extern pthread_key_t pk_dynamic_vars_key;
 #define pk_exception_set(VAL)  (pthread_setspecific(pk_exception_key, (void *)(VAL)))
 #define pk_exception_get()     ((limo_data *)pthread_getspecific(pk_exception_key))
 #define pk_finallystack_set(VAL)  (pthread_setspecific(pk_finallystack_key, (void *)(VAL)))
-#define pk_finallystack_get()     ((limo_data *)pthread_getspecific(pk_finallystack_key))
+#define pk_finallystack_get()     ((limo_finally_stack_item *)pthread_getspecific(pk_finallystack_key))
 #define pk_limo_data_next_set(VAL)  (pthread_setspecific(pk_limo_data_next_key, (void *)(VAL)))
 #define pk_limo_data_next_get()     ((void **)pthread_getspecific(pk_limo_data_next_key))
 #define pk_cons_next_set(VAL)  (pthread_setspecific(pk_cons_next_key, (void *)(VAL)))
