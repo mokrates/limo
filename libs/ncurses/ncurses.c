@@ -433,7 +433,7 @@ void limo_init_ncurses(limo_data *env)
   setq(limo_ncurses_env, make_sym("KEY_UNDO"), make_number_from_long_long(KEY_UNDO));
   setq(limo_ncurses_env, make_sym("KEY_MOUSE"), make_number_from_long_long(KEY_MOUSE));
   setq(limo_ncurses_env, make_sym("KEY_RESIZE"), make_number_from_long_long(KEY_RESIZE));
-  setq(limo_ncurses_env, make_sym("KEY_EVENT"), make_number_from_long_long(KEY_EVENT));
+  //setq(limo_ncurses_env, make_sym("KEY_EVENT"), make_number_from_long_long(KEY_EVENT));
   setq(limo_ncurses_env, make_sym("KEY_MAX"), make_number_from_long_long(KEY_MAX));
 
   // Colors
