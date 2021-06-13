@@ -1,5 +1,6 @@
 #include "limo.h"
 #include <unistd.h>
+#include <assert.h>
 
 BUILTIN(builtin_quote)
 {
@@ -270,12 +271,18 @@ BUILTIN(builtin_try)
 BUILTIN(builtin_finally)
 {
   limo_data *res;
+  limo_data *finallystack_before = pk_finallystack_get();
 
-  REQUIRE_ARGC("FINALLY", 2);  
-  res = try_catch(FIRST_ARG, env);
+  REQUIRE_ARGC("FINALLY", 2);
+
+  pk_finallystack_set(make_cons(make_thunk(SECOND_ARG, env), pk_finallystack_get()));
+  
+  res = eval(FIRST_ARG, env);  // jump-targets are responsible to execute finallies in case of jumps (exception/return-from)
+
+  assert(CDR(pk_finallystack_get()) == finallystack_before);
+  pk_finallystack_set(finallystack_before);
   eval(SECOND_ARG, env);
-  if (!res)
-    throw_after_finally();
+  
   return res;
 }
 

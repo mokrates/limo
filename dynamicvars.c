@@ -5,7 +5,7 @@ BUILTIN(builtin_get_dynamic_env)
   return pk_dynamic_vars_get();
 }
 
-BUILTIN(builtin_with_dynamic_env)
+BUILTIN(builtin_with_dynamic_env)  // TODO unwind-protect for this
 {
   limo_data *res, *denv, *old_denv;
 

@@ -8,8 +8,15 @@ BUILTIN(builtin_block)
   limo_data *block_env;
   int marked_constant;
 
+  sigjmp_buf *exception_buf_safe;
+  limo_data *finallystack_before;
+  limo_data *fs_cur;
+
   if (list_length(arglist) != 3)
     limo_error("(block BLOCKNAME BODY)");
+
+  exception_buf_safe = pk_ljbuf_get();
+  finallystack_before = pk_finallystack_get();
 
   jb = (sigjmp_buf *)GC_malloc(sizeof (sigjmp_buf));
   special_jb = make_special(sym_block, jb);
@@ -17,8 +24,15 @@ BUILTIN(builtin_block)
   env = make_env(env);
 
   setq(env, FIRST_ARG, special_jb);
-  if (sigsetjmp(*jb, 1)) {
+  if (sigsetjmp(*jb, 1)) {       // if true, longjmp happened.
     res = var_lookup(env, FIRST_ARG, &marked_constant);
+    pk_ljbuf_set(exception_buf_safe);
+    
+    // execute finallies
+    while ((fs_cur = pk_finallystack_get()) != finallystack_before) {
+      eval(CDR(CAR(fs_cur)), CAR(CAR(fs_cur)));  // evaluate top finally
+      pk_finallystack_set(CDR(fs_cur));          // pop top finally
+    }
   }
   else
     res = eval(SECOND_ARG, env);

@@ -16,16 +16,27 @@ void print_stacktrace(limo_data *s)
   }
 }
 
-limo_data *try_catch(limo_data *try, limo_data *env) /// TODO thread-safe!
+limo_data *try_catch(limo_data *try, limo_data *env)
 {
   sigjmp_buf *ljstacksafe;  // here the bufs get stacked
+  limo_data *finallystack_before;
+  limo_data *fs_cur;
   sigjmp_buf ljbuf;
   limo_data *res;
 
   ljstacksafe = pk_ljbuf_get();
+  finallystack_before = pk_finallystack_get();
+  
   pk_ljbuf_set(&ljbuf);
   if (sigsetjmp(ljbuf, 1)) { // if true; exception was thrown.
     pk_ljbuf_set(ljstacksafe);
+
+    // execute finallies
+    while ((fs_cur = pk_finallystack_get()) != finallystack_before) {
+      eval(CAR(CAR(fs_cur)), CDR(CAR(fs_cur)));  // evaluate top finally
+      pk_finallystack_set(CDR(fs_cur));          // pop top finally
+    }
+    
     return NULL;
   }
 
@@ -43,12 +54,13 @@ void throw(limo_data *excp)
   }
 
   pk_exception_set(excp);
-  setq(globalenv, sym_stacktrace, pk_stacktrace_get());
+  setq(globalenv, sym_stacktrace, pk_stacktrace_get());   // TODO: no!
 
   //if (*pk_ljbuf_get())
   siglongjmp(*pk_ljbuf_get(), 1);
 }
 
+// TODO: remove.
 void throw_after_finally(void)
 {
   if (!pk_ljbuf_get()) {

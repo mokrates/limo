@@ -43,6 +43,8 @@ static void *limo_threading_entry_function(void *thread_thunk)
   pk_gmpq_next_set(&make_gmpq_next);
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
+  pk_finallystack_set(nil);
+  
   dynamic_env = make_env(CDR((limo_data *)thread_thunk));
   null_env = make_env(nil);
   pk_dynamic_vars_set(dynamic_env);  

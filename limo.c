@@ -23,6 +23,7 @@ pthread_key_t pk_dynamic_vars_key;
 pthread_key_t pk_stacktrace_key;
 pthread_key_t pk_exception_key;
 pthread_key_t pk_ljbuf_key;
+pthread_key_t pk_finallystack_key;
 pthread_key_t pk_limo_data_next_key;
 pthread_key_t pk_cons_next_key;
 pthread_key_t pk_dict_next_key;
@@ -38,6 +39,7 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_ljbuf_key, NULL);
   pthread_key_create(&pk_stacktrace_key, NULL);
   pthread_key_create(&pk_exception_key, NULL);
+  pthread_key_create(&pk_finallystack_key, NULL);
   pthread_key_create(&pk_limo_data_next_key, NULL);
   pthread_key_create(&pk_cons_next_key, NULL);
   pthread_key_create(&pk_dict_next_key, NULL);
@@ -128,6 +130,7 @@ int main(int argc, char **argv)
   init_syms();
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
+  pk_finallystack_set(nil);
  
   env = make_globalenv(argc, argv);
   globalenv = env;
