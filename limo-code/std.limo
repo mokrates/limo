@@ -716,9 +716,10 @@
 ;; defining init is required.
 
 (defmacro class (parentclass . methods)
-  `(with-gensym (classname)
-       (defclass ,classname ,parentclass . ,methods)
-     ,classname))
+  (with-gensym (classname)
+      `(progn
+	(defclass ,classname ,parentclass ,@methods)
+	,classname)))
 (freezeq class)
 
 (defmacro defclass (classname parentclass . methods)
