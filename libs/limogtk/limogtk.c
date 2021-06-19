@@ -86,7 +86,8 @@ BUILTIN(builtin_get_error)
 
 static gboolean limo_g_timeout_cb(limo_data *closure)
 {
-  return !is_nil(eval(CAR(closure), CDR(closure)));
+  limo_data *res = eval(CAR(closure), CDR(closure));
+  return !is_nil(res);
 }
 
 BUILTIN(builtin_g_timeout_add)
