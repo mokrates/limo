@@ -41,18 +41,40 @@
       `(return-from _return)))
 (freezeq return)
 
-(defmacro while (condition . body)
-  (with-gensym (fun)
-	       `(block _break
-		       (progn
-			  (defun ,fun ()
-			      (if ,condition
-				    (progn (block _continue
-						      (progn
-							 ,@body))
-					     (,fun))
-				    ()))
-			  (,fun)))))
+(setq while
+      (scope
+       (defmacro simple-while (condition . body)
+	 (with-gensym (fun)
+	     `(progn
+	       (defun ,fun ()
+		 (if ,condition      
+		     (progn
+		      ,@body
+		      (,fun))
+		     ()))
+	       (,fun))))
+       (freezeq simple-while)
+       
+       (defmacro while (condition . body)
+	 (setq continue-frame (lambda (x) `(progn ,@x)))
+	 (setq break-frame (lambda (x) `(progn ,@x)))
+	 (simple-while (member (car body) '(:break :breakable :continue :continuable))
+		       (cond ((member (car body) '(:break :breakable))
+			      (setf break-frame (lambda (x) `(block _break (progn ,@x)))))
+			     ((member (car body) '(:continue :continuable))
+			      (setf continue-frame (lambda (x) `(block _continue (progn ,@x))))))
+		       (setf body (cdr body)))
+	 
+	 (with-gensym (fun)
+	     (break-frame
+	      `(progn
+		(defun ,fun ()
+		  (if ,condition
+		      (progn
+		       ,(continue-frame body)
+		       (,fun))
+		      ()))
+		(,fun)))))))
 (freezeq while)
 
 (defmacro break x

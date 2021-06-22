@@ -483,16 +483,40 @@
 	   (dict-set already-warned msg :t)
 	   (print (string-concat msg "\n"))))))
 
-(defmacro for-each (x l . body)
-  (setq it (gensym))
-  (setq recur (gensym))
-  `(progn
-    (defun ,recur (,it)
-	(when ,it 
+(setq for-each
+      (scope
+       (defmacro simple-while (condition . body)
+	 (with-gensym (fun)
+	     `(progn
+	       (defun ,fun ()
+		 (if ,condition      
+		     (progn
+		      ,@body
+		      (,fun))
+		     ()))
+	       (,fun))))
+       (freezeq simple-while)
+       
+       (defmacro for-each (x l . body)
+	 (setq continue-frame (lambda (x) `(progn ,@x)))
+	 (setq break-frame (lambda (x) `(progn ,@x)))
+	 (simple-while (member (car body) '(:break :breakable :continue :continuable))
+		       (cond ((member (car body) '(:break :breakable))
+			      (setf break-frame (lambda (x) `(block _break (progn ,@x)))))
+			     ((member (car body) '(:continue :continuable))
+			      (setf continue-frame (lambda (x) `(block _continue (progn ,@x))))))
+		       (setf body (cdr body)))
+	 
+	 (setq it (gensym))
+	 (setq recur (gensym))
+	 (break-frame
+	  `(progn
+	    (defun ,recur (,it)
+	      (when ,it 
 		(setq ,x (car ,it)) 
-		,@body
+		,(continue-frame body)
 		(,recur (cdr ,it))))
-    (,recur ,l)))
+	    (,recur ,l))))))
 (freezeq for-each)
 
 (defmacro for-list (x l . body)
