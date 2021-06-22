@@ -500,7 +500,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
   (setf line (string-strip next-line))
   (cond ((string-endswith line "extern")  ;; ignore the deprecated stuff
          (setq function-def ())
-         (while :t
+         (while :t :breakable
            (setf line (string-strip (file-readline stdin)))
            (setf function-def (append function-def (list line)))
            (when (string-endswith line ";")
@@ -509,7 +509,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 
         ((and (string-startswith line "cairo_") (member "(" (string-to-list line)))
          (setq function-def (list (format "%s %s" (string-strip last-line) line)))
-         (while :t
+         (while :t :breakable
            (when (string-endswith line ";")
              (break))
            (setf line (string-strip (file-readline stdin)))
