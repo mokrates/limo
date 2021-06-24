@@ -132,6 +132,7 @@ void dict_put_cons_ex(limo_data *dict, limo_data *cons, int cache)
   ld_place = dict_get_place(dict, CAR(cons));
   if (ld_place->cons == NULL) {
     dict->d_dict->used++;
+    ld_place->flags = cache;
     ld_place->cons = cons;
   }
   else if (ld_place->flags & DI_CACHE) {
