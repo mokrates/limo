@@ -33,6 +33,7 @@ static void *limo_threading_entry_function(void *thread_thunk)
   void *make_limo_data_next = NULL;
   void *make_cons_next = NULL;
   void *make_dict_next = NULL;
+  void *make_dict_store_next = NULL;
   void *make_gmpq_next = NULL;
   volatile limo_data *dynamic_env;
   limo_data *null_env;
@@ -40,6 +41,7 @@ static void *limo_threading_entry_function(void *thread_thunk)
   pk_limo_data_next_set(&make_limo_data_next);
   pk_cons_next_set(&make_cons_next);
   pk_dict_next_set(&make_dict_next);
+  pk_dict_store_next(&make_dict_store_next);
   pk_gmpq_next_set(&make_gmpq_next);
   pk_stacktrace_set(nil);
   pk_exception_set(nil);
