@@ -5,31 +5,29 @@
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args, limo_data *thunk_place)
 {
   // (#<lambda:(env . (lambda (a b) body)) args...)
-  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env;
-  lambda_env = CAR(f);
-  //  printf("lambda_env: "); writer(lambda_env); printf("\n");
-  lambda_list = CDR(f);
-  //  printf("lambda_list: "); writer(lambda_list); printf("\n");
-  params = CAR(CDR(lambda_list));
-  //  printf("params: "); writer(params); printf("\n");
-  body= CAR(CDR(CDR(lambda_list)));
-  //  printf("body: "); writer(body); printf("\n");
-  arglist=CDR(call);
-  //  printf("arglist: "); writer(arglist); printf("\n");
+  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env, **locals_store, *pdict;
+  int iparam = 0;
+  
+  lambda_env = CAR(f);                  // closure environment
+  lambda_list = CDR(f);                 
+  params = CAR(CDR(lambda_list));       // list of parameter names
+  body = CAR(CDR(CDR(lambda_list)));     // body of lambda
+  arglist = CDR(call);                    // argumentlist in current call
 
-  /* if (eval_args) */
-  /*   earglist = list_eval(arglist, env); */
-  /* else */
-  /*   earglist = arglist; */
-
-  // associating params with names
-  param_env = make_env(lambda_env);
+  param_env = make_env(lambda_env);     // environment to store the arguments
+  pdict = CDR(param_env);               // dictionary to store locals
+  
+  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)GC_malloc(f->nparams * sizeof (limo_data *));
   if (eval_args) {
-    while (!is_nil(params) && params->type==limo_TYPE_CONS) {
-      if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
+    while (!is_nil(params) && params->type == limo_TYPE_CONS) {
+      if (is_nil(arglist) || arglist->type != limo_TYPE_CONS )
 	limo_error("eval funcall: too few arguments");
       
-      setq(param_env, CAR(params), eval(CAR(arglist), env));
+      /* setq(param_env, CAR(params), eval(CAR(arglist), env)); */
+      locals_store[iparam] = make_cons(CAR(params), eval(CAR(arglist), env));
+      locals_store[iparam]->nparams = iparam;
+      dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+      ++iparam;
 
       params = CDR(params);
       arglist = CDR(arglist);
@@ -44,39 +42,50 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 	setq(param_env, CAR(params), CAR(CAR(arglist)));
 	printf("DEBUG: eval_function_call wurde mit einem CONST aufgerufen\n");
       }
-      else
-	setq(param_env, CAR(params), CAR(arglist));
+      else {
+	/* setq(param_env, CAR(params), CAR(arglist)); */
+	locals_store[iparam] = make_cons(CAR(params), CAR(arglist));
+	locals_store[iparam]->nparams = iparam;
+	dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+	++iparam;
+      }
 
       params = CDR(params);
       arglist = CDR(arglist);
     }
   }
-  if (params->type==limo_TYPE_SYMBOL)
-    if (eval_args)
-      setq(param_env, params, list_eval(arglist, env));
-    else
-      setq(param_env, params, arglist);
+  if (params->type==limo_TYPE_SYMBOL) {
+    if (eval_args) {
+      /* setq(param_env, params, list_eval(arglist, env)); */
+      locals_store[iparam] = make_cons(params, list_eval(arglist, env));
+      locals_store[iparam]->nparams = iparam;
+    }
+    else {
+      /* setq(param_env, params, arglist); */
+      locals_store[iparam] = make_cons(params, arglist);
+      locals_store[iparam]->nparams = iparam;
+    }
+    dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+  }
 
-  //  printf("env: "); writer(param_env); printf("\n");
-
-  if (thunk_place) {
+  if (thunk_place) {          // if we have a prepared thunk_place, use it.
     CDR(thunk_place) = body;
     CAR(thunk_place) = param_env;
     return thunk_place;
   }
-  else 
+  else                        // else create a new one
     return make_thunk(body, param_env);
 }
 
 limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
 {
   // (#<macro:(env . (macro (a b) body)) args...)
-  limo_data *macro_env, *macro_list, *params, *body, *arglist, *earglist, *param_env;
+  limo_data *macro_env, *macro_list, *params, *body, *arglist, *param_env;
   macro_env = CAR(f);
   macro_list = CDR(f);
   params = CAR(CDR(macro_list));
-  body= CAR(CDR(CDR(macro_list)));
-  arglist=CDR(call);
+  body = CAR(CDR(CDR(macro_list)));
+  arglist = CDR(call);
 
   // associating params with names
   param_env = make_env(macro_env);
@@ -91,11 +100,6 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
   }
   if (params->type==limo_TYPE_SYMBOL)
     setq(param_env, params, arglist);
-
-#if STATIC_MACROEX
-  //if (!(limo_register & LR_OPTDISABLE))
-  //  body = list_dup(body);     // don't really know what this was for.
-#endif
 
   limo_data *res = eval(body, param_env);
 
@@ -196,7 +200,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
 {
   limo_data *res;
-  int marked_constant;
+  /* int marked_constant; */
 
   while (ld->optimized)
     ld = ld->optimized;
@@ -228,18 +232,19 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
     if (ld->d_string[0] == ':')
       return ld;
     else {
-      res=var_lookup(env, ld, &marked_constant);
-#if STATIC_CONSTEX_HARD
-      if (!(limo_register & LR_OPTDISABLE))      
-        if (marked_constant)
-          (*ld) = *res;      
-#elif STATIC_CONSTEX
+      res=var_lookup_ex(env, ld, ld);
+/* #if STATIC_CONSTEX_HARD */
+/*       if (!(limo_register & LR_OPTDISABLE))       */
+/*         if (marked_constant) */
+/*           (*ld) = *res;       */
+#if STATIC_CONSTEX
       if (res->type == limo_TYPE_CONST)  // this can happen to parameters of macros.
         res=CAR(res);
+      //assert(res->type != limo_TYPE_CONST);
       
-      if (!(limo_register & LR_OPTDISABLE))
-        if (marked_constant)
-          ld->optimized = make_const(ld_dup(ld), res);
+      /* if (!(limo_register & LR_OPTDISABLE)) */
+      /*   if (marked_constant) */
+      /*     ld->optimized = make_const(ld_dup(ld), res); */
           //ld->optimized = res;
 #endif
       return res;
@@ -247,6 +252,11 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
 
   case limo_TYPE_CONST:
     return CAR(ld);
+
+  case limo_TYPE_LCACHE:
+    /* writer(CDR(env)->d_dict->locals_store[ld->nparams]); */
+    /* printf("\nresolving lcache\n"); */
+    return CDR(CDR(env)->d_dict->locals_store[ld->nparams]);
 
   default: 
     return ld;

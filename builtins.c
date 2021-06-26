@@ -27,10 +27,26 @@ BUILTIN(builtin_unsetq)
 BUILTIN(builtin_lambda)
 {
   limo_data *lambda = make_nil();
+  unsigned int nparams = 0;
+  limo_data *paramlist;
 
   REQUIRE_ARGC("LAMBDA", 2);
   lambda = make_cons(env, arglist);
-  lambda->type = limo_TYPE_LAMBDA;  
+  lambda->type = limo_TYPE_LAMBDA;
+
+  /* writer(arglist); */
+
+  paramlist = CAR(CDR(arglist));
+  if (paramlist->type == limo_TYPE_CONS)
+    for (;!is_nil(paramlist) && paramlist->type==limo_TYPE_CONS;
+	 ++nparams, paramlist=CDR(paramlist))
+      ;
+  if (paramlist->type != limo_TYPE_CONS)
+    nparams++;
+
+  /* printf("\n*******argc: %u\n", nparams); */
+  lambda->nparams = nparams;
+  
   return lambda;
 }
 
@@ -81,7 +97,7 @@ BUILTIN(builtin_apply)
     al=nil;
 
   if (f->type == limo_TYPE_LAMBDA)
-    return eval_function_call(f, make_cons(f,al), env, 0, NULL);
+    return eval_function_call(f, make_cons(f,al), env, 0, thunk_place);
   else if (f->type == limo_TYPE_BUILTIN)
     limo_error("calling APPLY with builtins is unsupported, please wrap in a lambda");
 }
@@ -466,9 +482,10 @@ BUILTIN(builtin_string_concat)
 
   limo_data *res = make_limo_data();
   res->type = limo_TYPE_STRING;
-  res->d_string = (char *)GC_malloc(str1->hash + str2->hash + 1);
+  res->d_string = (char *)GC_malloc_atomic(str1->hash + str2->hash + 1);
   memcpy(res->d_string, str1->d_string, str1->hash);
   memcpy(res->d_string + str1->hash, str2->d_string, str2->hash);
+  res->d_string[str1->hash + str2->hash] = '\0';
   res->hash = str1->hash + str2->hash;
   return res;
 }
@@ -604,7 +621,6 @@ BUILTIN(builtin_env_setf)
 
 BUILTIN(builtin_env_getq)
 {
-  int marked_constant; // we will ignore the value here
   limo_data *the_env;
   limo_data *name;
   limo_data *result;
@@ -612,7 +628,7 @@ BUILTIN(builtin_env_getq)
   REQUIRE_ARGC("env-getq", 2);
   name = SECOND_ARG;
   the_env = eval(FIRST_ARG, env);
-  result = var_lookup(the_env, name, &marked_constant);
+  result = var_lookup(the_env, name);
   return result;
 }
 

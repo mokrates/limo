@@ -7,35 +7,31 @@ struct block_data {
 
 BUILTIN(builtin_block)
 {
-  sigjmp_buf *jb;
   limo_data *special_block;
   limo_data *res;
   limo_data *block_env;
-  int marked_constant;
   struct block_data *bd;
 
   sigjmp_buf *exception_buf_safe;
-  limo_finally_stack_item *finallystack_before;
 
   if (list_length(arglist) != 3)
     limo_error("(block BLOCKNAME BODY)");
 
   exception_buf_safe = pk_ljbuf_get();
-  finallystack_before = pk_finallystack_get();
 
   bd = (struct block_data *)GC_malloc(sizeof (struct block_data));
   bd->finallystack_position = pk_finallystack_get();
   special_block = make_special(sym_block, bd);
   
-  env = make_env(env);
+  block_env = make_env(env);
 
   setq(env, FIRST_ARG, special_block);
   if (sigsetjmp(bd->jmpbuf, 1)) {       // if true, longjmp happened.
-    res = var_lookup(env, FIRST_ARG, &marked_constant);
+    res = var_lookup(env, FIRST_ARG);
     pk_ljbuf_set(exception_buf_safe);
   }
   else
-    res = eval(SECOND_ARG, env);
+    res = eval(SECOND_ARG, block_env);
 
   // this invalidates the jmpbuf. it could be taken out
   // of the BLOCK form, and return-fromed to, and that gives 
@@ -51,7 +47,6 @@ BUILTIN(builtin_return_from)
   limo_data *res;
   struct block_data *bd;
   int allen = list_length(arglist);
-  int marked_constant;
 
   limo_finally_stack_item *fs_cur;
     
@@ -63,7 +58,7 @@ BUILTIN(builtin_return_from)
   else
     res = nil;
   
-  bd = (struct block_data *)get_special(var_lookup(env, FIRST_ARG, &marked_constant), sym_block);
+  bd = (struct block_data *)get_special(var_lookup(env, FIRST_ARG), sym_block);
 
   // execute finallies
   while ((fs_cur = pk_finallystack_get()) != bd->finallystack_position) {

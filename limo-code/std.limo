@@ -353,14 +353,24 @@
 	(:t ())))
 (freezeq andf)
 
+;; (defmacro cond l   ;; used by quasiquote
+;;   (if l
+;;       (if (or (= (caar l) :t) (= (caar l) :else))
+;; 	  (cons 'progn (apply list (cdar l)))
+;; 	  (list 'if (caar l)
+;; 		(cons 'progn (apply list (cdar l)))
+;; 		(cons 'cond (cdr l))))
+;;       ()))
+
 (defmacro cond l   ;; used by quasiquote
   (if l
       (if (or (= (caar l) :t) (= (caar l) :else))
-	  (cons 'progn (apply list (cdar l)))
+	  (cons 'progn (cdar l))
 	  (list 'if (caar l)
-		(cons 'progn (apply list (cdar l)))
+		(cons 'progn (cdar l))
 		(cons 'cond (cdr l))))
       ()))
+
 (freezeq cond)
 
 (defmacro switch (s . items)

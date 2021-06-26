@@ -93,8 +93,9 @@ limo_dict *make_dict_size(int minused)
   while (size < 3*minused)
     size<<=1;
 
-  d->store = (limo_data **)GC_malloc(size * sizeof (limo_dict_item));
+  d->store = (limo_dict_item *)GC_malloc(size * sizeof (limo_dict_item));
   memset(d->store, 0, size * sizeof (limo_dict_item));
+  d->locals_store = NULL;
   d->size = size;
   d->used = 0;
   return d;
@@ -103,14 +104,16 @@ limo_dict *make_dict_size(int minused)
 void dict_resize(limo_data *dict)
 {
   limo_data new = *dict;
-  limo_dict *olddict=dict->d_dict;
-  limo_dict *newdict=make_dict_size(olddict->used);
+  limo_dict *olddict = dict->d_dict;
+  limo_dict *newdict = make_dict_size(olddict->used);
   int i;
 
+  /* printf("resizing\n"); */
   new.d_dict = newdict;
+  new.d_dict->locals_store = olddict->locals_store;
   for (i=0; i<olddict->size; ++i)
     if (olddict->store[i].cons != NULL)
-      dict_put_cons_ex(&new, olddict->store[i].cons,olddict->store[i].flags);
+      dict_put_cons_ex(&new, olddict->store[i].cons, olddict->store[i].flags);
   dict->d_dict = newdict;
 }
 
@@ -120,20 +123,20 @@ void dict_check_resize(limo_data *dict)
     dict_resize(dict);
 }
 
-void dict_put_cons_ex(limo_data *dict, limo_data *cons, int cache)
+void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags)
 {
   limo_dict_item *ld_place;
 
   if (dict->type != limo_TYPE_DICT)
     limo_error("dict_put(): didn't get a dict.");
 
-  dict_check_resize(dict);
-
   ld_place = dict_get_place(dict, CAR(cons));
   if (ld_place->cons == NULL) {
     dict->d_dict->used++;
-    ld_place->flags = cache;
+    ld_place->flags = flags;
     ld_place->cons = cons;
+
+    dict_check_resize(dict);
   }
   else if (ld_place->flags & DI_CACHE) {
       throw(make_cons(make_string("local variable referenced before assignment"), CAR(cons)));

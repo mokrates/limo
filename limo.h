@@ -41,9 +41,10 @@ extern unsigned long long limo_register;
 #define limo_TYPE_CONST   14  // wrapper for freeze'd constants.
 
 #define limo_TYPE_VCACHE  15
+#define limo_TYPE_LCACHE  16
 
-#define limo_TYPE_SPECIAL 16  // special: #<special: (typemarker . #<specialintern:pointer>)>
-#define limo_TYPE_SPECIAL_INTERN 17  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+#define limo_TYPE_SPECIAL 20  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 21  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -64,11 +65,13 @@ typedef struct limo_DATA {
     struct limo_DICT *d_dict;
     void *d_special_intern;
   };
-  #define d_vcache d_special
   union {
     unsigned int hash;  // for symbols
     unsigned int string_length;
-    unsigned int ld_marked_const;
+    struct {
+      unsigned short nparams;
+      unsigned short ld_marked_const;
+    };
   };
   limo_annotation *annotation;
   struct limo_DATA *optimized;
@@ -78,7 +81,8 @@ typedef struct limo_CONS {
   limo_data *car, *cdr;
 } limo_cons;
 
-#define DI_CACHE 1
+#define DI_CACHE (1<<0)
+#define DI_LOCAL (1<<1)
 typedef struct limo_DICT_ITEM {
   int flags;
   limo_data *cons;
@@ -88,6 +92,8 @@ typedef struct limo_DICT {
   limo_dict_item *store;
   int size;
   int used;
+
+  limo_data **locals_store;
 } limo_dict;
 
 typedef struct limo_FINALLY_STACK_ITEM {
@@ -237,8 +243,10 @@ limo_dict_item *dict_get_place(limo_data *dict, limo_data *key);
 void dict_remove(limo_data *dict, limo_data *key);
 limo_data *dict_to_list(limo_data *dict);
 
-limo_data *var_lookup(limo_data *env, limo_data *name, int *marked_const);
-limo_data *var_lookup_place(limo_data *env, limo_data *name); // returns the cons from the dict
+#define var_lookup(env, name) var_lookup_ex((env), (name), NULL)
+limo_data *var_lookup_ex(limo_data *env, limo_data *name, limo_data *opt);
+#define var_lookup_place(env, name) var_lookup_place_ex((env), (name), NULL)
+limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt); // returns the cons from the dict
 void setq(limo_data *env, limo_data *name, limo_data *value);
 void setf(limo_data *env, limo_data *name, limo_data *value);
 void setconstq(limo_data *env, limo_data *name, limo_data *value);
