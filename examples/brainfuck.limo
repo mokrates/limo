@@ -1,5 +1,9 @@
 (mod-load "vector")
 
+(freezeq vector-ref)
+(freezeq vector-set)
+(freezeq vector-len)
+
 (setq NCELLS 10000)        ; Anzahl Zellen
 (setq cptr (floor (/ NCELLS 2)))       ; Zellenpointer
 (setq cells (make-vector NCELLS))       ; Zellen-Array (RAM)
