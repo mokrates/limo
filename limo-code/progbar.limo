@@ -1,7 +1,19 @@
 (unify
- (progress-bar-wt progress-bar-w)
+ (progress-bar-wt progress-bar-w progbar-print)
  (scope
   (setq progbarcounter 0)
+
+  (defun progbar-print (x)
+    (for-each spl (string-split x "\n")
+      (for-each x (drange 1 progbarcounter 1)
+        (print (format "%s[E" (chr 27)))) ;; go down
+      (print "\n")
+      (for-each x (drange 0 progbarcounter 1)
+        (print (format "%s[F" (chr 27))))  ;; go up
+      (print (format "%s[L" (chr 27)))     ;; insert line  (move progbars down)
+      (print spl)
+      (print "\n")))
+    
   (defun progress-bar-x (it width pbc total lastepoch pos)
     (if it
         (progn
@@ -30,23 +42,36 @@
                                                                      (- bar-width nfilled) 1)))
                                         right-bar-margin
                                         "\r")))
-           (file-flush stdout)
            (for-each x (drange 0 pbc 1)
              (print (format "%s[F" (chr 27))))) ;; go up
+         (file-flush stdout)
          (setq thisepoch (car (time)))
          (dcons (car it) (progress-bar-x (cdr it) width pbc total thisepoch (+ pos 1))))
         (progn
 	 (decf progbarcounter)
+         (file-flush stdout)
 	 ())))
   
   (defun progress-bar-wt (it width total)
+    (for-each x (drange 1 progbarcounter 1)
+      (print (format "%s[E" (chr 27)))) ;; go down
+    (print (format "\n")) ;; go up
+    (for-each x (drange 0 progbarcounter 1)
+      (print (format "%s[F" (chr 27)))) ;; go up
+  
     (let ((pbc progbarcounter))
       (incf progbarcounter)
       (progress-bar-x it width pbc total 0 0)))
   
   (defun progress-bar-w (it width)
+    (for-each x (drange 1 progbarcounter 1)
+      (print (format "%s[E" (chr 27)))) ;; go down
+    (print (format "\n")) ;; go up
+    (for-each x (drange 0 progbarcounter 1)
+      (print (format "%s[F" (chr 27)))) ;; go up
+  
     (let ((pbc progbarcounter))
       (incf progbarcounter)
       (progress-bar-x it width pbc (list-length it) 0 0)))
   
-  (list progress-bar-wt progress-bar-w)))
+(list progress-bar-wt progress-bar-w progbar-print)))
