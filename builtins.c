@@ -98,10 +98,8 @@ BUILTIN(builtin_apply)
 
   if (f->type == limo_TYPE_LAMBDA)
     return eval_function_call(f, make_cons(f,al), env, 0, thunk_place);
-  else if (f->type == limo_TYPE_BUILTINF)
-    return (f->d_builtin)(make_cons(f,al), env, NULL);
-  else
-    limo_error("APPLY: type error");
+  else if (f->type == limo_TYPE_BUILTIN)
+    limo_error("calling APPLY with builtins is unsupported, please wrap in a lambda");
 }
 
 BUILTIN(builtin_progn)

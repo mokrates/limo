@@ -23,28 +23,27 @@ extern unsigned long long limo_register;
 #define LR_TRACE          (1<<1)
 #define LR_OPTDISABLE     (1<<2)
 
-#define limo_TYPE_EMPTY    0
-#define limo_TYPE_SYMBOL   1
-#define limo_TYPE_CONS     2
-#define limo_TYPE_LAMBDA   3
-#define limo_TYPE_MACRO    4
-#define limo_TYPE_BUILTIN  6
-#define limo_TYPE_BUILTINF 7 
-#define limo_TYPE_GMPQ     8
-#define limo_TYPE_FLOAT    9
-#define limo_TYPE_DOUBLE   10
-#define limo_TYPE_STRING   11
+#define limo_TYPE_EMPTY   0
+#define limo_TYPE_SYMBOL  1
+#define limo_TYPE_CONS    2
+#define limo_TYPE_LAMBDA  3
+#define limo_TYPE_MACRO   4
+#define limo_TYPE_BUILTIN 6
+#define limo_TYPE_GMPQ    7
+#define limo_TYPE_FLOAT   8
+#define limo_TYPE_DOUBLE  9
+#define limo_TYPE_STRING  10
 
-#define limo_TYPE_DICT     12
+#define limo_TYPE_DICT    11
 
-#define limo_TYPE_ENV      13
-#define limo_TYPE_THUNK    14  // eval again (for tail-opt) (cons expt env)
-#define limo_TYPE_CONST    15  // wrapper for freeze'd constants.
+#define limo_TYPE_ENV     12
+#define limo_TYPE_THUNK   13  // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_CONST   14  // wrapper for freeze'd constants.
 
-#define limo_TYPE_VCACHE   16
-#define limo_TYPE_LCACHE   17
+#define limo_TYPE_VCACHE  15
+#define limo_TYPE_LCACHE  16
 
-#define limo_TYPE_SPECIAL  20  // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL 20  // special: #<special: (typemarker . #<specialintern:pointer>)>
 #define limo_TYPE_SPECIAL_INTERN 21  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
@@ -126,7 +125,6 @@ extern int limo_rl_inited;
 #define TSCDR(x) (thunk_safe_cdr(x))
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
-#define BUILTINF(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
 
 #define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
 //#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
@@ -177,7 +175,6 @@ limo_data *make_sym(char *);
 limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *, limo_data *);
 limo_data *make_builtin(limo_builtin);
-limo_data *make_builtinf(limo_builtin);
 limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
@@ -371,8 +368,6 @@ char *repr_number(limo_data *ld);
 limo_data *make_number(void);
 limo_data *make_number_from_str(char *);
 limo_data *make_number_from_long_long(long long i);
-limo_data *make_number_from_ulong(unsigned long);
-limo_data *make_number_from_slong(signed long);
 limo_data *make_number_from_double(double d);
 double make_double_from_number(limo_data *n);
 

@@ -112,7 +112,6 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_CONS: cons_writer(ld); break;
   case limo_TYPE_SYMBOL: printf("%s", ld->d_string); break;
   case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->d_builtin); break;
-  case limo_TYPE_BUILTINF: printf("#<builtin function:%p>", ld->d_builtin); break;
   case limo_TYPE_DICT:
     if (in_env)
       printf("#<dict>");
@@ -179,15 +178,6 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
       list_put_str(dest, ">");
     }
     break;
-  case limo_TYPE_BUILTINF:
-    {
-      char buf[20];
-      list_put_str(dest, "#<builtin function:");
-      snprintf(buf, 20, "%p", ld->d_builtin);
-      list_put_str(dest, buf);
-      list_put_str(dest, ">");
-    }
-    break;    
   case limo_TYPE_DICT:
     if (in_env)
       list_put_str(dest, "#<dict>");

@@ -380,18 +380,26 @@
 	     (switch ,s ,@(cdr items)))))
 (freezeq switch)
 
-(setq * mpq_mul)
+(defun * os
+  (if os
+      (reduce mpq_mul os)
+      1))
 (freezeq *)
 
-(setq + mpq_add)
+(defun + os
+  (if os
+      (if (numberp (car os))
+	  (reduce mpq_add os)
+	  (apply string-concat os))
+      0))
 (freezeq +)
 
 (defun - (start . os)
-  (apply + (cons start (map mpq_neg os))))
+  (apply + (dcons start (dmap mpq_neg os))))
 (freezeq -)
 
 (defun / (start . os)
-  (apply * (cons start (map mpq_inv os))))
+  (apply * (dcons start (dmap mpq_inv os))))
 (freezeq /)
 
 (setq < ltn)   (freezeq <)
@@ -666,7 +674,7 @@
 		   ("r" (dcons (repr (car args))
 			       (format-list (cddr s) (cdr args))))))
 	  (:else (dcons (car s) (format-list (cdr s) args)))))
-  (reduce string-concat (format-list (string-to-list s) args)))
+  (reduce + (format-list (string-to-list s) args)))
 (freezeq format)
 
 (defun repr (x)
