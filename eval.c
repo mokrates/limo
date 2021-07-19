@@ -213,8 +213,13 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
       limo_data *f = eval(CAR(ld), env);
       switch (f->type) {
       case limo_TYPE_BUILTIN:
-	return f->d_builtin(ld, env, thunk_place); 
+	return f->d_builtin(ld, env, thunk_place);
 
+      case limo_TYPE_BUILTINF: {
+        limo_data *args = list_eval(CDR(ld), env);
+        return f->d_builtin(make_cons(f, args), env, thunk_place);
+      }
+      
       case limo_TYPE_MACRO:
 	return eval_macro_call(f, ld, env);
 
