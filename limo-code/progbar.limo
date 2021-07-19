@@ -47,7 +47,14 @@
          (file-flush stdout)
          (setq thisepoch (car (time)))
          (dcons (car it) (progress-bar-x (cdr it) width pbc total thisepoch (+ pos 1))))
-        (progn
+        (progn  ;; end of iterator reached.
+         
+         (for-each x (drange 0 pbc 1)
+           (print (format "%s[E" (chr 27)))) ;; go down
+         (print (format "%s[2K" (chr 27)))  ;; erase line
+         (for-each x (drange 0 pbc 1)
+           (print (format "%s[F" (chr 27)))) ;; go up
+        
 	 (decf progbarcounter)
          (file-flush stdout)
 	 ())))
