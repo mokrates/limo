@@ -59,6 +59,7 @@ install:
 	cp -f libs/*/*.so $(LIMO_PREFIX)
 	cp -f libs/*/*.ttf $(LIMO_PREFIX)
 	cp -rf limo-code/* $(LIMO_PREFIX)
+	mkdir -p $(INSTALL_PREFIX)/bin
 	cp -f limo $(INSTALL_PREFIX)/bin
 
 uninstall:
