@@ -32,7 +32,7 @@ BUILTINFUN(builtin_idivmod)
 
   if (!mpz_cmp_si(mpq_numref(LIMO_MPQ(d)), 0))
     limo_error("integer division by zero");
-  
+
   mpz_tdiv_qr(mpq_numref(LIMO_MPQ(q)),
 	      mpq_numref(LIMO_MPQ(r)),
 	      mpq_numref(LIMO_MPQ(n)),
@@ -42,7 +42,7 @@ BUILTINFUN(builtin_idivmod)
 
 BUILTINFUN(builtin_mpq_numerator) {
   limo_data *arg, *res;
-  
+
   REQUIRE_ARGC_FUN("MPQ_NUMERATOR", 1);
   arg = argv[0];
   REQUIRE_TYPE("MPQ_NUMERATOR", arg, limo_TYPE_GMPQ);
@@ -54,7 +54,7 @@ BUILTINFUN(builtin_mpq_numerator) {
 BUILTINFUN(builtin_mpq_denominator)
 {
   limo_data *arg, *res;
-  
+
   REQUIRE_ARGC_FUN("MPQ_DENONINATOR", 1);
   arg = argv[0];
   REQUIRE_TYPE("MPQ_DENONINATOR", arg, limo_TYPE_GMPQ);
@@ -63,24 +63,85 @@ BUILTINFUN(builtin_mpq_denominator)
   return res;
 }
 
-#define CALC2_BUILTINFUN(fun) BUILTINFUN(builtin_##fun ) \
-{ \
-  limo_data *res = make_number(); \
-  if (argc != 2) \
-    limo_error(#fun " needs 2 args!"); \
-\
-  limo_data *first = argv[0]; \
-  limo_data *second = argv[1]; \
-  REQUIRE_TYPE(#fun, first, limo_TYPE_GMPQ); \
-  REQUIRE_TYPE(#fun, second, limo_TYPE_GMPQ); \
-  fun(LIMO_MPQ(res), LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])); \
-  return res; \
+BUILTINFUN(builtin_mpq_add)
+{
+  int i;
+  limo_data *res = make_number();
+  for (i=0; i<argc; ++i) {
+    REQUIRE_TYPE("MPQ_ADD", argv[i], limo_TYPE_GMPQ);
+    mpq_add(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+  }
+  return res;
+
 }
 
-CALC2_BUILTINFUN(mpq_add);
-CALC2_BUILTINFUN(mpq_sub);
-CALC2_BUILTINFUN(mpq_mul);
-CALC2_BUILTINFUN(mpq_div);
+BUILTINFUN(builtin_mpq_mul)
+{
+  int i;
+  limo_data *res = make_number();
+  mpq_set_ui(LIMO_MPQ(res), 1, 1);
+  for (i=0; i<argc; ++i) {
+    REQUIRE_TYPE("MPQ_MUL", argv[i], limo_TYPE_GMPQ);
+    mpq_mul(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+  }
+
+  return res;
+}
+
+BUILTINFUN(builtin_mpq_sub)
+{
+  int i;
+  limo_data *res = make_number();
+  switch (argc) {
+  case 0:
+    limo_error("MPQ_SUB needs at least one argument");
+    break;
+
+  case 1:
+    REQUIRE_TYPE("MPQ_SUB", argv[0], limo_TYPE_GMPQ);    
+    mpq_neg(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    return res;
+
+  default:
+    REQUIRE_TYPE("MPQ_SUB", argv[0], limo_TYPE_GMPQ);
+    mpq_set(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    for (i=1; i<argc; ++i) {
+      REQUIRE_TYPE("MPQ_SUB", argv[i], limo_TYPE_GMPQ);
+      mpq_sub(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+    }
+    return res;
+  }
+}
+
+BUILTINFUN(builtin_mpq_div)
+{
+  int i;
+  limo_data *res = make_number();
+  switch (argc) {
+  case 0:
+    limo_error("MPQ_DIV needs at least one argument");
+    break;
+
+  case 1:
+    REQUIRE_TYPE("MPQ_DIV", argv[0], limo_TYPE_GMPQ);
+    if (mpq_equal(LIMO_MPQ(res), LIMO_MPQ(argv[0])))  // zero?
+      limo_error("MPQ_DIV division by zero");
+    
+    mpq_inv(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    return res;
+
+  default:
+    REQUIRE_TYPE("MPQ_DIV", argv[0], limo_TYPE_GMPQ);    
+    mpq_set(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    for (i=1; i<argc; ++i) {
+      REQUIRE_TYPE("MPQ_DIV", argv[i], limo_TYPE_GMPQ);
+      if (mpq_sgn(LIMO_MPQ(argv[i])) == 0)
+        limo_error("MPQ_DIV division by zero");
+      mpq_div(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+    }
+    return res;
+  }
+}
 
 #define CALC1_BUILTINFUN(fun) BUILTINFUN(builtin_##fun ) \
 { \
@@ -158,7 +219,7 @@ limo_data *make_number(void)
 
   if (!*make_gmpq_next)
     *make_gmpq_next = GC_malloc_many(sizeof (mpq_t));
-  
+
   res->type=limo_TYPE_GMPQ;
   res->d_mpq = (mpq_t *)*make_gmpq_next;
   *make_gmpq_next = GC_NEXT(*make_gmpq_next);
@@ -236,8 +297,8 @@ void *limo_gmp_gc_realloc(void *oldptr, size_t oldsize, size_t newsize)
 {
   return GC_realloc(oldptr, newsize);
 }
-void limo_gmp_gc_free(void *ptr, size_t size) 
-{ 
+void limo_gmp_gc_free(void *ptr, size_t size)
+{
   GC_free(ptr);
 }
 
@@ -245,14 +306,13 @@ void number_builtins(limo_data *env)
 {
   int i;
 
-  mp_set_memory_functions (GC_malloc, 
-			   limo_gmp_gc_realloc, 
+  mp_set_memory_functions (GC_malloc,
+			   limo_gmp_gc_realloc,
 			   limo_gmp_gc_free);
 
-  for (i=0; 
-       i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]); 
+  for (i=0;
+       i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]);
        ++i)
-    setq(env, make_sym(number_builtin_array[i].name), 
+    setq(env, make_sym(number_builtin_array[i].name),
 	 make_builtinfun(number_builtin_array[i].f));
 }
-

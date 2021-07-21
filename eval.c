@@ -217,11 +217,13 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
 	return f->d_builtin(ld, env, thunk_place);
 
       case limo_TYPE_BUILTINFUN: {
-        int nargs, i;
+        int nargs=0, i;
         limo_data *cur_ld;
         limo_data **argv;
 
-        nargs = list_length(ld) -1;
+        //cur_ld = CDR(ld);
+        //while (!is_nil(cur_ld)) { cur_ld=CDR(cur_ld); ++nargs; }
+        nargs = list_length(ld)-1;   // this seems to be faster than to inline
         argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
 
         for (i=0, cur_ld=CDR(ld); i<nargs; cur_ld=CDR(cur_ld), ++i)

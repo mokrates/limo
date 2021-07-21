@@ -135,7 +135,7 @@ extern int limo_rl_inited;
 #define REQUIRE_ARGC(fun, n)    do { int _ra_i; limo_data *_ra_al; for (_ra_i=0, _ra_al=arglist; !is_nil(_ra_al); _ra_al=CDR(_ra_al), ++_ra_i) \
 								     ; \
     if (_ra_i < (n+1)) limo_error(fun " - at least " #n " arguments expected."); } while (0)
-#define REQUIRE_ARGC_FUN(fun, n)  if (argc < (n)) limo_error(fun " - at least " #n " arguments expected.")
+#define REQUIRE_ARGC_FUN(fun, n)  do { if (argc < (n)) limo_error(fun " - at least " #n " arguments expected."); } while (0)
 
 #define LIMO_UNGETC_BUF 20
 typedef struct limo_READER_STREAM {
@@ -286,11 +286,11 @@ BUILTIN(builtin_apply);
 BUILTIN(builtin_progn);
 BUILTIN(builtin_if);
 BUILTIN(builtin_list);
-BUILTIN(builtin_cons);
+BUILTINFUN(builtin_cons);
 BUILTIN(builtin_dcons);
-BUILTIN(builtin_consp);
-BUILTIN(builtin_car);
-BUILTIN(builtin_cdr);
+BUILTINFUN(builtin_consp);
+BUILTINFUN(builtin_car);
+BUILTINFUN(builtin_cdr);
 BUILTIN(builtin_eq);
 BUILTIN(builtin_write);
 BUILTIN(builtin_write_to_list);

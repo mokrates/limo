@@ -105,11 +105,13 @@ BUILTIN(builtin_apply)
   if (f->type == limo_TYPE_LAMBDA)
     return eval_function_call(f, make_cons(f,al), env, 0, thunk_place);
   else if (f->type == limo_TYPE_BUILTINFUN) {
-    int nargs, i;
+    int nargs=0, i;
     limo_data *cur_ld;
     limo_data **argv;
     
-    nargs = list_length(al);
+    // cur_ld=al;
+    // while (!is_nil(cur_ld)) { cur_ld=CDR(cur_ld); ++nargs; }
+    nargs = list_length(al);  // this seems to be faster than to inline
     argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
     
     for (i=0, cur_ld=al; i<nargs; cur_ld=CDR(cur_ld), ++i)
@@ -167,11 +169,10 @@ BUILTIN(builtin_if)
     RETURN_THUNK(ldthen, env);
 }
 
-BUILTIN(builtin_cons)
+BUILTINFUN(builtin_cons)
 {
-  REQUIRE_ARGC("cons", 2);
-  return make_cons(eval(CAR(CDR(arglist)),env),
-		   eval(CAR(CDR(CDR(arglist))), env));
+  REQUIRE_ARGC_FUN("cons", 2);
+  return make_cons(argv[0], argv[1]);
 }
 
 BUILTIN(builtin_dcons)
@@ -180,34 +181,33 @@ BUILTIN(builtin_dcons)
   return make_dcons(eval(CAR(CDR(arglist)), env), CAR(CDR(CDR(arglist))), env);
 }
 
-BUILTIN(builtin_consp)
+BUILTINFUN(builtin_consp)
 {
-  REQUIRE_ARGC("CONSP", 1);
+  REQUIRE_ARGC_FUN("CONSP", 1);
 
-  if (eval(FIRST_ARG, env)->type == limo_TYPE_CONS)
+  if (argv[0]->type == limo_TYPE_CONS)
     return sym_true;
   else
     return nil;
 }
 
-BUILTIN(builtin_car)
+BUILTINFUN(builtin_car)
 {
-  REQUIRE_ARGC("car", 1);
-  limo_data *ld = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("car", 1);
+  limo_data *ld = argv[0];
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
     limo_error("error: (car CONS!=nil)");
   return CAR(ld);
 }
 
-BUILTIN(builtin_cdr)
+BUILTINFUN(builtin_cdr)
 {
-  REQUIRE_ARGC("cdr", 1);
+  REQUIRE_ARGC_FUN("cdr", 1);
 
-  limo_data *ld = eval(FIRST_ARG, env);
+  limo_data *ld = argv[0];
   if (is_nil(ld) || ld->type!=limo_TYPE_CONS)
     limo_error("error: (cdr CONS!=nil)");
   return CDR(ld);
-
 }
 
 BUILTIN(builtin_eq)
