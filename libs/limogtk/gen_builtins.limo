@@ -439,7 +439,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
               (if (= (nth (- (list-length pl) 1) pl) "...);")
                   ;;(print (format "variadic func %r\n" pl))
                   ()
-                  (print (format "not matching params: %r\n" pl)))
+                  (progbar-print (format "not matching params: %r" pl)))
               (break))
 ;;            (print (format "parameter-matches: %r\n" matches))
             (setq ptype (string-strip (nth 1 matches)))
@@ -473,7 +473,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
          (progn
           (setq rettype (string-strip (cadr matches)))
           (when (not (dict-has-key typedict rettype))
-            (print (format "missing type %s\n" rettype))
+            (progbar-print (format "missing type %s" rettype))
             (dict-set missing-types rettype ())
             (break))
           (setq fname (caddr matches))
@@ -491,7 +491,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                 (cons (append (list (dict-getvalue typedict rettype) fname)
                               plist)
                       processed-fns)))
-         (print (format "coudn't parse: %r\n" f-stuff))))))
+         (progbar-print (format "coudn't parse: %r" f-stuff))))))
 
 (setq line ())
 (setq last-line ())

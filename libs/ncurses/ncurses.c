@@ -3,24 +3,24 @@
 limo_data *sym_ncurses_window;
 
 #define INS_NCURSES_BUILTIN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtin(f))
+#define INS_NCURSES_BUILTINFUN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtinfun(f))
 
-BUILTIN(builtin_ncurses_stdscr)
+BUILTINFUN(builtin_ncurses_stdscr)
 {
   return make_special(sym_ncurses_window, (void *)stdscr);
 }
 
-BUILTIN(builtin_ncurses_initscr)
+BUILTINFUN(builtin_ncurses_initscr)
 {
-  initscr();
-  return nil;
+  return make_special(sym_ncurses_window, initscr());
 }
 
-BUILTIN(builtin_ncurses_start_color)
+BUILTINFUN(builtin_ncurses_start_color)
 {
   return make_number_from_long_long(start_color());
 }
 
-BUILTIN(builtin_ncurses_has_colors)
+BUILTINFUN(builtin_ncurses_has_colors)
 {
   if (has_colors())
     return sym_true;
@@ -28,38 +28,38 @@ BUILTIN(builtin_ncurses_has_colors)
     return nil;
 }
 
-BUILTIN(builtin_ncurses_init_pair)
+BUILTINFUN(builtin_ncurses_init_pair)
 {
   limo_data *ld_pair, *ld_fg, *ld_bg;
   unsigned pair, fg, bg;
-  REQUIRE_ARGC("INIT-PAIR", 3);
-  ld_pair = eval(FIRST_ARG, env);
-  ld_fg   = eval(SECOND_ARG, env);
-  ld_bg   = eval(THIRD_ARG, env);
+  REQUIRE_ARGC_FUN("INIT-PAIR", 3);
+  ld_pair = argv[0];
+  ld_fg   = argv[1];
+  ld_bg   = argv[2];
   pair = GETINTFROMMPQ(ld_pair);
   fg = GETINTFROMMPQ(ld_fg);
   bg = GETINTFROMMPQ(ld_bg);
   return make_number_from_long_long(init_pair(pair, fg, bg));
 }
 
-BUILTIN(builtin_ncurses_color_pair)
+BUILTINFUN(builtin_ncurses_color_pair)
 {
   limo_data *ld_pnum;
   unsigned pnum;
-  REQUIRE_ARGC("COLOR-PAIR", 1);
-  ld_pnum = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("COLOR-PAIR", 1);
+  ld_pnum = argv[0];
   pnum = GETINTFROMMPQ(ld_pnum);
   return make_number_from_long_long(COLOR_PAIR(pnum));
 }
 
-BUILTIN(builtin_ncurses_keypad)
+BUILTINFUN(builtin_ncurses_keypad)
 {
   limo_data *ld_win, *ld_bf;
   WINDOW *win;
   int bf;
-  REQUIRE_ARGC("KEYPAD", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_bf = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("KEYPAD", 2);
+  ld_win = argv[0];
+  ld_bf = argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   if (is_nil(ld_bf))
     bf=0;
@@ -68,14 +68,14 @@ BUILTIN(builtin_ncurses_keypad)
   return make_number_from_long_long(keypad(win, bf));
 }
 
-BUILTIN(builtin_ncurses_nodelay)
+BUILTINFUN(builtin_ncurses_nodelay)
 {
   limo_data *ld_win, *ld_bf;
   WINDOW *win;
   int bf;
-  REQUIRE_ARGC("NODELAY", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_bf = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("NODELAY", 2);
+  ld_win = argv[0];
+  ld_bf = argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   if (is_nil(ld_bf))
     bf=0;
@@ -84,177 +84,177 @@ BUILTIN(builtin_ncurses_nodelay)
   return make_number_from_long_long(nodelay(win, bf));
 }
 
-BUILTIN(builtin_ncurses_halfdelay)
+BUILTINFUN(builtin_ncurses_halfdelay)
 {
   limo_data *ld_tenths;
-  REQUIRE_ARGC("HALFDELAY", 1);
-  ld_tenths = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("HALFDELAY", 1);
+  ld_tenths = argv[0];
   REQUIRE_TYPE("HALFDELAY", ld_tenths, limo_TYPE_GMPQ);
   halfdelay(GETINTFROMMPQ(ld_tenths));
   return nil;
 }
 
-// BUILTIN(builtin_ncurses_@(fname))  { @(fname)();  return nil; }
-BUILTIN(builtin_ncurses_nonl)     { nonl();     return nil; }
-BUILTIN(builtin_ncurses_nl)       { nl();       return nil; }
-BUILTIN(builtin_ncurses_nocbreak) { nocbreak(); return nil; }
-BUILTIN(builtin_ncurses_cbreak)   { cbreak();   return nil; }
-BUILTIN(builtin_ncurses_noraw)    { noraw();    return nil; }
-BUILTIN(builtin_ncurses_raw)      { raw();      return nil; }
-BUILTIN(builtin_ncurses_echo)     { echo();     return nil; }
-BUILTIN(builtin_ncurses_noecho)   { noecho();   return nil; }
-BUILTIN(builtin_ncurses_endwin)   { endwin();   return nil; }
+// BUILTINFUN(builtin_ncurses_@(fname))  { @(fname)();  return nil; }
+BUILTINFUN(builtin_ncurses_nonl)     { nonl();     return nil; }
+BUILTINFUN(builtin_ncurses_nl)       { nl();       return nil; }
+BUILTINFUN(builtin_ncurses_nocbreak) { nocbreak(); return nil; }
+BUILTINFUN(builtin_ncurses_cbreak)   { cbreak();   return nil; }
+BUILTINFUN(builtin_ncurses_noraw)    { noraw();    return nil; }
+BUILTINFUN(builtin_ncurses_raw)      { raw();      return nil; }
+BUILTINFUN(builtin_ncurses_echo)     { echo();     return nil; }
+BUILTINFUN(builtin_ncurses_noecho)   { noecho();   return nil; }
+BUILTINFUN(builtin_ncurses_endwin)   { endwin();   return nil; }
 
-BUILTIN(builtin_ncurses_waddch)
+BUILTINFUN(builtin_ncurses_waddch)
 {
   limo_data *ld_win, *ld_chr;
   WINDOW *win;
   unsigned chr;
-  REQUIRE_ARGC("WADDCH", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_chr = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("WADDCH", 2);
+  ld_win = argv[0];
+  ld_chr = argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   chr = GETINTFROMMPQ(ld_chr);
   return make_number_from_long_long(waddch(win, chr));
 }
 
-BUILTIN(builtin_ncurses_wmove)
+BUILTINFUN(builtin_ncurses_wmove)
 {
   limo_data *ld_win, *ld_x, *ld_y;
   WINDOW *win;
   unsigned x, y;
-  REQUIRE_ARGC("WMOVE", 3);
-  ld_win = eval(FIRST_ARG, env);
-  ld_x = eval(SECOND_ARG, env);
-  ld_y = eval(THIRD_ARG, env);
+  REQUIRE_ARGC_FUN("WMOVE", 3);
+  ld_win = argv[0];
+  ld_x = argv[1];
+  ld_y = argv[2];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   x = GETINTFROMMPQ(ld_x);
   y = GETINTFROMMPQ(ld_y);
   return make_number_from_long_long(wmove(win, x, y));
 }
 
-BUILTIN(builtin_ncurses_wrefresh)
+BUILTINFUN(builtin_ncurses_wrefresh)
 {
   limo_data *ld_win;
   WINDOW *win;
-  REQUIRE_ARGC("WREFRESH", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WREFRESH", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   return make_number_from_long_long(wrefresh(win));
 }
 
-BUILTIN(builtin_ncurses_wgetch)
+BUILTINFUN(builtin_ncurses_wgetch)
 {
   limo_data *ld_win;
   WINDOW *win;
-  REQUIRE_ARGC("WGETCH", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WGETCH", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   return make_number_from_long_long(wgetch(win));
 }
 
-BUILTIN(builtin_ncurses_wclear)
+BUILTINFUN(builtin_ncurses_wclear)
 {
   limo_data *ld_win;
   WINDOW *win;
-  REQUIRE_ARGC("WCLEAR", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WCLEAR", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   return make_number_from_long_long(wclear(win));
 }
 
-BUILTIN(builtin_ncurses_werase)
+BUILTINFUN(builtin_ncurses_werase)
 {
   limo_data *ld_win;
   WINDOW *win;
-  REQUIRE_ARGC("WERASE", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WERASE", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   return make_number_from_long_long(werase(win));
 }
 
-BUILTIN(builtin_ncurses_getyx)
+BUILTINFUN(builtin_ncurses_getyx)
 {
   limo_data *ld_win;
   WINDOW *win;
   unsigned x, y;
-  REQUIRE_ARGC("WGETYX", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WGETYX", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   getyx(win, y, x);
   return make_cons(make_number_from_long_long(y), make_number_from_long_long(x));
 }
 
-BUILTIN(builtin_ncurses_getparyx)
+BUILTINFUN(builtin_ncurses_getparyx)
 {
   limo_data *ld_win;
   WINDOW *win;
   unsigned x, y;
-  REQUIRE_ARGC("WGETPARYX", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WGETPARYX", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   getparyx(win, y, x);
   return make_cons(make_number_from_long_long(y), make_number_from_long_long(x));
 }
 
-BUILTIN(builtin_ncurses_getbegyx)
+BUILTINFUN(builtin_ncurses_getbegyx)
 {
   limo_data *ld_win;
   WINDOW *win;
   unsigned x, y;
-  REQUIRE_ARGC("WGETBEGYX", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WGETBEGYX", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   getbegyx(win, y, x);
   return make_cons(make_number_from_long_long(y), make_number_from_long_long(x));
 }
 
-BUILTIN(builtin_ncurses_getmaxyx)
+BUILTINFUN(builtin_ncurses_getmaxyx)
 {
   limo_data *ld_win;
   WINDOW *win;
   unsigned x, y;
-  REQUIRE_ARGC("WGETMAXYX", 1);
-  ld_win = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("WGETMAXYX", 1);
+  ld_win = argv[0];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   getmaxyx(win, y, x);
   return make_cons(make_number_from_long_long(y), make_number_from_long_long(x));
 }
 
-BUILTIN(builtin_ncurses_wattron)
+BUILTINFUN(builtin_ncurses_wattron)
 {
   limo_data *ld_win, *ld_attr;
   WINDOW *win;
   unsigned attr;
-  REQUIRE_ARGC("WATTRON", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_attr= eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("WATTRON", 2);
+  ld_win = argv[0];
+  ld_attr= argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   attr = GETINTFROMMPQ(ld_attr);
   return make_number_from_long_long(wattron(win, attr));
 }
 
-BUILTIN(builtin_ncurses_wattroff)
+BUILTINFUN(builtin_ncurses_wattroff)
 {
   limo_data *ld_win, *ld_attr;
   WINDOW *win;
   unsigned attr;
-  REQUIRE_ARGC("WATTROFF", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_attr= eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("WATTROFF", 2);
+  ld_win = argv[0];
+  ld_attr= argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   attr = GETINTFROMMPQ(ld_attr);
   return make_number_from_long_long(wattroff(win, attr));
 }
 
-BUILTIN(builtin_ncurses_wattrset)
+BUILTINFUN(builtin_ncurses_wattrset)
 {
   limo_data *ld_win, *ld_attr;
   WINDOW *win;
   unsigned attr;
-  REQUIRE_ARGC("WATTRSET", 2);
-  ld_win = eval(FIRST_ARG, env);
-  ld_attr= eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("WATTRSET", 2);
+  ld_win = argv[0];
+  ld_attr= argv[1];
   win = (WINDOW *)get_special(ld_win, sym_ncurses_window);
   attr = GETINTFROMMPQ(ld_attr);
   return make_number_from_long_long(wattrset(win, attr));
@@ -270,37 +270,37 @@ void limo_init_ncurses(limo_data *env)
   sym_ncurses_window = make_sym("NCURSES-WINDOW");
   limo_ncurses_env = make_env(nil);
 
-  INS_NCURSES_BUILTIN(builtin_ncurses_stdscr, "STDSCR");
-  INS_NCURSES_BUILTIN(builtin_ncurses_initscr, "INITSCR");
-  INS_NCURSES_BUILTIN(builtin_ncurses_start_color, "START-COLOR");
-  INS_NCURSES_BUILTIN(builtin_ncurses_has_colors, "HAS-COLORS");
-  INS_NCURSES_BUILTIN(builtin_ncurses_init_pair, "INIT-PAIR"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_color_pair, "COLOR-PAIR"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_keypad, "KEYPAD");
-  INS_NCURSES_BUILTIN(builtin_ncurses_nodelay, "NODELAY");
-  INS_NCURSES_BUILTIN(builtin_ncurses_halfdelay, "HALFDELAY");
-  INS_NCURSES_BUILTIN(builtin_ncurses_nonl, "NONL"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_nl, "NL"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_nocbreak, "NOCBREAK"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_cbreak, "CBREAK"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_noraw, "NORAW"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_raw, "RAW"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_noecho, "NOECHO");
-  INS_NCURSES_BUILTIN(builtin_ncurses_echo, "ECHO");
-  INS_NCURSES_BUILTIN(builtin_ncurses_endwin, "ENDWIN"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_waddch, "WADDCH"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_wmove, "WMOVE");
-  INS_NCURSES_BUILTIN(builtin_ncurses_wrefresh, "WREFRESH"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_wgetch, "WGETCH");
-  INS_NCURSES_BUILTIN(builtin_ncurses_wclear, "WCLEAR");
-  INS_NCURSES_BUILTIN(builtin_ncurses_werase, "WERASE");
-  INS_NCURSES_BUILTIN(builtin_ncurses_getyx, "GETYX"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_getparyx, "GETPARYX"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_getbegyx, "GETBEGYX"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_getmaxyx, "GETMAXYX"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_wattron, "WATTRON"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_wattroff, "WATTROFF"); 
-  INS_NCURSES_BUILTIN(builtin_ncurses_wattrset, "WATTRSET"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_stdscr, "STDSCR");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_initscr, "INITSCR");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_start_color, "START-COLOR");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_has_colors, "HAS-COLORS");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_init_pair, "INIT-PAIR"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_color_pair, "COLOR-PAIR"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_keypad, "KEYPAD");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_nodelay, "NODELAY");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_halfdelay, "HALFDELAY");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_nonl, "NONL"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_nl, "NL"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_nocbreak, "NOCBREAK"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_cbreak, "CBREAK"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_noraw, "NORAW"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_raw, "RAW"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_noecho, "NOECHO");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_echo, "ECHO");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_endwin, "ENDWIN"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_waddch, "WADDCH"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wmove, "WMOVE");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wrefresh, "WREFRESH"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wgetch, "WGETCH");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wclear, "WCLEAR");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_werase, "WERASE");
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_getyx, "GETYX"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_getparyx, "GETPARYX"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_getbegyx, "GETBEGYX"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_getmaxyx, "GETMAXYX"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wattron, "WATTRON"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wattroff, "WATTROFF"); 
+  INS_NCURSES_BUILTINFUN(builtin_ncurses_wattrset, "WATTRSET"); 
   
   // Attributes
   setq(limo_ncurses_env, make_sym("A_NORMAL"), make_number_from_long_long(A_NORMAL));

@@ -1,4 +1,5 @@
 #include <gc/gc.h>
+#include <alloca.h>
 #include "limo.h"
 #include <assert.h>
 
@@ -213,7 +214,21 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
       limo_data *f = eval(CAR(ld), env);
       switch (f->type) {
       case limo_TYPE_BUILTIN:
-	return f->d_builtin(ld, env, thunk_place); 
+	return f->d_builtin(ld, env, thunk_place);
+
+      case limo_TYPE_BUILTINFUN: {
+        int nargs, i;
+        limo_data *cur_ld;
+        limo_data **argv;
+
+        nargs = list_length(ld) -1;
+        argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
+
+        for (i=0, cur_ld=CDR(ld); i<nargs; cur_ld=CDR(cur_ld), ++i)
+          argv[i] = eval(CAR(cur_ld), env);
+
+        return f->d_builtinfun(nargs, argv);
+      }
 
       case limo_TYPE_MACRO:
 	return eval_macro_call(f, ld, env);

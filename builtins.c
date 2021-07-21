@@ -1,10 +1,16 @@
 #include "limo.h"
 #include <unistd.h>
 #include <assert.h>
+#include <alloca.h>
 
 BUILTIN(builtin_quote)
 {
   return CAR(CDR(arglist));
+}
+
+BUILTIN(builtin_list)
+{
+  return list_eval(CDR(arglist), env);
 }
 
 BUILTIN(builtin_setq)
@@ -98,8 +104,21 @@ BUILTIN(builtin_apply)
 
   if (f->type == limo_TYPE_LAMBDA)
     return eval_function_call(f, make_cons(f,al), env, 0, thunk_place);
-  else if (f->type == limo_TYPE_BUILTIN)
-    limo_error("calling APPLY with builtins is unsupported, please wrap in a lambda");
+  else if (f->type == limo_TYPE_BUILTINFUN) {
+    int nargs, i;
+    limo_data *cur_ld;
+    limo_data **argv;
+    
+    nargs = list_length(al);
+    argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
+    
+    for (i=0, cur_ld=al; i<nargs; cur_ld=CDR(cur_ld), ++i)
+      argv[i] = CAR(cur_ld);
+    
+    return f->d_builtinfun(nargs, argv);
+  }
+
+  limo_error("calling APPLY on builtins is unsupported, please wrap in a lambda");
 }
 
 BUILTIN(builtin_progn)
@@ -146,11 +165,6 @@ BUILTIN(builtin_if)
     RETURN_THUNK(ldelse, env);
   else
     RETURN_THUNK(ldthen, env);
-}
-
-BUILTIN(builtin_list)
-{
-  return list_eval(CDR(arglist), env);
 }
 
 BUILTIN(builtin_cons)

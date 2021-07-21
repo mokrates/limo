@@ -23,28 +23,30 @@ extern unsigned long long limo_register;
 #define LR_TRACE          (1<<1)
 #define LR_OPTDISABLE     (1<<2)
 
-#define limo_TYPE_EMPTY   0
-#define limo_TYPE_SYMBOL  1
-#define limo_TYPE_CONS    2
-#define limo_TYPE_LAMBDA  3
-#define limo_TYPE_MACRO   4
-#define limo_TYPE_BUILTIN 6
-#define limo_TYPE_GMPQ    7
-#define limo_TYPE_FLOAT   8
-#define limo_TYPE_DOUBLE  9
-#define limo_TYPE_STRING  10
+#define limo_TYPE_EMPTY          0
+#define limo_TYPE_SYMBOL         1
+#define limo_TYPE_CONS           2
 
-#define limo_TYPE_DICT    11
+#define limo_TYPE_LAMBDA         3
+#define limo_TYPE_MACRO          4
+#define limo_TYPE_BUILTIN        6
+#define limo_TYPE_BUILTINFUN     7
 
-#define limo_TYPE_ENV     12
-#define limo_TYPE_THUNK   13  // eval again (for tail-opt) (cons expt env)
-#define limo_TYPE_CONST   14  // wrapper for freeze'd constants.
+#define limo_TYPE_GMPQ           8
+#define limo_TYPE_FLOAT          9
+#define limo_TYPE_DOUBLE         10
+#define limo_TYPE_STRING         11
 
-#define limo_TYPE_VCACHE  15
-#define limo_TYPE_LCACHE  16
+#define limo_TYPE_DICT           12
+#define limo_TYPE_ENV            13
+#define limo_TYPE_THUNK          14 // eval again (for tail-opt) (cons expt env)
+#define limo_TYPE_CONST          15 // wrapper for freeze'd constants.
 
-#define limo_TYPE_SPECIAL 20  // special: #<special: (typemarker . #<specialintern:pointer>)>
-#define limo_TYPE_SPECIAL_INTERN 21  // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
+#define limo_TYPE_VCACHE         16
+#define limo_TYPE_LCACHE         17
+
+#define limo_TYPE_SPECIAL        20 // special: #<special: (typemarker . #<specialintern:pointer>)>
+#define limo_TYPE_SPECIAL_INTERN 21 // special: e.g. #<special: (STREAM . #<specialintern:0x12345678>)>
 
 typedef struct limo_ANNOTATION {
   char *filename;
@@ -61,6 +63,7 @@ typedef struct limo_DATA {
     float d_float;
     double d_double;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env, struct limo_DATA *thunk_place);
+    struct limo_DATA *(*d_builtinfun)(int argc, struct limo_DATA **argv);
     struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
     void *d_special_intern;
@@ -125,12 +128,14 @@ extern int limo_rl_inited;
 #define TSCDR(x) (thunk_safe_cdr(x))
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
+#define BUILTINFUN(x) limo_data *x(int argc, limo_data **argv)
 
 #define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
 //#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
 #define REQUIRE_ARGC(fun, n)    do { int _ra_i; limo_data *_ra_al; for (_ra_i=0, _ra_al=arglist; !is_nil(_ra_al); _ra_al=CDR(_ra_al), ++_ra_i) \
 								     ; \
     if (_ra_i < (n+1)) limo_error(fun " - at least " #n " arguments expected."); } while (0)
+#define REQUIRE_ARGC_FUN(fun, n)  if (argc < (n)) limo_error(fun " - at least " #n " arguments expected.")
 
 #define LIMO_UNGETC_BUF 20
 typedef struct limo_READER_STREAM {
@@ -174,7 +179,9 @@ limo_data *make_cons(limo_data *, limo_data *);
 limo_data *make_sym(char *);
 limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *, limo_data *);
+typedef limo_data *(*limo_builtinfun)(int, limo_data **);
 limo_data *make_builtin(limo_builtin);
+limo_data *make_builtinfun(limo_builtinfun);
 limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
@@ -184,11 +191,11 @@ limo_data *make_globalenv(int, char **);
 
 limo_data *try_catch(limo_data *thetry, limo_data *env);
 #ifndef __cplusplus
-void throw(limo_data *excp);
+void throw(limo_data *excp); //  __attribute__ ((noreturn));  
 #endif
 void throw_after_finally(void);
-void limo_error(char *, ...);
-void limo_error_errno(limo_data *excp_name);
+void limo_error(char *, ...); // __attribute__ ((noreturn));   
+void limo_error_errno(limo_data *excp_name); //  __attribute__ ((noreturn));
 void print_stacktrace(limo_data *s); // prints stacktrace s
 
 extern pthread_key_t pk_stacktrace_key;

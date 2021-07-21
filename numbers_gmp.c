@@ -1,32 +1,32 @@
 #include <math.h>
 #include "limo.h"
 
-BUILTIN(builtin_numberp)
+BUILTINFUN(builtin_numberp)
 {
-  if (eval(FIRST_ARG, env)->type == limo_TYPE_GMPQ)
+  if (argv[0]->type == limo_TYPE_GMPQ)
     return sym_true;
   else
     return nil;
 }
 
-BUILTIN(builtin_reprn)
+BUILTINFUN(builtin_reprn)
 {
   limo_data *res=make_nil();
   res->type = limo_TYPE_STRING;
-  res->d_string = repr_number(eval(FIRST_ARG, env));
+  res->d_string = repr_number(argv[0]);
   res->hash = strlen(res->d_string);
   return res;
 }
 
-BUILTIN(builtin_idivmod)
+BUILTINFUN(builtin_idivmod)
 {
   limo_data *q = make_number();
   limo_data *r = make_number();
   limo_data *res = make_cons(q, make_cons(r, nil));
 
-  REQUIRE_ARGC("IDIVMOD", 2);
-  limo_data *n = eval(FIRST_ARG, env);
-  limo_data *d = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("IDIVMOD", 2);
+  limo_data *n = argv[0];
+  limo_data *d = argv[1];
   REQUIRE_TYPE("IDIVMOD", n, limo_TYPE_GMPQ);
   REQUIRE_TYPE("IDIVMOD", d, limo_TYPE_GMPQ);
 
@@ -40,115 +40,115 @@ BUILTIN(builtin_idivmod)
   return res;
 }
 
-BUILTIN(builtin_mpq_numerator) {
+BUILTINFUN(builtin_mpq_numerator) {
   limo_data *arg, *res;
   
-  REQUIRE_ARGC("MPQ_NUMERATOR", 1);
-  arg = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("MPQ_NUMERATOR", 1);
+  arg = argv[0];
   REQUIRE_TYPE("MPQ_NUMERATOR", arg, limo_TYPE_GMPQ);
   res = make_number();  // 0/1
   mpq_set_num(LIMO_MPQ(res), mpq_numref(LIMO_MPQ(arg)));
   return res;
 }
 
-BUILTIN(builtin_mpq_denominator)
+BUILTINFUN(builtin_mpq_denominator)
 {
   limo_data *arg, *res;
   
-  REQUIRE_ARGC("MPQ_DENONINATOR", 1);
-  arg = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("MPQ_DENONINATOR", 1);
+  arg = argv[0];
   REQUIRE_TYPE("MPQ_DENONINATOR", arg, limo_TYPE_GMPQ);
   res = make_number();  // 0/1
   mpq_set_num(LIMO_MPQ(res), mpq_denref(LIMO_MPQ(arg)));
   return res;
 }
 
-#define CALC2_BUILTIN(fun) BUILTIN(builtin_##fun ) \
+#define CALC2_BUILTINFUN(fun) BUILTINFUN(builtin_##fun ) \
 { \
   limo_data *res = make_number(); \
-  if (list_length(arglist) != 3) \
+  if (argc != 2) \
     limo_error(#fun " needs 2 args!"); \
 \
-  limo_data *first = eval(FIRST_ARG, env); \
-  limo_data *second = eval(SECOND_ARG, env); \
+  limo_data *first = argv[0]; \
+  limo_data *second = argv[1]; \
   REQUIRE_TYPE(#fun, first, limo_TYPE_GMPQ); \
   REQUIRE_TYPE(#fun, second, limo_TYPE_GMPQ); \
-  fun(LIMO_MPQ(res), LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))); \
+  fun(LIMO_MPQ(res), LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])); \
   return res; \
 }
 
-CALC2_BUILTIN(mpq_add);
-CALC2_BUILTIN(mpq_sub);
-CALC2_BUILTIN(mpq_mul);
-CALC2_BUILTIN(mpq_div);
+CALC2_BUILTINFUN(mpq_add);
+CALC2_BUILTINFUN(mpq_sub);
+CALC2_BUILTINFUN(mpq_mul);
+CALC2_BUILTINFUN(mpq_div);
 
-#define CALC1_BUILTIN(fun) BUILTIN(builtin_##fun ) \
+#define CALC1_BUILTINFUN(fun) BUILTINFUN(builtin_##fun ) \
 { \
   limo_data *res = make_number(); \
   limo_data *arg;		  \
-  if (list_length(arglist) != 2) \
+  if (argc != 1) \
     limo_error(#fun " needs 1 arg!"); \
-  arg = eval(FIRST_ARG, env); \
+  arg = argv[0]; \
   REQUIRE_TYPE(#fun, arg, limo_TYPE_GMPQ); \
   fun(LIMO_MPQ(res), LIMO_MPQ(arg)); \
   return res; \
 }
 
-CALC1_BUILTIN(mpq_neg)
-CALC1_BUILTIN(mpq_abs)
-CALC1_BUILTIN(mpq_inv)
+CALC1_BUILTINFUN(mpq_neg)
+CALC1_BUILTINFUN(mpq_abs)
+CALC1_BUILTINFUN(mpq_inv)
 
-BUILTIN(builtin_ltn)
+BUILTINFUN(builtin_ltn)
 {
-  if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) < 0)
+  if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) < 0)
     return sym_true;
   else
     return nil;
 }
 
-BUILTIN(builtin_gtn)
+BUILTINFUN(builtin_gtn)
 {
-  if (mpq_cmp(LIMO_MPQ(eval(FIRST_ARG, env)), LIMO_MPQ(eval(SECOND_ARG, env))) > 0)
+  if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) > 0)
     return sym_true;
   else
     return nil;
 }
 
-BUILTIN(builtin_sin)
+BUILTINFUN(builtin_sin)
 {
-  REQUIRE_ARGC("SIN", 1);
-  return make_number_from_double(sin(make_double_from_number(eval(FIRST_ARG, env))));
+  REQUIRE_ARGC_FUN("SIN", 1);
+  return make_number_from_double(sin(make_double_from_number(argv[0])));
 }
 
-BUILTIN(builtin_cos)
+BUILTINFUN(builtin_cos)
 {
-  REQUIRE_ARGC("COS", 1);
-  return make_number_from_double(cos(make_double_from_number(eval(FIRST_ARG, env))));
+  REQUIRE_ARGC_FUN("COS", 1);
+  return make_number_from_double(cos(make_double_from_number(argv[0])));
 }
 
-BUILTIN(builtin_atan)
+BUILTINFUN(builtin_atan)
 {
-  REQUIRE_ARGC("ATAN", 1);
-  return make_number_from_double(atan(make_double_from_number(eval(FIRST_ARG, env))));
+  REQUIRE_ARGC_FUN("ATAN", 1);
+  return make_number_from_double(atan(make_double_from_number(argv[0])));
 }
 
-BUILTIN(builtin_asin)
+BUILTINFUN(builtin_asin)
 {
-  REQUIRE_ARGC("ASIN", 1);
-  return make_number_from_double(asin(make_double_from_number(eval(FIRST_ARG, env))));
+  REQUIRE_ARGC_FUN("ASIN", 1);
+  return make_number_from_double(asin(make_double_from_number(argv[0])));
 }
 
-BUILTIN(builtin_power)
+BUILTINFUN(builtin_power)
 {
-  REQUIRE_ARGC("POWER", 2);
-  return make_number_from_double(pow(make_double_from_number(eval(FIRST_ARG, env)),
-				     make_double_from_number(eval(SECOND_ARG, env))));
+  REQUIRE_ARGC_FUN("POWER", 2);
+  return make_number_from_double(pow(make_double_from_number(argv[0]),
+				     make_double_from_number(argv[1])));
 }
 
-BUILTIN(builtin_int)
+BUILTINFUN(builtin_int)
 {
-  REQUIRE_ARGC("INT", 1);
-  return make_number_from_double((double)(long long)(make_double_from_number(eval(FIRST_ARG, env))));
+  REQUIRE_ARGC_FUN("INT", 1);
+  return make_number_from_double((double)(long long)(make_double_from_number(argv[0])));
 }
 
 limo_data *make_number(void)
@@ -207,7 +207,7 @@ double make_double_from_number(limo_data *n)
   return d;
 }
 
-struct { char *name; limo_builtin f; } number_builtin_array[] = {
+struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
   { "NUMBERP", builtin_numberp },
   { "REPRN", builtin_reprn },
   { "LTN", builtin_ltn },
@@ -253,6 +253,6 @@ void number_builtins(limo_data *env)
        i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]); 
        ++i)
     setq(env, make_sym(number_builtin_array[i].name), 
-	 make_builtin(number_builtin_array[i].f));
+	 make_builtinfun(number_builtin_array[i].f));
 }
 

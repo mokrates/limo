@@ -28,8 +28,8 @@
     ([_ncurses . getmaxyx] [self . _scr])))
 
 (defun ncurses-init ()
-  ([_ncurses . initscr])
-  ([_ncurses . cbreak])
-  ([_ncurses . noecho])
-  ([_ncurses . keypad] ([_ncurses . stdscr]) :t)
-  ([_ncurses . stdscr]))
+  (let ((scr ([_ncurses . initscr])))
+    ([_ncurses . cbreak])
+    ([_ncurses . noecho])
+    ([_ncurses . keypad] scr :t)
+    scr))

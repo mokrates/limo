@@ -5,6 +5,8 @@
 
 ;; lisp style defmacro and defun (but with schemy param lists)
 
+;; (setq list (lambda x x))
+;; (freezeq list)
 (setq defmacro 
       (macro (name args . body)
 	(list setq name (list 'macro args (cons 'progn body)))))
@@ -276,9 +278,6 @@
 
 (defun identity (x) x)
 (freezeq identity)
-
-(defun list x x)
-(freezeq list)
 
 (defun comp fs
   (cond ((not fs) identity)

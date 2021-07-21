@@ -135,6 +135,15 @@ limo_data *make_builtin(limo_builtin f)
   return ld;
 }
 
+limo_data *make_builtinfun(limo_builtinfun f)
+{
+  limo_data *ld = make_limo_data();
+  ld->type = limo_TYPE_BUILTINFUN;
+  ld->d_builtinfun=f;
+
+  return ld;
+}
+
 limo_data *make_thunk(limo_data *expr, limo_data *env)
 {
 #if LIMO_TAILCALL_OPT
