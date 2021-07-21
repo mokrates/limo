@@ -3,6 +3,7 @@
 limo_data *sym_limogtk_gpointer;
 
 #define INS_LIMOGTK_BUILTIN(f, name) setq(limo_limogtk_env, make_sym(name), make_builtin(f))
+#define INS_LIMOGTK_BUILTINFUN(f, name) setq(limo_limogtk_env, make_sym(name), make_builtinfun(f))
 #define INS_LIMOGTK_FLAG(name, val)  setq(limo_limogtk_env, make_sym(name), make_number_from_long_long(val));
 
 static void limogtk_finalizer_g_object_unref(limo_data *ld, void *user_data)
