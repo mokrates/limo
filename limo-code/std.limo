@@ -538,6 +538,28 @@
     (,recur ,l)))
 (freezeq for-list)
 
+(defun sort (lt l)   ; merge
+  (defun seconds (l) ; every second item
+    (when l
+      (dcons (car l)
+             (when (cdr l) (seconds (cddr l))))))
+  
+  (defun merge (l m)
+    (cond ((and l m)
+           (if (lt (car l) (car m))
+               (dcons (car l) (merge (cdr l) m))
+               (dcons (car m) (merge l (cdr m)))))
+          (l l)
+          (m m)
+          (:else nil)))
+  (undyn
+   (when l
+     (let ((left (undyn (seconds l)))
+           (right (undyn (seconds (cdr l)))))
+       (if (not (and left right))
+           (or left right)
+           (merge (sort lt left) (sort lt right)))))))
+           
 (defun qsort (lt l) 
   (defun ltx (x) (lt x (car l)))
   (when l (append 
@@ -636,7 +658,7 @@
 (defmacro setplace (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
-	(:else `(_setf ,k ,v))))
+	(:else `(,_setf ,k ,v))))
 (setf setf setplace)
 (unsetq setplace)
 (freezeq setf)
