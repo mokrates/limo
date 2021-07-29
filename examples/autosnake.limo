@@ -29,7 +29,7 @@
 (defun shuffle (l)
   (when l
     (setq r (random (list-length l)))
-    (cons (nth r l) (shuffle (remove-nth l r)))))
+    (dcons (nth r l) (shuffle (remove-nth l r)))))
 
 (defun random-choice (l)
   (nth (random (list-length l)) l))

@@ -10,9 +10,9 @@ void list_put_str(limo_data ***dest, char *str)
 void l_cons_writer(limo_data ***dest, limo_data *ld)
 {
   list_put_str(dest, "(");
-  while (ld->type == limo_TYPE_CONS && ld->d_cons) {
+  while (ld->type == limo_TYPE_CONS) {
     l_writer(dest, CAR(ld));
-    if (CDR(ld)) {
+    if (!is_nil(CDR(ld))) {
       if (CDR(ld)->type != limo_TYPE_CONS) {
 	list_put_str(dest, " . ");
 	l_writer(dest, CDR(ld));
@@ -20,10 +20,11 @@ void l_cons_writer(limo_data ***dest, limo_data *ld)
       }
       else {
 	ld=CDR(ld);
-	if (ld->d_cons)
-	  list_put_str(dest, " ");
+        list_put_str(dest, " ");
       }
     }
+    else
+      break;
   }
   list_put_str(dest, ")");
 }
@@ -31,9 +32,9 @@ void l_cons_writer(limo_data ***dest, limo_data *ld)
 void cons_writer(limo_data *ld)
 {
   printf("(");
-  while (ld->type == limo_TYPE_CONS && ld->d_cons) {
+  while (ld->type == limo_TYPE_CONS) {
     writer(CAR(ld));
-    if (CDR(ld)) {
+    if (!is_nil(CDR(ld))) {
       if (CDR(ld)->type != limo_TYPE_CONS) {
 	printf(" . ");
 	writer(CDR(ld));
@@ -41,10 +42,11 @@ void cons_writer(limo_data *ld)
       }
       else {
 	ld=CDR(ld);
-	if (ld->d_cons)
-	  printf(" ");
+        printf(" ");
       }
     }
+    else
+      break;
   }
   printf(")");
 }
@@ -107,6 +109,7 @@ void writer(limo_data *ld) // not threadsafe!
   static int in_env=0;
 
   switch (ld->type) {
+  case limo_TYPE_NIL: printf("()"); break;
   case limo_TYPE_STRING: string_writer(ld); break;
   case limo_TYPE_GMPQ: number_writer(ld); break;
   case limo_TYPE_CONS: cons_writer(ld); break;
@@ -166,6 +169,7 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
   static int in_env=0;
 
   switch (ld->type) {
+  case limo_TYPE_NIL: list_put_str(dest, "()"); break;
   case limo_TYPE_STRING: l_string_writer(dest, ld); break;
   case limo_TYPE_GMPQ: l_number_writer(dest, ld); break;
   case limo_TYPE_CONS: l_cons_writer(dest, ld); break;

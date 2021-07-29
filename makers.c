@@ -26,34 +26,16 @@ limo_data *make_limo_data(void)
 limo_data *make_nil(void)
 {
   limo_data *ld = memset(make_limo_data(), 0, sizeof (limo_data));
-  ld->type = limo_TYPE_CONS;
+  ld->type = limo_TYPE_NIL;
   return ld;
 }
 
-/* limo_data *make_cons(limo_data *car, limo_data *cdr) */
-/* { */
-/*   limo_data *ld = make_nil(); */
-/*   ld->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons)); */
-/*   ld->d_cons->car = car; */
-/*   ld->d_cons->cdr = cdr; */
-/*   return ld; */
-/* } */
-
 limo_data *make_cons(limo_data *car, limo_data *cdr)
 {
-  limo_data *ld = make_nil();
-  void **make_cons_next = pk_cons_next_get();
-  limo_cons *cons;
-  
-  if (*make_cons_next == NULL)
-    *make_cons_next = GC_malloc_many(sizeof (limo_cons));
-
-  cons = (limo_cons *)*make_cons_next;
-  *make_cons_next = GC_NEXT(*make_cons_next);
-
-  ld->d_cons = cons;
-  ld->d_cons->car = car;
-  ld->d_cons->cdr = cdr;
+  limo_data *ld = make_limo_data();
+  ld->type = limo_TYPE_CONS;
+  CAR(ld) = car;
+  CDR(ld) = cdr;
   return ld;
 }
 

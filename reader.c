@@ -255,18 +255,19 @@ limo_data *read_list(reader_stream *f)
     if (c == EOF)
       limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
     if (c == ')' || c==']') { // ( for emacs
-      (*ld_into)->d_cons = NULL;
+      (*ld_into)->type = limo_TYPE_NIL;
       break;
     }
-    else
-      (*ld_into)->d_cons = (limo_cons *)GC_malloc(sizeof (limo_cons));
+    else {
+      (*ld_into)->type = limo_TYPE_CONS;
+    }
       
     limo_ungetc(c, f);
-    (*ld_into)->d_cons->car = reader(f);
+    CAR((*ld_into)) = reader(f);
 
     c=read_skip_space_comments(f);
     if (c=='.') { // pair
-      (*ld_into)->d_cons->cdr = reader(f);
+      CDR(*ld_into) = reader(f);
       c=read_skip_space_comments(f);
       if (c != ')' && c != ']')
 	limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
@@ -274,8 +275,8 @@ limo_data *read_list(reader_stream *f)
     }
     else {
       limo_ungetc(c, f);
-      (*ld_into)->d_cons->cdr = make_limo_data();
-      ld_into = &((*ld_into)->d_cons->cdr);
+      CDR(*ld_into) = make_limo_data();
+      ld_into = &CDR(*ld_into);
       (*ld_into)->type = limo_TYPE_CONS;
     }
     c=read_skip_space_comments(f);

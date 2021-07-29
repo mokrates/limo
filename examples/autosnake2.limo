@@ -219,7 +219,7 @@
 	  (:else
 	   (cons (car bs) (remove-as as (cdr bs))))))
   (freezeq remove-as)
-  (let* ((ssnake (qsort tuple-lt snake))
+  (let* ((ssnake (sort tuple-lt snake))
 	 (pot-apple-fields (remove-as ssnake *all-fields*)))
     (if pot-apple-fields
 	(random-choice pot-apple-fields)
@@ -280,7 +280,7 @@
 		     (cons (wn-get (car headpos) (+ (cdr headpos) 1))
 			   (cons (car headpos)
 				 (+ (cdr headpos) 1)))))))
-	 (moves-most-ahead (qsort (lambda (m n) (> (norm-to-tail (car m) tailwn)
+	 (moves-most-ahead (sort (lambda (m n) (> (norm-to-tail (car m) tailwn)
 					      (norm-to-tail (car n) tailwn)))
 				  moves)))
     (if (or *circlestrat*

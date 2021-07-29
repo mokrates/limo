@@ -10,11 +10,6 @@
 
 (setq *surface* ([_sdl . sdl-setvideomode] 640 480 24 [_sdl . sdl_hwsurface]))
 
-(freezeq +)
-(freezeq -)
-(freezeq /)
-(freezeq *)
-
 (defun bit (n v)
   (mod (floor (/ v n)) 2))
 
@@ -26,20 +21,6 @@
 					      (* 255 (bit 4 n))))
 				      (range 0 17 1))))
 
-(defun sqrt (x) 
-  (block fun
-    (let ((lo 0)
-	  (hi x)
-	  (mid (/ x 2)))
-      (for-each i (drange 0 10 1)
-	(setq sqr (* mid mid))
-	(cond ((= sqr x) (return-from fun mid))
-	      ((< sqr x) (setf lo mid))
-	      (:t (setf hi mid)))
-	(setf mid (/ (+ hi lo) 2)))
-      mid)))
-(freezeq sqrt)
-
 (defun csqr (c)
   (cons (- (* (car c) (car c))
 	   (* (cdr c) (cdr c)))
@@ -50,10 +31,6 @@
   (cons (+ (car a) (car b))
 	(+ (cdr a) (cdr b))))
 (freezeq cadd)
-
-(defun cabs (c)
-  (sqrt (+ (* (car c) (car c)) (* (cdr c) (cdr c)))))
-(freezeq cabs)
 
 (defun mandelbrot (x y)
   (block fun

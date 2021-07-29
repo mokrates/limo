@@ -23,7 +23,7 @@ extern unsigned long long limo_register;
 #define LR_TRACE          (1<<1)
 #define LR_OPTDISABLE     (1<<2)
 
-#define limo_TYPE_EMPTY          0
+#define limo_TYPE_NIL            0
 #define limo_TYPE_SYMBOL         1
 #define limo_TYPE_CONS           2
 
@@ -58,7 +58,6 @@ typedef struct limo_DATA {
   int type;
   union {
     char *d_string;  // symbol, string
-    struct limo_CONS *d_cons; // cons
     mpq_t *d_mpq; // int
     float d_float;
     double d_double;
@@ -67,7 +66,9 @@ typedef struct limo_DATA {
     struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
     void *d_special_intern;
-  };
+    struct limo_DATA *car;
+  }; 
+  struct limo_DATA *cdr;
   union {
     unsigned int hash;  // for symbols
     unsigned int string_length;
@@ -79,10 +80,6 @@ typedef struct limo_DATA {
   limo_annotation *annotation;
   struct limo_DATA *optimized;
 } limo_data;
-
-typedef struct limo_CONS {
-  limo_data *car, *cdr;
-} limo_cons;
 
 #define DI_CACHE (1<<0)
 #define DI_LOCAL (1<<1)
@@ -123,8 +120,8 @@ extern limo_data *nil;
 extern limo_data *traceplace;
 extern int limo_rl_inited;
 
-#define CAR(x) ((x)->d_cons->car)
-#define CDR(x) ((x)->d_cons->cdr)
+#define CAR(x) ((x)->car)
+#define CDR(x) ((x)->cdr)
 #define TSCDR(x) (thunk_safe_cdr(x))
 
 #define BUILTIN(x) limo_data *x(limo_data *arglist, limo_data *env, limo_data *thunk_place)
@@ -229,7 +226,7 @@ extern pthread_key_t pk_dynamic_vars_key;
   
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)
-#define is_nil(x) ((x)->type == limo_TYPE_CONS && !(x)->d_cons)
+#define is_nil(x) ((x)->type == limo_TYPE_NIL)
 int limo_equals(limo_data *, limo_data *);
 int list_length(limo_data *);
 char *limo_strdup(char *str);

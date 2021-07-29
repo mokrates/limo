@@ -20,39 +20,50 @@
 (setq nil ())
 (freezeq nil)
 
+
+(defun not (x)
+  (if x () :t))
+(freezeq not)
+
+(defun caar (l) (car (car l)))         (freezeq caar)
+(defun cdar (l) (cdr (car l)))         (freezeq cdar)
+(defun cadr (l) (car (cdr l)))         (freezeq cadr)
+(defun cddr (l) (cdr (cdr l)))         (freezeq cddr)
+(defun cadar (l) (car (cdr (car l))))  (freezeq cadar)
+(defun caddr (l) (car (cdr (cdr l))))  (freezeq caddr)
+(defun cdddr (l) (cdr (cdr (cdr l))))  (freezeq cdddr)
+
 ;;;;;;;;;;;; if optimization
 (setq _if if)
 (defmacro if (cond then else)
   (_if (consp cond)
-       (_if cond
-            (_if (eq (car cond) 'not)
-                 (list 'if (cadr cond) else then)
-                 (_if (eq (car cond) 'or)
+       (_if (eq (car cond) 'not)
+            (list 'if (cadr cond) else then)
+            (_if (eq (car cond) 'or)
+                 (_if (cdr cond)
+                      (list 'if
+                            (cadr cond)
+                            then
+                            (_if (cddr cond)
+                                 (list 'if
+                                       (cons 'or (cddr cond))
+                                       then
+                                       else)
+                                 else))
+                      else)
+                 (_if (eq (car cond) 'and)
                       (_if (cdr cond)
                            (list 'if
                                  (cadr cond)
-                                 then
                                  (_if (cddr cond)
                                       (list 'if
-                                            (cons 'or (cddr cond))
+                                            (cons 'and (cddr cond))
                                             then
                                             else)
-                                      else))
-                           else)
-                      (_if (eq (car cond) 'and)
-                           (_if (cdr cond)
-                                (list 'if
-                                      (cadr cond)
-                                      (_if (cddr cond)
-                                           (list 'if
-                                                 (cons 'and (cddr cond))
-                                                 then
-                                                 else)
-                                           then)
-                                      else)
-                                then)
-                           (list _if cond then else))))
-            else)
+                                      then)
+                                 else)
+                           then)
+                      (list _if cond then else))))
        (list _if cond then else)))
  ;;;;;;;;;
 
@@ -96,11 +107,9 @@
 
 (defun reverse (l) ;; used by quasiquote
   (defun helper (l akku)
-    (if (consp l)
-	(if l 
-	    (helper (cdr l) (cons (car l) akku)) 
-	    akku)
-	(throw (cons "reverse takes a proper list" l))))
+    (if l 
+        (helper (cdr l) (cons (car l) akku)) 
+        akku))
   (helper l ()))
 (freezeq reverse)
 
@@ -131,12 +140,12 @@
 
 
 (defun deepeq (x y)
-  (cond ((and (consp x) x)  ;; cons and not empty
+  (cond ((consp x)
 	 (and (consp y)
-	      y
 	      (deepeq (car x) (car y))
 	      (deepeq (cdr x) (cdr y))))
 	(:t (eq x y))))
+
 (freezeq deepeq)
 
 ;; ########################
@@ -307,18 +316,6 @@
 		      (cdr b)))))
 (freezeq dzip2)
 
-(defun not (x)
-  (if x () :t))
-(freezeq not)
-
-(defun caar (l) (car (car l)))         (freezeq caar)
-(defun cdar (l) (cdr (car l)))         (freezeq cdar)
-(defun cadr (l) (car (cdr l)))         (freezeq cadr)
-(defun cddr (l) (cdr (cdr l)))         (freezeq cddr)
-(defun cadar (l) (car (cdr (car l))))  (freezeq cadar)
-(defun caddr (l) (car (cdr (cdr l))))  (freezeq caddr)
-(defun cdddr (l) (cdr (cdr (cdr l))))  (freezeq cdddr)
-
 (defmacro when (c . b)
   `(if ,c ,(cons 'progn b) ()))
 (freezeq when)
@@ -431,17 +428,25 @@
 	(:else (nth (mpq_sub n 1) (cdr l)))))
 (freezeq nth)
 
-(defun range (start end step)  ;; recursive! with generator: drange.
-  (if (>= start end)
-      ()
-      (cons start (range (mpq_add start step) end step))))
-(freezeq range)
-
 (defun drange (start end step)
   (if (>= start end)
       ()
       (dcons start (drange (mpq_add start step) end step))))
 (freezeq drange)
+
+(defun range (start end step)  ;; recursive! with generator: drange.
+  (undyn (drange start end step)))
+(freezeq range)
+
+(defmacro mrange (first . rest)
+  (if rest
+      `(range ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(range 0 ,first 1)))
+
+(defmacro mdrange (first . rest)
+  (if rest
+      `(drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(drange 0 ,first 1)))
 
 (defun lreduce (f l)   ;; fold l with f from left
   (defun recur (akku l)
@@ -549,9 +554,7 @@
            (if (lt (car l) (car m))
                (dcons (car l) (merge (cdr l) m))
                (dcons (car m) (merge l (cdr m)))))
-          (l l)
-          (m m)
-          (:else nil)))
+          (:else (or l m))))
   (undyn
    (when l
      (let ((left (undyn (seconds l)))
@@ -563,9 +566,9 @@
 (defun qsort (lt l) 
   (defun ltx (x) (lt x (car l)))
   (when l (append 
-	   (qsort lt (filter ltx (cdr l)))
+	   (qsort lt (dfilter ltx (cdr l)))
 	   (list (car l))
-	   (qsort lt (filter (comp not ltx) (cdr l))))))
+	   (qsort lt (dfilter (comp not ltx) (cdr l))))))
 (freezeq qsort)
 
 (defun make-symbol (s)
@@ -709,7 +712,8 @@
 	  (:else (string-concat (repr (car x)) " " 
 				(list-to-string (cdr x))))))
 
-  (cond ((numberp x) (reprn x))
+  (cond ((not x) "()")
+        ((numberp x) (reprn x))
 	((stringp x) (string-concat "\"" x "\""))
 	((symbolp x) (symbol-to-string x))
 	((consp x) (string-concat "(" (list-to-string x)))))

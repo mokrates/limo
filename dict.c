@@ -28,10 +28,13 @@ inline int limo_equals(limo_data *a, limo_data *b)
       return !strncmp(a->d_string, b->d_string, a->hash);
     
   case limo_TYPE_CONS:
-    return a->d_cons == b->d_cons;
+    return CAR(a) == CAR(b) && CDR(a) == CDR(b);
 
   case limo_TYPE_GMPQ:
     return !mpq_cmp(LIMO_MPQ(a), LIMO_MPQ(b));
+
+  case limo_TYPE_NIL:
+    return b->type == limo_TYPE_NIL;
   }
     
   return 0;
@@ -101,7 +104,7 @@ limo_dict *make_dict_size(int minused)
   return d;
 }
 
-void dict_resize(limo_data *dict)
+inline void dict_resize(limo_data *dict)
 {
   limo_data new = *dict;
   limo_dict *olddict = dict->d_dict;
@@ -117,7 +120,7 @@ void dict_resize(limo_data *dict)
   dict->d_dict = newdict;
 }
 
-void dict_check_resize(limo_data *dict)
+inline void dict_check_resize(limo_data *dict)
 {
   if (3 * (dict->d_dict->used) > 2*dict->d_dict->size)
     dict_resize(dict);
@@ -127,8 +130,8 @@ void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags)
 {
   limo_dict_item *ld_place;
 
-  if (dict->type != limo_TYPE_DICT)
-    limo_error("dict_put(): didn't get a dict.");
+  /* if (dict->type != limo_TYPE_DICT) */
+  /*   limo_error("dict_put(): didn't get a dict."); */
 
   ld_place = dict_get_place(dict, CAR(cons));
   if (ld_place->cons == NULL) {

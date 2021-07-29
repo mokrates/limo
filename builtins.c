@@ -256,7 +256,7 @@ BUILTIN(builtin_setcar)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS || cons->d_cons == NULL)
+  if (cons->type != limo_TYPE_CONS)
     limo_error("ERROR: (setcar CONS value)");
 
   CAR(cons) = value;
@@ -270,7 +270,7 @@ BUILTIN(builtin_setcdr)
   limo_data *cons = eval(FIRST_ARG, env);
   limo_data *value = eval(SECOND_ARG, env);
 
-  if (cons->type != limo_TYPE_CONS || cons->d_cons == NULL)
+  if (cons->type != limo_TYPE_CONS)
     limo_error("ERROR: (setcdr CONS value)");
 
   CDR(cons) = value;

@@ -21,8 +21,8 @@ limo_data *make_lcache(limo_data *place)
 
 limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt) // returns the cons from the dict
 {
-  if (env->type != limo_TYPE_ENV)
-    limo_error("var_lookup: given env is no env");
+  /* if (env->type != limo_TYPE_ENV) */
+  /*   limo_error("var_lookup: given env is no env"); */
 
   /* printf("looking for\n"); */
   /* writer(name); printf(" *******\n"); */

@@ -118,7 +118,7 @@ BUILTIN(builtin_fd_poll)
   for (i=0; i<pollfdlist_length; ++i,CDR(ld_cursor)=make_cons(nil, nil), ld_cursor=CDR(ld_cursor))
     CAR(ld_res) = make_number_from_long_long(pfds[i].revents);
   
-  ld_cursor->d_cons=NULL;
+  ld_cursor->type=limo_TYPE_NIL;
   return ld_res;
 }
 

@@ -159,9 +159,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   limo_data *stacktrace_cons;
 
   limo_data thunk;
-  limo_cons thunk_cons;
   thunk.type = limo_TYPE_THUNK;
-  thunk.d_cons = &thunk_cons;
 
   if (limo_register) {        // TODO: here is a check of "things". could be used to signal Ctrl-c
     if (limo_register & LR_SIGINT) {
@@ -177,25 +175,20 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 
   stacktrace_cons = make_cons(form, tmp_stacktrace);
   pk_stacktrace_set(stacktrace_cons);
-  for (;;) {
-    form=real_eval(form, env, &thunk);
-    assert(form);
-    assert(form->type != limo_TYPE_CONST);
 
-    if (form->type == limo_TYPE_THUNK) {
-      limo_data *next_form;
-      //      printf("THUNK:"); writer(form); printf("\n");
-      next_form= CDR(form);
-      env      = CAR(form);
-      form     = next_form;
-      CAR(stacktrace_cons) = form;
-    }
-    else {
-        pk_stacktrace_set(tmp_stacktrace);
-	return form;
-    }
+  form=real_eval(form, env, &thunk);
+  while (form->type == limo_TYPE_THUNK) {
+    limo_data *next_form;
+    //      printf("THUNK:"); writer(form); printf("\n");
+    next_form= CDR(form);
+    env      = CAR(form);
+    form     = next_form;
+    CAR(stacktrace_cons) = form;
+
+    form = real_eval(form, env, &thunk);
   }
-
+  pk_stacktrace_set(tmp_stacktrace);
+  return form;
 }
 
 limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)

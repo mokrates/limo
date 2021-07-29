@@ -3,9 +3,7 @@
 
 inline int (is_nil)(limo_data *ld)
 {
-  if (!ld)
-    limo_error("null pointer (is_nil)");
-  return ld->type == limo_TYPE_CONS && !ld->d_cons;
+  return ld->type == limo_TYPE_NIL;
 }
 
 int list_length(limo_data *l)
@@ -28,7 +26,7 @@ char *limo_strdup(char *in)
 limo_data *thunk_safe_cdr(limo_data *x)
 {
   limo_data *cdr;
-  cdr = (x)->d_cons->cdr;
+  cdr = CDR(x);
   while (cdr->type == limo_TYPE_THUNK)
     cdr = eval(CDR(cdr), CAR(cdr));
 
