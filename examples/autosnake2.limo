@@ -338,6 +338,7 @@
 
 (finally 
  (while :t
+   :breakable
    (let ((next-move (find-next-move snake apple)))    
      (setf snake (move-snake-to-pos-and-paint next-move snake apple))
      (setf *num-moves-since* (+ *num-moves-since* 1)) ;; count moves
