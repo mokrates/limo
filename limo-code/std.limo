@@ -467,23 +467,24 @@
 	(:else (filter p (cdr l)))))
 (freezeq filter)
 
-(defun append l
-  (defun helper (l1 l2)  ;; recursive: with generator: dappend
-    (if (not l1) l2
-	(cons (car l1) (helper (cdr l1) l2))))
-  (reduce helper (cons () l)))
-(freezeq append)
-
-(defun dappend l
-  (defun helper (l1 l2)
-    (if (not l1) l2
-	(dcons (car l1) (helper (cdr l1) l2))))
-  (reduce helper (dcons () l)))
-(freezeq dappend)
-
 (defmacro scope x
   `((lambda () (progn ,@x))))
 (freezeq scope)
+
+(setq dappend
+      ((lambda ()
+         (progn
+          (defun helper (l1 l2)
+            (if (not l1) l2
+                (dcons (car l1) (helper (cdr l1) l2))))
+          
+          (defun dappend l
+            (reduce helper (dcons () l)))))))
+(freezeq dappend)
+
+(defun append x
+  (undyn (apply dappend x)))
+(freezeq append)
 
 (setq warn-once
       (scope
