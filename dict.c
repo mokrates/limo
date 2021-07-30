@@ -57,7 +57,7 @@ static inline unsigned int hash_string(char *str)
   return hash;
 }
 
-inline unsigned hash(limo_data *ld)
+static inline unsigned hash(limo_data *ld)
 {
   assert (ld->type != limo_TYPE_CONST);
   if (ld->type == limo_TYPE_SYMBOL) {

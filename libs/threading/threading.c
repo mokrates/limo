@@ -231,7 +231,7 @@ void limo_init_threading(limo_data *env)
   sym_mutex_attr_rec    = make_sym(":RECURSIVE");
   sym_mutex_attr_errchk = make_sym(":ERRORCHECK");
 
-  threading_env = make_env(NULL);
+  threading_env = make_env(nil);
   INS_THREADING_BUILTIN(builtin_thread_create, "THREAD-CREATE");
   INS_THREADING_BUILTIN(builtin_thread_join, "THREAD-JOIN");
 

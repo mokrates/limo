@@ -188,11 +188,11 @@ limo_data *make_globalenv(int, char **);
 
 limo_data *try_catch(limo_data *thetry, limo_data *env);
 #ifndef __cplusplus
-void throw(limo_data *excp); //  __attribute__ ((noreturn));  
+void throw(limo_data *excp)  __attribute__ ((noreturn));  
 #endif
 void throw_after_finally(void);
-void limo_error(char *, ...); // __attribute__ ((noreturn));   
-void limo_error_errno(limo_data *excp_name); //  __attribute__ ((noreturn));
+void limo_error(char *, ...) __attribute__ ((noreturn));   
+void limo_error_errno(limo_data *excp_name) __attribute__ ((noreturn));
 void print_stacktrace(limo_data *s); // prints stacktrace s
 
 extern pthread_key_t pk_stacktrace_key;
@@ -294,7 +294,7 @@ BUILTIN(builtin_write_to_list);
 BUILTIN(builtin_try);
 BUILTIN(builtin_throw);
 BUILTIN(builtin_finally);
-BUILTIN(builtin_exit);
+BUILTINFUN(builtin_exit);
 BUILTIN(builtin_load);
 BUILTIN(builtin_mod_isinline);
 BUILTIN(builtin_mod_loadinline);

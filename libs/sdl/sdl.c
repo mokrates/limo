@@ -96,7 +96,7 @@ void limo_init_sdl(limo_data *env)
   limo_data *limo_SDL_RESIZABLE = make_number_from_long_long(SDL_RESIZABLE);
 
   /// insert constants into environment
-  limo_sdl_env = make_env(NULL);
+  limo_sdl_env = make_env(nil);
   setq(limo_sdl_env, make_sym("SDL_INIT_TIMER"), limo_SDL_INIT_TIMER);
   setq(limo_sdl_env, make_sym("SDL_INIT_AUDIO"), limo_SDL_INIT_AUDIO);
   setq(limo_sdl_env, make_sym("SDL_INIT_VIDEO"), limo_SDL_INIT_VIDEO);

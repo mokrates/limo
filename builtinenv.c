@@ -23,7 +23,6 @@ struct { char *name; limo_builtin f; }
                      { "TRY", builtin_try },
                      { "FINALLY", builtin_finally},
                      { "THROW", builtin_throw },
-                     { "EXIT", builtin_exit },
                      { "LOAD", builtin_load},
                      { "MOD-ISINLINE", builtin_mod_isinline },
                      { "MOD-LOADINLINE", builtin_mod_loadinline },
@@ -71,14 +70,15 @@ struct { char *name; limo_builtinfun f; }
                         { "CONS", builtin_cons},
                         { "CONSP", builtin_consp},
                         { "CAR", builtin_car},
-                        { "CDR", builtin_cdr}
+                        { "CDR", builtin_cdr},
+                        { "EXIT", builtin_exit },
   };
 
 
 
 limo_data *make_globalenv(int argc, char **argv)
 {
-  limo_data *env = make_env(NULL);
+  limo_data *env = make_env(make_nil());
   limo_data *args_start;
   limo_data **args = &args_start;
   int i;

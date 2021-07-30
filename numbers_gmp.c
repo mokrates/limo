@@ -11,11 +11,8 @@ BUILTINFUN(builtin_numberp)
 
 BUILTINFUN(builtin_reprn)
 {
-  limo_data *res=make_nil();
-  res->type = limo_TYPE_STRING;
-  res->d_string = repr_number(argv[0]);
-  res->hash = strlen(res->d_string);
-  return res;
+  REQUIRE_ARGC_FUN("REPRN", 1);
+  return make_string(repr_number(argv[0]));
 }
 
 BUILTINFUN(builtin_idivmod)
@@ -214,7 +211,7 @@ BUILTINFUN(builtin_int)
 
 limo_data *make_number(void)
 {
-  limo_data *res = make_nil();
+  limo_data *res = make_limo_data();
   void **make_gmpq_next = pk_gmpq_next_get();
 
   if (!*make_gmpq_next)

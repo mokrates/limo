@@ -25,7 +25,7 @@ limo_data *make_limo_data(void)
 
 limo_data *make_nil(void)
 {
-  limo_data *ld = memset(make_limo_data(), 0, sizeof (limo_data));
+  limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_NIL;
   return ld;
 }

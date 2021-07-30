@@ -35,6 +35,7 @@
 
 ;;;;;;;;;;;; if optimization
 (setq _if if)
+(freezeq _if)
 (defmacro if (cond then else)
   (_if (consp cond)
        (_if (eq (car cond) 'not)
@@ -65,6 +66,7 @@
                            then)
                       (list _if cond then else))))
        (list _if cond then else)))
+(freezeq if)
  ;;;;;;;;;
 
 
@@ -235,29 +237,23 @@
     (recur ,@(rvals (car x)))))
 (freezeq loop)
 
-(defun dmap (f a)
-  (defun helper (f a)
-    (when a
-	  (dcons (f (car a)) (helper f (cdr a)))))
-  (freezeq helper)
-  (helper f a))
-(freezeq dmap)
+(defun dmap1 (f a)
+  (when a
+    (dcons (f (car a)) (dmap1 f (cdr a)))))
+(freezeq dmap1)
 
 (defun map1 (f a)
-  (defun helper (f a)
-    (when a
-	  (dcons (f (car a)) (helper f (cdr a)))))
-   (undyn (helper f a)))
+  (undyn (dmap1 f a)))
 (freezeq map1)
 
-(define (map f . a)
-  (define (helper f a)
-    (if (and (car a) (consp (car a)))
-	(dcons (apply f (map1 car a))
-	       (helper f (map1 cdr a)))
-	()))
-  (undyn (helper f a)))
-(freezeq map)
+(defun dmap (f . a)
+  (when (consp (car a))
+    (dcons (apply f (map1 car a))
+           (apply dmap (cons f (map1 cdr a))))))
+(freezeq dmap)
+
+(defun map (f . a)
+  (undyn (apply dmap (cons f a))))
 
 (defun map-list (f a)
   (defun helper (f a)
@@ -542,6 +538,17 @@
 		(,recur (cdr ,x))))
     (,recur ,l)))
 (freezeq for-list)
+
+(defmacro do (vars test . body)     ;; cl-do  / no breaks/continues yet.
+  (with-gensym (f)
+      `(progn
+        (defun ,f ,(map1 car vars)
+          (if ,(car test)
+              ,(cadr test)
+              (progn
+               ,@body
+               (,f ,@(map1 caddr vars)))))
+        (,f ,@(map1 cadr vars)))))
 
 (defun sort (lt l)   ; merge
   (defun seconds (l) ; every second item

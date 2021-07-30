@@ -49,6 +49,7 @@ static void init_pthread_keys(void)
 
 static void init_syms()
 {
+  nil            = make_nil();
   sym_env        = make_sym("_ENV");
   sym_callerenv  = make_sym("_CALLERENV");
   sym_trace      = make_sym("_TRACE");
@@ -56,7 +57,6 @@ static void init_syms()
   sym_true       = make_sym(":T");
   sym_underscore = make_sym("_");
   sym_block      = make_sym("BLOCK");
-  nil            = make_nil();
 }
 
 void load_limo_file(char *filename, limo_data *env)

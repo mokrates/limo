@@ -280,8 +280,6 @@ BUILTIN(builtin_setcdr)
 BUILTIN(builtin_try)
 {
   limo_data *res;
-  limo_data *rethrow;
-
   REQUIRE_ARGC("TRY", 2);
   res = try_catch(FIRST_ARG, env);
   if (!res) {
@@ -296,6 +294,7 @@ BUILTIN(builtin_try)
     else
       return res;
   }
+  return res;
 }
 
 BUILTIN(builtin_finally)
@@ -322,16 +321,20 @@ BUILTIN(builtin_finally)
   return res;
 }
 
-
 BUILTIN(builtin_throw)
 {
   REQUIRE_ARGC("THROW", 1);
   throw(eval(FIRST_ARG, env));
 }
 
-BUILTIN(builtin_exit)
+BUILTINFUN(builtin_exit)
 {
-  exit(0);
+  if (argc>=1) {
+    REQUIRE_TYPE("EXIT", argv[0], limo_TYPE_GMPQ);
+    exit(GETINTFROMMPQ(argv[0]));
+  }
+  else
+    exit(0);
 }
 
 BUILTIN(builtin_load)
