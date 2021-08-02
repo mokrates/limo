@@ -103,6 +103,7 @@ int main(int argc, char **argv)
   reader_stream *rs;
   int marked_const;
   sigset_t sigset;
+  int free_space_divisor;
 
   ////// initializing GC
   GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
@@ -114,6 +115,8 @@ int main(int argc, char **argv)
   // hopefully, the GC-thread gets spawned here
   // and inherits the NO SIGINT
   GC_init();
+  free_space_divisor = GC_call_with_alloc_lock(GC_get_free_space_divisor, NULL);
+  GC_call_with_alloc_lock(GC_set_free_space_divisor, 1);
   GC_allow_register_threads();
 
   assert(GC_thread_is_registered());
