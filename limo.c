@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 
   // hopefully, the GC-thread gets spawned here
   // and inherits the NO SIGINT
-  GC_use_entire_heap=1;
+  //GC_use_entire_heap=1;
   GC_init();
   //int free_space_divisor = GC_call_with_alloc_lock(GC_get_free_space_divisor, NULL);
   GC_call_with_alloc_lock(GC_set_free_space_divisor, 1);
