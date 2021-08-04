@@ -1,4 +1,4 @@
-; -*- scheme -*-
+; -*- limo -*-
 
 (mod-load "string_builtins")
 
@@ -43,7 +43,9 @@
 (setq string-strip string-strip)
 
 (defun string-slice (s l u)  ; string, lower, upper
-  (list-to-string (list-slice (string-to-list s) l u)))
+  (let ((len (string-length s)))
+    (list-to-string
+     (map1 (lambda (x) (string-nth x s)) (mdrange l (if (< len u) len u))))))
 
 (defun string-split (s d)
   (map list-to-string (list-split (string-to-list s) d)))
