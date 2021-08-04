@@ -33,7 +33,7 @@ extern unsigned long long limo_register;
 #define limo_TYPE_BUILTINFUN     7
 
 #define limo_TYPE_GMPQ           8
-#define limo_TYPE_FLOAT          9
+#define limo_TYPE_INT            9
 #define limo_TYPE_DOUBLE         10
 #define limo_TYPE_STRING         11
 
@@ -59,7 +59,7 @@ typedef struct limo_DATA {
   union {
     char *d_string;  // symbol, string
     mpq_t *d_mpq; // int
-    float d_float;
+    int    d_int;
     double d_double;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env, struct limo_DATA *thunk_place);
     struct limo_DATA *(*d_builtinfun)(int argc, struct limo_DATA **argv);

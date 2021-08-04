@@ -209,6 +209,27 @@ BUILTINFUN(builtin_int)
   return make_number_from_double((double)(long long)(make_double_from_number(argv[0])));
 }
 
+
+////////////////////
+// Testfunctions
+BUILTINFUN(builtin_test_todbl) {
+  limo_data *res = make_limo_data();
+  REQUIRE_ARGC_FUN("TEST-TODBL", 1);
+  res->type = limo_TYPE_DOUBLE;
+  res->d_double = mpq_get_d(LIMO_MPQ(argv[0]));
+  return res;
+}
+
+BUILTINFUN(builtin_test_toint) {
+  limo_data *res = make_limo_data();
+  REQUIRE_ARGC_FUN("TEST-TOINT", 1);
+  res->type = limo_TYPE_INT;
+  res->d_int = mpz_get_si(mpq_numref(LIMO_MPQ(argv[0])));
+  return res;
+}
+
+////////////////////
+
 limo_data *make_number(void)
 {
   limo_data *res = make_limo_data();
@@ -285,7 +306,11 @@ struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
   { "ATAN", builtin_atan },
   { "ASIN", builtin_asin },
   { "POWER", builtin_power },
-  { "INT", builtin_int }
+  { "INT", builtin_int },
+
+  /// new double and int testfuns
+  { "TEST-TOINT", builtin_test_toint },
+  { "TEST-TODBL", builtin_test_todbl },
 };
 
 // needed for gmp, because it uses a
