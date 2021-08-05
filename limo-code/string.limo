@@ -7,9 +7,11 @@
 	    (setq _builtin-string-concat string-concat)
 	    (lambda x
 	      (reduce _builtin-string-concat (cons "" x)))))
+(freezeq string-concat)
 
 (defun list-to-string (l)
   (apply string-concat l))
+(freezeq list-to-string)
 
 (defun string-to-list (s)
   (setq l (string-length s))
@@ -18,6 +20,7 @@
 	(dcons (string-nth p s) (string-to-list-helper s (+ 1 p)))
 	()))
   (string-to-list-helper s 0))
+(freezeq string-to-list)
 
 (unify (string-lstrip string-rstrip string-strip)
        (scope 
@@ -46,9 +49,11 @@
   (let ((len (string-length s)))
     (list-to-string
      (map1 (lambda (x) (string-nth x s)) (mdrange l (if (< len u) len u))))))
+(freezeq string-slice)
 
 (defun string-split (s d)
-  (map list-to-string (list-split (string-to-list s) d)))
+  (map1 list-to-string (list-split (string-to-list s) d)))
+(freezeq string-split)
 
 (defclass string@ ()      ; string-class
   (defmethod init (self s)
@@ -82,3 +87,4 @@
   (if (not l)
       ()
       (list-to-string (dcons (car l) (helper sep (cdr l))))))
+(freezeq string-join)

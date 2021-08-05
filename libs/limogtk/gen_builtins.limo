@@ -28,10 +28,11 @@
   (list-to-string (map uscore-to-minus (string-to-list s))))
 
 (defun string-endswith (s end)
-  (= (string-slice s
-                   (- (string-length s) (string-length end))
-                   (string-length s))
-     end))
+  (let ((start (- (string-length s) (string-length end))))
+    (= (string-slice s
+                     (if (> 0 start) 0 start)
+                     (string-length s))
+       end)))
 
 (defun string-startswith (s start)
   (= (string-slice s 0 (string-length start)) start))

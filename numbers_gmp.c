@@ -228,6 +228,24 @@ BUILTINFUN(builtin_test_toint) {
   return res;
 }
 
+BUILTINFUN(builtin_test_intltn)
+{
+  REQUIRE_ARGC_FUN("TEST-INTLTN", 2);
+  if (argv[0]->d_int < argv[1]->d_int)
+    return sym_true;
+  else
+    return nil;
+}
+
+BUILTINFUN(builtin_test_intadd)
+{
+  REQUIRE_ARGC_FUN("TEST-INTADD", 2);
+  limo_data *res = make_limo_data();
+  res->type = limo_TYPE_INT;
+  res->d_int = argv[0]->d_int + argv[1]->d_int;
+  return res;
+}
+
 ////////////////////
 
 limo_data *make_number(void)
@@ -311,6 +329,8 @@ struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
   /// new double and int testfuns
   { "TEST-TOINT", builtin_test_toint },
   { "TEST-TODBL", builtin_test_todbl },
+  { "TEST-INTLTN", builtin_test_intltn },
+  { "TEST-INTADD", builtin_test_intadd },
 };
 
 // needed for gmp, because it uses a

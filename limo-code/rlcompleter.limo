@@ -9,8 +9,8 @@
 	  (chr (- (+ (ord char) (ord "A")) (ord "a")))
 	  char))
     (list-to-string
-     (map upcase (string-to-list str))))
-
+     (dmap1 upcase (string-to-list str))))
+  
   (defun globalenv (cu)
     (if (car (env-extract cu))
 	(globalenv (car (env-extract cu)))
@@ -21,10 +21,10 @@
     
   (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text 1 (dict-getvalue regex-const 'reg_extended) 0)))
   (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))
-  (map (curry string-concat prefix)
-       (filter (curry string-startswith (upcase-str lword))
-	       (map (lambda (x) (symbol-to-string (car x)))
-		    (dict-to-list (cdr (env-extract (globalenv (env-current )))))))))
+  (map1 (curry string-concat prefix)
+	(dfilter (curry string-startswith (upcase-str lword))
+		 (dmap1 (lambda (x) (symbol-to-string (car x)))
+			(dict-to-list (cdr (env-extract (globalenv (env-current )))))))))
 
 (defun limo-rl-completer (text)
   (defun upcase-str (str)
@@ -34,8 +34,8 @@
 	  (chr (- (+ (ord char) (ord "A")) (ord "a")))
 	  char))
     (list-to-string
-     (map upcase (string-to-list str))))
-
+     (dmap1 upcase (string-to-list str))))
+  
   (defun globalenv (cu)
     (if (car (env-extract cu))
 	(globalenv (car (env-extract cu)))
@@ -54,8 +54,8 @@
   
   (defun allsyms (env)
     (if env
-	(append (map (lambda (x) (car x))
-		     (dict-to-list (cdr (env-extract env))))
+	(append (dmap1 (lambda (x) (car x))
+		       (dict-to-list (cdr (env-extract env))))
 		(allsyms (car (env-extract env))))
 	()))
   
@@ -71,10 +71,10 @@
 	 (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))
 	 (setq sym-list (map (lambda (x) (car x))
 			     (dict-to-list (cdr (env-extract (globalenv (env-current)))))))
-	 (map (curry string-concat prefix)
-	      (filter (curry string-startswith (upcase-str lword))
-		      (map (lambda (x) (symbol-to-string x))
-			   (filter getenv sym-list)))))
+	 (map1 (curry string-concat prefix)
+	       (dfilter (curry string-startswith (upcase-str lword))
+			(dmap1 (lambda (x) (symbol-to-string x))
+			       (filter getenv sym-list)))))
 	(br-dot
 	 (list text))
 	(br-match            ;; complete '[env' and '[env . incompl...'
@@ -87,19 +87,19 @@
 	 (setq prefix (string-slice text 0 (- (string-length text) (string-length rword))))
 
 	 (when (setq theenv (getenv (make-sym lword)))
-	   (map (curry string-concat prefix)
-		(filter (curry string-startswith (upcase-str rword))
-			(map (lambda (x) (symbol-to-string x))
-			     (allsyms theenv))))))
-    
+	   (map1 (curry string-concat prefix)
+		 (dfilter (curry string-startswith (upcase-str rword))
+			  (dmap1 (lambda (x) (symbol-to-string x))
+				 (allsyms theenv))))))
+	
 	(:t       ;; complete the rest
 	 (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text 1 (dict-getvalue regex-const 'reg_extended) 0)))
 	 (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))
-	 (map (curry string-concat prefix)
-	      (filter (curry string-startswith (upcase-str lword))
-		      (map (lambda (x) (symbol-to-string (car x)))
-			   (dict-to-list (cdr (env-extract glenv)))))))))
-  
+	 (map1 (curry string-concat prefix)
+	       (dfilter (curry string-startswith (upcase-str lword))
+			(dmap1 (lambda (x) (symbol-to-string (car x)))
+			       (dict-to-list (cdr (env-extract glenv)))))))))
+
   
 ;;(set-rlcompleter (cons simple-completer ""))
 (set-rlcompleter (cons limo-rl-completer ""))
