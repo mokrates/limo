@@ -12,10 +12,8 @@
 	   '((a . a) (a . b) (a . c)))
 
  (asserteq (dzip2 '(a b c) '(d e f))
-	   '((a . d) (b . e) (c . f)))
+            '((a . d) (b . e) (c . f)))
 
- (asserteq (dzipn '(a b c) '(d e f) '(g h i))
-	   '((a d g) (b e h) (c f i)))
  (asserteq (switch 'foo ('bar 'baz) ('foo 'furz))
 	   'furz)
 

@@ -246,14 +246,23 @@
   (undyn (dmap1 f a)))
 (freezeq map1)
 
-(defun dmap (f . a)
+(defun dmapn (f . a)
   (when (consp (car a))
     (dcons (apply f (map1 car a))
            (apply dmap (cons f (map1 cdr a))))))
+(freezeq dmapn)
+
+(defun mapn (f . a)
+  (undyn (apply dmap (cons f a))))
+(freezeq mapn)
+
+(defun dmap (f . a)
+  (apply (if (consp (cdr a)) dmapn dmap1) (cons f a)))
 (freezeq dmap)
 
 (defun map (f . a)
   (undyn (apply dmap (cons f a))))
+(freezeq map)
 
 (defun map-list (f a)
   (defun helper (f a)
@@ -293,24 +302,28 @@
                                   x))))))
 (freezeq comp)
 
-(defun dzipn x
-  (when (and (apply andf (dmap consp x))
-	     (apply andf x))
-	(dcons (dmap car x)
-	       (apply dzipn (dmap cdr x)))))
-(freezeq dzipn)
-(setq zip dzipn)  ;; this is the right zip
+(defun dzip x
+  (when (apply andf (map1 consp x))
+    (dcons (map1 car x)
+           (apply dzip (map1 cdr x)))))
+(freezeq dzip)
+
+(defun zip x
+  (undyn (apply dzip x)))
 (freezeq zip)
 
 (defun dzip2 (a b)
   (when (and (consp a)
-	     (consp b)
-	     a b)
-	(dcons (cons (car a) 
-		     (car b))
-	       (dzip2 (cdr a) 
-		      (cdr b)))))
+             (consp b))
+    (dcons (cons (car a) 
+                 (car b))
+           (dzip2 (cdr a) 
+                  (cdr b)))))
 (freezeq dzip2)
+
+(defun zip2 (a b)
+  (undyn (dzip2 a b)))
+(freezeq zip2)
 
 (defmacro when (c . b)
   `(if ,c ,(cons 'progn b) ()))
@@ -462,9 +475,7 @@
 (freezeq dfilter)
 
 (defun filter (p l)    ;; recursive
-  (cond ((not l) l)
-	((p (car l)) (cons (car l) (filter p (cdr l))))
-	(:else (filter p (cdr l)))))
+  (undyn (dfilter p l)))
 (freezeq filter)
 
 (defmacro scope x
@@ -751,8 +762,8 @@
 (freezeq let*)
 
 (defmacro let (lblock . body)
-  `((lambda ,(map car lblock) (progn ,@body))
-    ,@(map cadr lblock)))
+  `((lambda ,(map1 car lblock) (progn ,@body))
+    ,@(map1 cadr lblock)))
 (freezeq let)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
