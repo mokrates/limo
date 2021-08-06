@@ -20,8 +20,8 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   
   CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)GC_malloc(f->nparams * sizeof (limo_data *));
   if (eval_args) {
-    while (!is_nil(params) && params->type == limo_TYPE_CONS) {
-      if (is_nil(arglist) || arglist->type != limo_TYPE_CONS )
+    while (params->type == limo_TYPE_CONS) {
+      if (arglist->type != limo_TYPE_CONS)
 	limo_error("eval funcall: too few arguments");
       
       /* setq(param_env, CAR(params), eval(CAR(arglist), env)); */
@@ -35,22 +35,16 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
     }
   }
   else { // don't eval args
-    while (!is_nil(params) && params->type==limo_TYPE_CONS) {
-      if (is_nil(arglist) || arglist->type!=limo_TYPE_CONS )
+    while (params->type==limo_TYPE_CONS) {
+      if (arglist->type!=limo_TYPE_CONS)
 	limo_error("eval funcall: too few arguments");
 
-      if (CAR(arglist)->type == limo_TYPE_CONST) {  // TODO: das hier entfernen, wenn es nciht auftritt
-	setq(param_env, CAR(params), CAR(CAR(arglist)));
-	printf("DEBUG: eval_function_call wurde mit einem CONST aufgerufen\n");
-      }
-      else {
-	/* setq(param_env, CAR(params), CAR(arglist)); */
-	locals_store[iparam] = make_cons(CAR(params), CAR(arglist));
-	locals_store[iparam]->nparams = iparam;
-	dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
-	++iparam;
-      }
-
+      /* setq(param_env, CAR(params), CAR(arglist)); */
+      locals_store[iparam] = make_cons(CAR(params), CAR(arglist));
+      locals_store[iparam]->nparams = iparam;
+      dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+      ++iparam;
+      
       params = CDR(params);
       arglist = CDR(arglist);
     }
@@ -91,7 +85,7 @@ limo_data *eval_macro_call(limo_data *f, limo_data *call, limo_data *env)
   // associating params with names
   param_env = make_env(macro_env);
   //  setq(param_env, sym_callerenv, env);  // don't need that.
-  while (!is_nil(params) && params->type==limo_TYPE_CONS) {
+  while (params->type==limo_TYPE_CONS) {
     if (is_nil(arglist))
       limo_error("too few arguments");
 
@@ -123,7 +117,7 @@ limo_data *list_dup(limo_data *list)
 {
   limo_data *ld;  
   limo_data **el = &ld;
-  while (list->type == limo_TYPE_CONS && !is_nil(list)) {
+  while (list->type == limo_TYPE_CONS) {
     if (CAR(list)->type == limo_TYPE_CONS)
       (*el) = make_cons(list_dup(CAR(list)), NULL);
     else
@@ -143,7 +137,7 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 {
   limo_data *ld;
   limo_data **el = &ld;
-  while (list->type == limo_TYPE_CONS && !is_nil(list)) {
+  while (list->type == limo_TYPE_CONS) {
     (*el) = make_cons(eval(CAR(list), env), NULL);
     el = &CDR(*el);
 
@@ -200,43 +194,37 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
     ld = ld->optimized;
 
   switch (ld->type) {
-  case limo_TYPE_CONS:
-    if (is_nil(ld))
-      return ld;
-    else {
-      limo_data *f = eval(CAR(ld), env);
-      switch (f->type) {
-      case limo_TYPE_BUILTIN:
-	return f->d_builtin(ld, env, thunk_place);
+  case limo_TYPE_CONS: {
+    limo_data *f = eval(CAR(ld), env);
+    switch (f->type) {
+    case limo_TYPE_BUILTIN:
+      return f->d_builtin(ld, env, thunk_place);
+      
+    case limo_TYPE_BUILTINFUN: {
+      int nargs=0, i;
+      limo_data *cur_ld;
+      limo_data **argv;
+      
+      //cur_ld = CDR(ld);
+      //while (!is_nil(cur_ld)) { cur_ld=CDR(cur_ld); ++nargs; }
+      nargs = list_length(ld)-1;   // this seems to be faster than to inline
+      argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
 
-      case limo_TYPE_BUILTINFUN: {
-        int nargs=0, i;
-        limo_data *cur_ld;
-        limo_data **argv;
+      for (i=0, cur_ld=CDR(ld); i<nargs; cur_ld=CDR(cur_ld), ++i)
+        argv[i] = eval(CAR(cur_ld), env);
 
-        //cur_ld = CDR(ld);
-        //while (!is_nil(cur_ld)) { cur_ld=CDR(cur_ld); ++nargs; }
-        nargs = list_length(ld)-1;   // this seems to be faster than to inline
-        argv  = (limo_data **)alloca(nargs * sizeof (limo_data *));
-
-        for (i=0, cur_ld=CDR(ld); i<nargs; cur_ld=CDR(cur_ld), ++i)
-          argv[i] = eval(CAR(cur_ld), env);
-
-        return f->d_builtinfun(nargs, argv);
-      }
-
-      case limo_TYPE_MACRO:
-	return eval_macro_call(f, ld, env);
-
-      case limo_TYPE_LAMBDA:
-	return eval_function_call(f, ld, env, 1, thunk_place);
-
-      default: limo_error("expected a callable. didn't get one");
-      }
+      return f->d_builtinfun(nargs, argv);
     }
-
-  case limo_TYPE_STRING:
-    return ld;
+        
+    case limo_TYPE_MACRO:
+      return eval_macro_call(f, ld, env);
+        
+    case limo_TYPE_LAMBDA:
+      return eval_function_call(f, ld, env, 1, thunk_place);
+        
+    default: limo_error("expected a callable. didn't get one");
+    }
+  }
 
   case limo_TYPE_SYMBOL:
     if (ld->d_string[0] == ':')
