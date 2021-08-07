@@ -127,8 +127,8 @@
 	((consp o)
 	 (list-to-string (append '("[")
 				 (list (json-dumps (car o)))
-				 (map (lambda (x) (string-concat ", " (json-dumps x)))
-				      (cdr o))
+				 (dmap1 (lambda (x) (string-concat ", " (json-dumps x)))
+                                        (cdr o))
 				 '("]"))))
 	((stringp o)
 	 (list-to-string (write-to-list o)))
@@ -146,8 +146,8 @@
 	       (list-to-string
 		(append '("{")
 			(list (writepair (car dl)))
-			(map (lambda (x) (string-concat ", " (writepair x)))
-			     (cdr dl))
+			(dmap1 (lambda (x) (string-concat ", " (writepair x)))
+                               (cdr dl))
 			'("}")))
 	       "{}")))))
 

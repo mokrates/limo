@@ -44,7 +44,7 @@ BUILTIN(builtin_lambda)
 
   paramlist = CAR(CDR(arglist));
   if (paramlist->type == limo_TYPE_CONS)
-    for (;!is_nil(paramlist) && paramlist->type==limo_TYPE_CONS;
+    for (;paramlist->type==limo_TYPE_CONS;
 	 ++nparams, paramlist=CDR(paramlist))
       ;
   if (paramlist->type != limo_TYPE_CONS)
@@ -216,7 +216,8 @@ BUILTIN(builtin_eq)
 
   if (limo_equals(eval(FIRST_ARG, env), eval(SECOND_ARG, env)))
     return sym_true;
-    else return nil;
+  else
+    return nil;
 }
 
 BUILTIN(builtin_write)

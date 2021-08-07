@@ -1,0 +1,7 @@
+(defun min (x y)
+  (if (< x y) x y))
+(freezeq min)
+
+(defun max (x y)
+  (if (> x y) x y))
+(freezeq max)
