@@ -46,9 +46,11 @@
 (setq string-strip string-strip)
 
 (defun string-slice (s l u)  ; string, lower, upper
-  (let ((len (string-length s)))
+  (let* ((len (string-length s))
+	 (lo (if (> 0 l) (+ 1 len l) l))
+	 (up (if (> 0 u) (+ 1 len u) u)))
     (list-to-string
-     (map1 (lambda (x) (string-nth x s)) (mdrange l (if (< len u) len u))))))
+     (map1 (lambda (x) (string-nth x s)) (mdrange lo (if (< len up) len up))))))
 (freezeq string-slice)
 
 (defun string-split (s d)
