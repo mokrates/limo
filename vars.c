@@ -34,7 +34,7 @@ limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt) 
   limo_data *cons;
   
   place=dict_get_place(dict, name);
-  if (place->cons == NULL) {
+  if (place->cons == NULL && !is_nil(up)) {
     cons = var_lookup_place(up, name);
 
     place->cons = cons;
