@@ -124,8 +124,12 @@ true if <object-or-class> is an object or a subclass of class <class>
 (defhelp for-each
   "MACRO for-each
 (for-each item list
+  [ :continuable ] [ :breakable ]
   body...)
 Executes <body> for each <item> in <list>
+
+If :continueable is used, the for-each loop may be (continue)d.
+If :breakable is used, the for-each loop may be (break)ed.
 ") 
 
 (defhelp cond
@@ -206,3 +210,30 @@ the garbage collector. Returns the last finalizer set.
 Function fin doesn't get any arguments (use a closure if you
 need any data there)
 ")
+
+(defhelp do
+  "MACRO do 
+SYNTAX: (do ((VAR1 INIT1 STEP1) ...)
+             (STOP-COND RESULT)
+             BODY)
+
+EX:
+(do ((x 0 (+ x 1))     ;; VAR1
+     (y 0 (+ y x)))    ;; VAR2
+    ((= x 5) y)       ;; STOP-COND and RESULT
+    (print (format \"x=%n y=%n\\n\" x y)))   ;; BODY
+x=0 y=0
+x=1 y=0
+x=2 y=1
+x=3 y=3
+x=4 y=6
+-> 10
+")
+
+(defhelp if
+  "MACRO (if <cond> <then> <else>)
+EX: (if (= x 3) \"x equals three!\" \"sadly, x is not three...\")
+<then> is only evaluated, if the <cond> is true, <else> only if <cond> is false.
+
+The macro reorders if-clauses, if the condition consists of NOT, AND, and OR 
+for efficiency reasons.")
