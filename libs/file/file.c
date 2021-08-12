@@ -2,6 +2,7 @@
 #include <errno.h>
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f))
 
 limo_data *sym_file;
 
@@ -58,6 +59,37 @@ BUILTIN(builtin_file_close)
   f=get_special(eval(FIRST_ARG, env),sym_file);
   fclose(f);
   return make_nil();
+}
+
+BUILTINFUN(builtin_file_eof)
+{
+  FILE *f;
+  REQUIRE_ARGC_FUN("FILE-EOF", 1);
+  f = get_special(argv[0], sym_file);
+  if (feof(f))
+    return sym_true;
+  else
+    return nil;
+}
+
+BUILTINFUN(builtin_file_read)
+{
+  FILE *f;
+  size_t len, rlen;
+  limo_data *res;
+  
+  REQUIRE_ARGC_FUN("FILE-READ", 2);
+  f = get_special(argv[0], sym_file);
+  len = GETINTFROMMPQ(argv[1]);
+  res = make_limo_data();
+  res->type = limo_TYPE_STRING;
+  res->d_string = GC_malloc_atomic(len+1);
+  rlen = fread(res->d_string, 1, len, f);
+  if (rlen < len)
+    res->d_string = GC_realloc(res->d_string, rlen+1);
+  res->d_string[rlen] = '\0';
+  res->string_length = rlen;
+  return res;
 }
 
 BUILTIN(builtin_file_getc)
@@ -132,6 +164,8 @@ void limo_init_file(limo_data *env)
   INSBUILTIN(builtin_file_flush, "FILE-FLUSH");
   INSBUILTIN(builtin_file_fdopen, "FILE-FDOPEN");
   INSBUILTIN(builtin_file_getc, "FILE-GETC");
+  INSBUILTINFUN(builtin_file_eof, "FILE-EOF");
+  INSBUILTINFUN(builtin_file_read, "FILE-READ");
   INSBUILTIN(builtin_file_open, "FILE-OPEN");
   INSBUILTIN(builtin_file_seek, "FILE-SEEK");
   INSBUILTIN(builtin_file_tell, "FILE-TELL");
