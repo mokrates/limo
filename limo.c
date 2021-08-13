@@ -150,7 +150,7 @@ int main(int argc, char **argv)
   rs = limo_rs_from_string(limo_program_cstr);
   while (!limo_eof(rs)) {
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(*pk_stacktrace_get());
+      print_stacktrace(stacktrace);
       writer(pk_exception_get());
       printf("\n");
       exit(1);
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
   if (argc != 2 || strcmp(argv[1], "-n")) {
     rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(*pk_stacktrace_get());
+      print_stacktrace(stacktrace);
       writer(pk_exception_get());
       printf("\n");
       exit(1);
@@ -181,8 +181,8 @@ int main(int argc, char **argv)
         rl_readline_state &= ~RL_STATE_SIGHANDLER;
         rl_reset_after_signal();
     	rs = limo_rs_make_readline();
-    	print_stacktrace(*pk_stacktrace_get());
-    	pk_stacktrace_set(nil);
+    	print_stacktrace(stacktrace);
+        stacktrace = nil;
     	writer(pk_exception_get());
     	printf("\n");
       }

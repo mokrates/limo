@@ -59,6 +59,8 @@ static void *limo_threading_entry_function(void *thread_thunk)
   GC_reachable_here(dynamic_env);
   GC_reachable_here(thread_thunk);
   GC_reachable_here(null_env);
+
+  return NULL;
 }
 
 BUILTIN(builtin_thread_create)

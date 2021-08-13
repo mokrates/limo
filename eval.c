@@ -192,10 +192,10 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     form = real_eval(form, env, &thunk);
   }
 
+  *stacktrace = tmp_stacktrace;
   CAR(stacktrace_cons) = NULL;
   CDR(stacktrace_cons) = *stacktrace_free;
   *stacktrace_free = stacktrace_cons;
-  *stacktrace = tmp_stacktrace;
   return form;
 }
 
