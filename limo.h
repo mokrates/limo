@@ -93,7 +93,7 @@ typedef struct limo_DICT {
   int size;
   int used;
 
-  limo_data **locals_store;
+  limo_data *locals_store;
 } limo_dict;
 
 typedef struct limo_FINALLY_STACK_ITEM {

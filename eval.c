@@ -3,31 +3,34 @@
 #include "limo.h"
 #include <assert.h>
 
+#define SETCONS(t,a,d) do { (t).type = limo_TYPE_CONS; (t).car = a; (t).cdr = d; } while (0)
+
 limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int eval_args, limo_data *thunk_place)
 {
   // (#<lambda:(env . (lambda (a b) body)) args...)
-  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env, **locals_store, *pdict;
+  limo_data *lambda_env, *lambda_list, *params, *body, *arglist, *param_env, *locals_store, *pdict;
   int iparam = 0;
-  
+
   lambda_env = CAR(f);                  // closure environment
-  lambda_list = CDR(f);                 
+  lambda_list = CDR(f);
   params = CAR(CDR(lambda_list));       // list of parameter names
   body = CAR(CDR(CDR(lambda_list)));     // body of lambda
   arglist = CDR(call);                    // argumentlist in current call
 
   param_env = make_env(lambda_env);     // environment to store the arguments
   pdict = CDR(param_env);               // dictionary to store locals
-  
-  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)GC_malloc(f->nparams * sizeof (limo_data *));
+
+  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)GC_malloc(f->nparams * sizeof (limo_data));
   if (eval_args) {
     while (params->type == limo_TYPE_CONS) {
       if (arglist->type != limo_TYPE_CONS)
 	limo_error("eval funcall: too few arguments");
-      
+
       /* setq(param_env, CAR(params), eval(CAR(arglist), env)); */
-      locals_store[iparam] = make_cons(CAR(params), eval(CAR(arglist), env));
-      locals_store[iparam]->nparams = iparam;
-      dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+      //locals_store[iparam] = make_cons(CAR(params), eval(CAR(arglist), env));
+      SETCONS(locals_store[iparam], CAR(params), eval(CAR(arglist), env));
+      locals_store[iparam].nparams = iparam;
+      dict_put_cons_ex(pdict, &locals_store[iparam], DI_LOCAL);
       ++iparam;
 
       params = CDR(params);
@@ -40,11 +43,13 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
 	limo_error("eval funcall: too few arguments");
 
       /* setq(param_env, CAR(params), CAR(arglist)); */
-      locals_store[iparam] = make_cons(CAR(params), CAR(arglist));
-      locals_store[iparam]->nparams = iparam;
-      dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+      //locals_store[iparam] = make_cons(CAR(params), CAR(arglist));
+
+      SETCONS(locals_store[iparam], CAR(params), CAR(arglist));
+      locals_store[iparam].nparams = iparam;
+      dict_put_cons_ex(pdict, &locals_store[iparam], DI_LOCAL);
       ++iparam;
-      
+
       params = CDR(params);
       arglist = CDR(arglist);
     }
@@ -52,15 +57,17 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   if (params->type==limo_TYPE_SYMBOL) {
     if (eval_args) {
       /* setq(param_env, params, list_eval(arglist, env)); */
-      locals_store[iparam] = make_cons(params, list_eval(arglist, env));
-      locals_store[iparam]->nparams = iparam;
+      //locals_store[iparam] = make_cons(params, list_eval(arglist, env));
+      SETCONS(locals_store[iparam], params, list_eval(arglist, env));
+      locals_store[iparam].nparams = iparam;
     }
     else {
       /* setq(param_env, params, arglist); */
-      locals_store[iparam] = make_cons(params, arglist);
-      locals_store[iparam]->nparams = iparam;
+      //locals_store[iparam] = make_cons(params, arglist);
+      SETCONS(locals_store[iparam], params, arglist);
+      locals_store[iparam].nparams = iparam;
     }
-    dict_put_cons_ex(pdict, locals_store[iparam], DI_LOCAL);
+    dict_put_cons_ex(pdict, &locals_store[iparam], DI_LOCAL);
   }
 
   if (thunk_place) {          // if we have a prepared thunk_place, use it.
@@ -115,7 +122,7 @@ limo_data *ld_dup(limo_data *ld)
 
 limo_data *list_dup(limo_data *list)
 {
-  limo_data *ld;  
+  limo_data *ld;
   limo_data **el = &ld;
   while (list->type == limo_TYPE_CONS) {
     if (CAR(list)->type == limo_TYPE_CONS)
@@ -177,7 +184,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   }
   else
     stacktrace_cons = make_cons(form, tmp_stacktrace);
-  
+
   *stacktrace = stacktrace_cons;
 
   form=real_eval(form, env, &thunk);
@@ -213,12 +220,12 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
     switch (f->type) {
     case limo_TYPE_BUILTIN:
       return f->d_builtin(ld, env, thunk_place);
-      
+
     case limo_TYPE_BUILTINFUN: {
       int nargs=0, i;
       limo_data *cur_ld;
       limo_data **argv;
-      
+
       //cur_ld = CDR(ld);
       //while (!is_nil(cur_ld)) { cur_ld=CDR(cur_ld); ++nargs; }
       nargs = list_length(ld)-1;   // this seems to be faster than to inline
@@ -229,13 +236,13 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
 
       return f->d_builtinfun(nargs, argv);
     }
-        
+
     case limo_TYPE_MACRO:
       return eval_macro_call(f, ld, env);
-        
+
     case limo_TYPE_LAMBDA:
       return eval_function_call(f, ld, env, 1, thunk_place);
-        
+
     default: limo_error("expected a callable. didn't get one");
     }
   }
@@ -253,7 +260,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
       if (res->type == limo_TYPE_CONST)  // this can happen to parameters of macros.
         res=CAR(res);
       //assert(res->type != limo_TYPE_CONST);
-      
+
       /* if (!(limo_register & LR_OPTDISABLE)) */
       /*   if (marked_constant) */
       /*     ld->optimized = make_const(ld_dup(ld), res); */
@@ -268,9 +275,9 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
   case limo_TYPE_LCACHE:
     /* writer(CDR(env)->d_dict->locals_store[ld->nparams]); */
     /* printf("\nresolving lcache\n"); */
-    return CDR(CDR(env)->d_dict->locals_store[ld->nparams]);
+    return CDR(env)->d_dict->locals_store[ld->nparams].cdr;
 
-  default: 
+  default:
     return ld;
   }
 }
