@@ -18,7 +18,7 @@ CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 
 .PHONY: all libs clean realclean install uninstall
 
-all: libs limo
+all: TAGS libs limo
 
 exelimo: $(EXEOBJ)
 	ar rcs liblimo.a $(EXEOBJ)
@@ -32,7 +32,7 @@ limo: $(OBJ) libs
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
 
 limo-almost-static: $(OBJ) libs
-	$(CC) $(OBJ) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
+	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
 
 limo-wsl: limo-almost-static
 
@@ -40,7 +40,7 @@ libs:
 	make -C libs
 
 TAGS:
-	etags *.c *.h libs/*/*.c libs/*/*.h
+	etags.emacs --regex='{c}/BUILTIN\(FUN\)?(\([^)]+\)/\2/' *.c *.h libs/*/*.c libs/*/*.h
 
 $(OBJ): $(HEADERS) Makefile
 

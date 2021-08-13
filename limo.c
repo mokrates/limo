@@ -25,14 +25,15 @@ pthread_key_t pk_exception_key;
 pthread_key_t pk_ljbuf_key;
 pthread_key_t pk_finallystack_key;
 pthread_key_t pk_limo_data_next_key;
-pthread_key_t pk_cons_next_key;
+pthread_key_t pk_stacktrace_free_key;
 pthread_key_t pk_dict_next_key;
 pthread_key_t pk_gmpq_next_key;
 
 void *make_limo_data_next = NULL;
-void *make_cons_next = NULL;
+void *make_stacktrace_free = NULL;
 void *make_dict_next = NULL;
 void *make_gmpq_next = NULL;
+limo_data *stacktrace;
 
 static void init_pthread_keys(void)
 {
@@ -41,7 +42,7 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_exception_key, NULL);
   pthread_key_create(&pk_finallystack_key, NULL);
   pthread_key_create(&pk_limo_data_next_key, NULL);
-  pthread_key_create(&pk_cons_next_key, NULL);
+  pthread_key_create(&pk_stacktrace_free_key, NULL);
   pthread_key_create(&pk_dict_next_key, NULL);
   pthread_key_create(&pk_gmpq_next_key, NULL);  
   pthread_key_create(&pk_dynamic_vars_key, NULL);
@@ -126,12 +127,13 @@ int main(int argc, char **argv)
 
   init_pthread_keys();
   pk_limo_data_next_set(&make_limo_data_next);
-  pk_cons_next_set(&make_cons_next);
+  pk_stacktrace_free_set(&make_stacktrace_free);
   pk_dict_next_set(&make_dict_next);
   pk_gmpq_next_set(&make_gmpq_next);
 
   init_syms();
-  pk_stacktrace_set(nil);
+  stacktrace = nil;
+  pk_stacktrace_set(&stacktrace);
   pk_exception_set(nil);
   pk_finallystack_set(NULL);
  
@@ -148,7 +150,7 @@ int main(int argc, char **argv)
   rs = limo_rs_from_string(limo_program_cstr);
   while (!limo_eof(rs)) {
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(pk_stacktrace_get());
+      print_stacktrace(*pk_stacktrace_get());
       writer(pk_exception_get());
       printf("\n");
       exit(1);
@@ -159,7 +161,7 @@ int main(int argc, char **argv)
   if (argc != 2 || strcmp(argv[1], "-n")) {
     rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
     if (NULL==try_catch(reader(rs), env)) {
-      print_stacktrace(pk_stacktrace_get());
+      print_stacktrace(*pk_stacktrace_get());
       writer(pk_exception_get());
       printf("\n");
       exit(1);
@@ -179,7 +181,7 @@ int main(int argc, char **argv)
         rl_readline_state &= ~RL_STATE_SIGHANDLER;
         rl_reset_after_signal();
     	rs = limo_rs_make_readline();
-    	print_stacktrace(pk_stacktrace_get());
+    	print_stacktrace(*pk_stacktrace_get());
     	pk_stacktrace_set(nil);
     	writer(pk_exception_get());
     	printf("\n");

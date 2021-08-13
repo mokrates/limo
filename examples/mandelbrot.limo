@@ -22,8 +22,8 @@
 				      (range 0 17 1))))
 
 (defun csqr (c)
-  (cons (- (* (car c) (car c))
-	   (* (cdr c) (cdr c)))
+  (cons (- (power (car c) 2)
+	   (power (cdr c) 2))
 	(* 2 (car c) (cdr c))))
 (freezeq csqr)
 
@@ -37,7 +37,7 @@
     (progn
      (setq z (cons x y))
      (for-each n (drange 0 16 1)
-       (if (>= (+ (* (car z) (car z)) (* (cdr z) (cdr z))) 4)
+       (if (>= (+ (power (car z) 2) (power (cdr z) 2)) 4)
 	   (return-from fun n)
 	   (setf z (cadd (csqr z) (cons x y)))))
      16)))

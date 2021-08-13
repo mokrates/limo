@@ -149,8 +149,10 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 
 limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 {
-  limo_data *tmp_stacktrace = pk_stacktrace_get();
+  limo_data **stacktrace = pk_stacktrace_get();
+  limo_data **stacktrace_free = pk_stacktrace_free_get();
   limo_data *stacktrace_cons;
+  limo_data *tmp_stacktrace = *stacktrace;
 
   limo_data thunk;
   thunk.type = limo_TYPE_THUNK;
@@ -167,8 +169,16 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
     }
   }
 
-  stacktrace_cons = make_cons(form, tmp_stacktrace);
-  pk_stacktrace_set(stacktrace_cons);
+  if (*stacktrace_free) {
+    stacktrace_cons = *stacktrace_free;
+    *stacktrace_free = CDR(*stacktrace_free);
+    CAR(stacktrace_cons) = form;
+    CDR(stacktrace_cons) = tmp_stacktrace;
+  }
+  else
+    stacktrace_cons = make_cons(form, tmp_stacktrace);
+  
+  *stacktrace = stacktrace_cons;
 
   form=real_eval(form, env, &thunk);
   while (form->type == limo_TYPE_THUNK) {
@@ -181,7 +191,11 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
 
     form = real_eval(form, env, &thunk);
   }
-  pk_stacktrace_set(tmp_stacktrace);
+
+  CAR(stacktrace_cons) = NULL;
+  CDR(stacktrace_cons) = *stacktrace_free;
+  *stacktrace_free = stacktrace_cons;
+  *stacktrace = tmp_stacktrace;
   return form;
 }
 
