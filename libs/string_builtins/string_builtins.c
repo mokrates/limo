@@ -1,6 +1,7 @@
 #include <limo.h>
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f))
 
 BUILTIN(builtin_string_nth)
 {
@@ -106,6 +107,30 @@ BUILTIN(builtin_string_utf8_length) {
   return make_number_from_long_long(count);
 }
 
+BUILTINFUN(builtin_list_to_string)
+{
+  limo_data *ld, *res;
+  unsigned int total_length = 0, pos = 0;
+  
+  REQUIRE_ARGC_FUN("LIST-TO-STRING", 1);
+  for (ld=argv[0]; !is_nil(ld); ld=CDR(ld))
+    if (CAR(ld)->type == limo_TYPE_STRING)
+      total_length += CAR(ld)->string_length;
+    else
+      limo_error("list-to-string expects a list of strings");
+
+  res = make_limo_data();
+  res->type = limo_TYPE_STRING;
+  res->d_string = GC_malloc_atomic(total_length+1);
+  res->string_length = total_length;
+  for (ld=argv[0]; !is_nil(ld); ld=CDR(ld)) {
+    memcpy(res->d_string + pos, CAR(ld)->d_string, CAR(ld)->string_length);
+    pos+=CAR(ld)->string_length;
+  }
+  res->d_string[pos]='\0';
+  return res;
+}
+
 void limo_init_string_builtins(limo_data *env)
 {
   INSBUILTIN(builtin_string_nth, "STRING-NTH");
@@ -114,4 +139,5 @@ void limo_init_string_builtins(limo_data *env)
   INSBUILTIN(builtin_ord, "ORD");
   INSBUILTIN(builtin_chr, "CHR");
   INSBUILTIN(builtin_string_utf8_length, "STRING-UTF8-LENGTH");
+  INSBUILTINFUN(builtin_list_to_string, "LIST-TO-STRING");
 }

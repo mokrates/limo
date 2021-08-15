@@ -9,7 +9,7 @@
 	  (chr (- (+ (ord char) (ord "A")) (ord "a")))
 	  char))
     (list-to-string
-     (dmap1 upcase (string-to-list str))))
+     (map1 upcase (string-to-list str))))
   
   (defun globalenv (cu)
     (if (car (env-extract cu))
@@ -34,7 +34,7 @@
 	  (chr (- (+ (ord char) (ord "A")) (ord "a")))
 	  char))
     (list-to-string
-     (dmap1 upcase (string-to-list str))))
+     (map1 upcase (string-to-list str))))
   
   (defun globalenv (cu)
     (if (car (env-extract cu))

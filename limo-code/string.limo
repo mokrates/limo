@@ -9,8 +9,8 @@
 	      (reduce _builtin-string-concat (cons "" x)))))
 (freezeq string-concat)
 
-(defun list-to-string (l)
-  (apply string-concat l))
+;; (defun list-to-string (l)
+;;   (apply string-concat l))
 (freezeq list-to-string)
 
 (defun string-to-list (s)

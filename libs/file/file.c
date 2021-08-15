@@ -95,18 +95,23 @@ BUILTINFUN(builtin_file_read)
 BUILTIN(builtin_file_getc)
 {
   FILE *f;
-  char buf[3]="\0\0";
   limo_data *ld;
 
   if (list_length(arglist)<2)
     limo_error("file_getc FILE");
 
   f=get_special(eval(FIRST_ARG, env),sym_file);
-  *buf = fgetc(f);
-  if (feof(f))
-    return make_string("");
-  ld = make_string(buf);
-  ld->hash=1;
+  ld = make_limo_data();
+  ld->type = limo_TYPE_STRING;
+  ld->d_string = (char *)&ld->cdr;
+  ld->d_string[0] = fgetc(f);
+  ld->d_string[1] = '\0';
+  if (feof(f)) {
+    ld->d_string[0] = '\0';
+    ld->string_length = 0;
+  }
+  else
+    ld->string_length = 1;
   return ld;
 }
 
