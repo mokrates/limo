@@ -67,7 +67,7 @@ typedef struct limo_DATA {
     struct limo_DICT *d_dict;
     void *d_special_intern;
     struct limo_DATA *car;
-  }; 
+  };
   struct limo_DATA *cdr;
   union {
     unsigned int hash;  // for symbols
@@ -101,7 +101,7 @@ typedef struct limo_FINALLY_STACK_ITEM {
   sigjmp_buf *exc_buf;
   limo_data *thunk;
   // backtrace?
-  
+
   struct limo_FINALLY_STACK_ITEM *next;
 } limo_finally_stack_item;
 
@@ -188,10 +188,10 @@ limo_data *make_globalenv(int, char **);
 
 limo_data *try_catch(limo_data *thetry, limo_data *env);
 #ifndef __cplusplus
-void throw(limo_data *excp)  __attribute__ ((noreturn));  
+void throw(limo_data *excp)  __attribute__ ((noreturn));
 #endif
 void throw_after_finally(void);
-void limo_error(char *, ...) __attribute__ ((noreturn));   
+void limo_error(char *, ...) __attribute__ ((noreturn));
 void limo_error_errno(limo_data *excp_name) __attribute__ ((noreturn));
 void print_stacktrace(limo_data *s); // prints stacktrace s
 
@@ -223,7 +223,7 @@ extern pthread_key_t pk_dynamic_vars_key;
 #define pk_gmpq_next_get()       ((void **)pthread_getspecific(pk_gmpq_next_key))
 #define pk_dynamic_vars_set(VAL) (pthread_setspecific(pk_dynamic_vars_key, (void *)(VAL)))
 #define pk_dynamic_vars_get()    ((limo_data *)pthread_getspecific(pk_dynamic_vars_key))
-  
+
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)
 #define is_nil(x) ((x)->type == limo_TYPE_NIL)
@@ -396,4 +396,3 @@ void segfault(void);  // segfault to generate a stacktrace. selfmade debug stopp
 #ifdef LIMO_MAKE_EXECUTABLE
 extern char *limo_program_cstr;
 #endif
-

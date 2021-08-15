@@ -23,7 +23,7 @@ BUILTIN(builtin_string_nth)
   res = make_limo_data();
   res->string_length = 1;
   res->type = limo_TYPE_STRING;
-  res->d_string = GC_malloc_atomic(2);
+  res->d_string = (char *)&(res->cdr);
   res->d_string[1] = '\0';
   res->d_string[0] = str->d_string[i];
   return res;
@@ -66,19 +66,21 @@ BUILTIN(builtin_ord)
 
 BUILTIN(builtin_chr)
 {
-  char buf[3]="\0\0";
   limo_data *n, *str;
   int i;
 
   REQUIRE_ARGC("CHR", 1);
-  
+
   n = eval(FIRST_ARG, env);
   if (n->type != limo_TYPE_GMPQ)
     limo_error("(CHR number)");
 
   i = (int)mpq_get_d(*n->d_mpq);
-  *buf = (char)i;
-  str = make_string(buf);
+  str = make_limo_data();
+  str->type = limo_TYPE_STRING;
+  str->d_string = (char *)&str->cdr;
+  str->d_string[0] = (unsigned char)i;
+  str->d_string[1] = '\0';
   str->string_length=1;
   return str;
 }
