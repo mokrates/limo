@@ -19,7 +19,7 @@
   (if (!= x "")
       (dcons x (fread file))
       ()))
-(setq program-string (list-to-string (fread progfile)))
+(setq program-string (reduce string-concat (fread progfile)))
 (setq program (make-vector (string-length program-string)))
 (for-each i (drange 0 (string-length program-string) 1)
   (vector-set program i (string-nth i program-string)))
