@@ -87,8 +87,9 @@
   
   (defun load-keyword (kw val)
     (for-each c (string-to-list kw)
-      (unless (eq (car s) c)
-	(throw (list 'json-error "unknown keyword encountered"))))
+      (if (eq (car s) c)
+          (setf s (cdr s))
+          (throw (list 'json-error "unknown keyword encountered"))))
     val)
 	    
   (defun load-object ()
