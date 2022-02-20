@@ -497,6 +497,15 @@
   (undyn (apply dappend x)))
 (freezeq append)
 
+(defun nconc lists
+  (cond ((not lists) ())
+        ((not (car lists)) (apply nconc (cdr lists)))
+        (:else
+         (do ((cursor (car lists) (cdr cursor)))
+             ((not (cdr cursor))
+              (progn (setcdr cursor (apply nconc (cdr lists)))
+                     (car lists)))))))
+
 (setq warn-once
       (scope
        (setq already-warned (make-dict))
