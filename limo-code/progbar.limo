@@ -1,5 +1,5 @@
 (unify
- (progress-bar-wt progress-bar-w progbar-print)
+ (progress-bar-wt progress-bar-w progress-bar-t progress-bar progbar-print)
  (scope
   (setq progbarcounter 0)
 
@@ -80,5 +80,11 @@
     (let ((pbc progbarcounter))
       (incf progbarcounter)
       (progress-bar-x it width pbc (list-length it) 0 0)))
-  
-(list progress-bar-wt progress-bar-w progbar-print)))
+
+  (defun progress-bar-t (it total)
+    (progress-bar-wt it 80 total))
+
+  (defun progress-bar (it)
+    (progress-bar-w it 80))
+
+  (list progress-bar-wt progress-bar-w progress-bar-t progress-bar progbar-print)))
