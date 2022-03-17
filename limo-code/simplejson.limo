@@ -33,7 +33,7 @@
 	     (setf s (cdr s)))))
     (setf res (cons "\"" res))
     (setf s (cdr s))   ;; skip trailing "\""
-    (read-string (from-backslash-u (list-to-string (reverse res)))))
+    (read-string (list-to-string (reverse res))))
 
   (defun load-number ()     ;; perhaps unsafe?
     (setq res ())
