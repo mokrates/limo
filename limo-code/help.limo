@@ -99,11 +99,47 @@ see defmethod
 example:
 (defclass foo ()                 ; defining class
   (defmethod init (self) ())     ; must exist to instantiate
-  (defmethod print-something (self) (print \"foo\\n\")))  ; example-method
+  (defmethod print-something (self) (print \"foo\\n\"))  ; example-method
+
+  ;; properties are the 'public interface' for data-members
+  (defprop   sprop _sprop)        ; define a simple property using data-member _sprop
+  (defmethod cprop (self . value) ; define a complex property
+    (if value             ;; value is empty list, if no 
+        (if (< (car value) 5)     ;; do some checking
+            (setmember [self . _cprop] (car value)) ;; setting the value
+            (throw 'what-did-you-think))
+        [self . _cprop])))         ;; no second argument given, return value of propery
+
 (setq bar (new foo))             ; instantiate
-[foo print-something]            ; method-call
-(set-member [foo . bar] \"baz\") ; setting a member
-[foo . bar] -> \"baz\"           ; reading a member
+[bar print-something]            ; method-call
+(set-member [bar . baz] \"quux\") ; setting a member
+[bar . baz] -> \"quux\"           ; reading a member
+
+;; setting a property, first way
+[bar sprop \"bacon\"]
+;; reading the property
+[bar sprop] -> \"bacon\"
+
+;; setting a property, second way
+(setf [bar sprop] \"eggs\")
+;; reading
+[bar sprop] -> \"eggs\"
+
+;; setting a complex property
+λimo > (setf [bar cprop] 6)
+
+UNHANDLED EXCEPTION CAUGHT
+\"file: *READLINE*, line: 1, col: 13\"
+  (THROW (QUOTE WHAT-DID-YOU-THINK))
+WHAT-DID-YOU-THINK
+
+;; setting a complex property next try
+λimo > (setf [bar cprop] 4)
+-> 4
+
+;; reading the complex property
+λimo > [bar cprop]
+-> 4
 
 see defmethod.
 
