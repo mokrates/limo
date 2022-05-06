@@ -88,5 +88,5 @@
         
   (if (not l)
       ()
-      (list-to-string (dcons (car l) (helper sep (cdr l))))))
+      (list-to-string (cons (car l) (undyn (helper sep (cdr l)))))))
 (freezeq string-join)
