@@ -22,7 +22,7 @@
                (incf i 6)))
             ((and (= (string-nth i str) "\\")
                   (= (string-nth (+ i 1) str) "\\"))
-             (result+= "\\")
+             (result+= "\\\\")
              (incf i 2))
             (:else
              (result+= (string-nth i str))
