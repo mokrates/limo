@@ -145,8 +145,7 @@ typedef struct limo_READER_STREAM {
   enum { RS_FILE, RS_STR, RS_READLINE } type;
   int pos; // linepos whereever it makes sense
   int line;
-  char ungetc_buf[LIMO_UNGETC_BUF];
-  int ungetc_buf_pos;
+  limo_data* ungetc_buf;
   int eof; // only for readline
   char *filename;
   limo_data *env; // for dispatching
@@ -185,6 +184,7 @@ limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
 limo_data *make_string(char *);
+limo_data *make_char(char);
 
 limo_data *make_globalenv(int, char **);
 

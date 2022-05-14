@@ -91,8 +91,12 @@ int limo_getc(reader_stream *rs)
 {
   int c;
 
-  if (rs->ungetc_buf_pos > 0)
-    return rs->ungetc_buf[--(rs->ungetc_buf_pos)];
+  if (!is_nil(rs->ungetc_buf)) {
+    char *c;
+    c=CAR(rs->ungetc_buf)->d_string[0];
+    rs->ungetc_buf = CDR(rs->ungetc_buf);
+    return c;
+  }
 
   switch (rs->type) {
   case RS_FILE:
@@ -174,7 +178,7 @@ reader_stream *limo_rs_make_readline(limo_data *env)
   rs->type = RS_READLINE;
   rs->stream.readline = (char *)GC_malloc(1);
   rs->stream.readline[0] = '\0';
-  rs->ungetc_buf_pos=0;
+  rs->ungetc_buf = nil;
   rs->eof=0;
   rs->env = env;
   rs->filename="*READLINE*";
@@ -188,7 +192,7 @@ reader_stream *limo_rs_from_file(FILE *f, char *filename, limo_data *env)
 
   rs->type = RS_FILE;
   rs->stream.file = f;
-  rs->ungetc_buf_pos=0;
+  rs->ungetc_buf = nil;
   rs->eof=0;
   rs->filename = filename;
   rs->line = 0;
@@ -204,7 +208,7 @@ reader_stream *limo_rs_from_string(char *str, limo_data *env)
 
   rs->type = RS_STR;
   rs->stream.str = limo_strdup(str);
-  rs->ungetc_buf_pos=0;
+  rs->ungetc_buf = nil;
   rs->eof=0;
   rs->filename = "*STRING*";
   rs->line = 0;
@@ -215,7 +219,7 @@ reader_stream *limo_rs_from_string(char *str, limo_data *env)
 
 void limo_ungetc(char c, reader_stream *rs)
 {
-  rs->ungetc_buf[rs->ungetc_buf_pos++] = c;
+  rs->ungetc_buf = make_cons(make_char(c), rs->ungetc_buf);
 }
 
 limo_annotation *limo_rs_annotation(reader_stream *rs)
@@ -246,6 +250,38 @@ int read_skip_space_comments(reader_stream *f)
       c=limo_getc(f);
   }
   return c;
+}
+
+//////////////////////////////////////////////////////////
+// Read a dispatch macro
+// CAUTION! Can return NULL in case of
+// for example #|comment|#
+
+limo_data *read_dispatch_macro(reader_stream *f)
+{
+  char disp_char[2]="\0\0";
+  limo_data *readtable;
+  limo_data *readtable_entry;
+  limo_data *res;
+  disp_char[0] = limo_getc(f);
+
+  // get dispatch function
+  readtable = var_lookup(f->env, make_sym("*READTABLE*")); // throws exception if *READTABLE* doesn't exist.
+  readtable_entry = dict_get_place(readtable, make_string(disp_char))->cons;    // returns nil, if entry doesn't exist
+  if (!readtable_entry)
+    throw(make_sym("MACRO-DISPATCH-ERROR"));
+  res = eval(make_cons(CDR(readtable_entry),
+		       make_cons(make_special(sym_reader_stream, f),
+				 nil)),
+	     f->env);
+  if (is_nil(res))
+    return NULL;
+  else {
+    if (res->type != limo_TYPE_CONS)
+      throw(make_cons(make_sym("MACRO-DISPATCH-ERROR"), make_string("reader macro must return either nil or a cons")));
+
+    return CAR(res);
+  }
 }
 
 limo_data *read_list(reader_stream *f)
@@ -423,29 +459,10 @@ limo_data *reader(reader_stream *f)
     return limpy_block_reader(f);
   }
   else if (c=='#') {  // dispatch-char
-    char disp_char[2]="\0\0";
-    limo_data *readtable;
-    limo_data *readtable_entry;
     limo_data *res;
-    disp_char[0] = limo_getc(f);
-
-    // get dispatch function
-    readtable = var_lookup(f->env, make_sym("*READTABLE*")); // throws exception if *READTABLE* doesn't exist.
-    readtable_entry = dict_get_place(readtable, make_string(disp_char))->cons;    // returns nil, if entry doesn't exist
-    if (!readtable_entry)
-      throw(make_sym("MACRO-DISPATCH-ERROR"));
-    res = eval(make_cons(CDR(readtable_entry),
-                         make_cons(make_special(sym_reader_stream, f),
-                                   nil)),
-               f->env);
-    if (is_nil(res))
+    res = read_dispatch_macro(f);
+    if (!res)  // empty result, possibly #| comment |#
       return reader(f);
-    else {
-      if (res->type != limo_TYPE_CONS)
-        throw(make_cons(make_sym("MACRO-DISPATCH-ERROR"), make_string("reader macro must return either nil or a cons")));
-
-      return CAR(res);
-    }
   }
   else {
     limo_ungetc(c, f);

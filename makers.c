@@ -151,6 +151,18 @@ limo_data *make_string(char *msg)
   return str;
 }
 
+// create a one byte string without requiring an extra buffer for the string
+limo_data *make_char(char c)
+{
+  limo_data *str = make_limo_data();
+  str->type = limo_TYPE_STRING;
+  str->d_string = (char *)&(str->cdr);
+  str->d_string[1] = '\0';
+  str->d_string[0] = c;
+  str->string_length = 1;
+  return str;
+}
+
 limo_data *make_const(limo_data *name, limo_data *ld)
 {
   limo_data *res;
