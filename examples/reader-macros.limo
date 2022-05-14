@@ -1,0 +1,21 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; examples for reader macros
+
+
+;; (reader-stream-getc rs) gets you one byte
+;; (reader-stream-ungetc rs c) ungets you one byte
+;; (read rs) reads with limo reader from rs and returns one item
+;; (dict-set *readtable* "x" reader-function) sets reader-function to be used for #x...
+;;
+;; reader function must return nil or a list. if it returns nil,
+;; the reader reads nothing (useful for comments)
+;; (defun reader-function (rs) ... (list result))
+
+(defun list-index-reader (rs)
+  (let ((l (read rs))   ;; read the list
+        (i (cadr (read rs))))  ;; the index is to be written with []
+    (list `(nth ,i ,l))))
+
+(dict-set *readtable* "i" list-index-reader)
+
+#i '(1 2 3) [1]  ;; ->2
