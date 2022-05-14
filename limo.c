@@ -17,6 +17,7 @@ limo_data *sym_true;
 limo_data *sym_stacktrace;
 limo_data *sym_underscore;
 limo_data *sym_block;
+limo_data *sym_reader_stream;
 limo_data *nil;
 
 pthread_key_t pk_dynamic_vars_key;
@@ -57,6 +58,7 @@ static void init_syms()
   sym_stacktrace = make_sym("_STACKTRACE");
   sym_true       = make_sym(":T");
   sym_underscore = make_sym("_");
+  sym_reader_stream = make_sym("READER-STREAM");
   sym_block      = make_sym("BLOCK");
 }
 
@@ -65,7 +67,7 @@ void load_limo_file(char *filename, limo_data *env)
   FILE *f;
   reader_stream *rs;
   if (f=fopen(filename, "r")) {
-    rs = limo_rs_from_file(f, filename);
+    rs = limo_rs_from_file(f, filename, env);
     while (!limo_eof(rs)) {
       eval(reader(rs), env);
     }
@@ -159,7 +161,7 @@ int main(int argc, char **argv)
 #else
 
   if (argc != 2 || strcmp(argv[1], "-n")) {
-    rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))");
+    rs = limo_rs_from_string("(load (string-concat _limo-prefix \"init.limo\"))", env);
     if (NULL==try_catch(reader(rs), env)) {
       print_stacktrace(stacktrace);
       writer(pk_exception_get());
@@ -168,7 +170,7 @@ int main(int argc, char **argv)
     }
   }
 
-  rs = limo_rs_make_readline();
+  rs = limo_rs_make_readline(env);
 
   while (!limo_eof(rs)) { // REPL
     limo_data *ld;
@@ -180,7 +182,7 @@ int main(int argc, char **argv)
         signal(SIGINT, limo_repl_sigint);
         rl_readline_state &= ~RL_STATE_SIGHANDLER;
         rl_reset_after_signal();
-    	rs = limo_rs_make_readline();
+    	rs = limo_rs_make_readline(env);
     	print_stacktrace(stacktrace);
         stacktrace = nil;
     	writer(pk_exception_get());

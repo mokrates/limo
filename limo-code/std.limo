@@ -899,7 +899,30 @@
 					;(* 1 2 3)
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; reader-macros
 
+;; reader-macros HAVE to return either nil or a cons
+;; if 
+
+(setq *readtable* (make-dict))
+(dict-set *readtable* "|"
+          (scope
+           (defun comment-reader (rs)
+             (unless (reader-stream-eof rs)
+               (if (= (reader-stream-getc rs) "|")
+                   (unless (= (setq c (reader-stream-getc rs)) "#")
+                     (progn (reader-stream-ungetc rs c)
+                            (comment-reader rs)))
+                   (comment-reader rs))))))
+
+(dict-set *readtable* "." (lambda (rs) (list (eval (read rs)))))
+(dict-set *readtable* "!"
+          (scope
+           (defun line-comment-reader (rs)
+             (unless (or (reader-stream-eof rs)
+                         (= (reader-stream-getc rs) "\n"))
+               (line-comment-reader rs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

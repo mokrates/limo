@@ -23,7 +23,6 @@ void limo_history_write_history(char *rl)
   char *home;
   char **env;
   char history_file_name[256];
-  FILE *f;
 
   env=environ;
   while (*env != NULL && strncmp("HOME=", *env, 5))
@@ -43,7 +42,6 @@ void limo_history_read_history(void)
   char *home;
   char **env;
   static char history_file_name[256]="\0";
-  FILE *f;
 
   if (history_file_name[0]!='\0')
     return;
@@ -141,6 +139,9 @@ int limo_getc(reader_stream *rs)
       }
     }
     return rs->stream.readline[rs->pos++];
+
+  default:
+    throw(make_sym("UNKNOWN-READER-STREAM-TYPE"));
   }
 }
 
@@ -150,11 +151,13 @@ char limo_eof(reader_stream *rs)
   case RS_FILE: return feof(rs->stream.file);
   case RS_STR: return rs->stream.str[rs->pos]=='\0';
   case RS_READLINE: return rs->eof;
+  default:
+    throw(make_sym("UNKNOWN-READER-STREAM-TYPE"));
   }
 }
 
 int limo_rl_inited = 0;
-reader_stream *limo_rs_make_readline(void)
+reader_stream *limo_rs_make_readline(limo_data *env)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
   memset(rs, 0, sizeof *rs);
@@ -173,11 +176,12 @@ reader_stream *limo_rs_make_readline(void)
   rs->stream.readline[0] = '\0';
   rs->ungetc_buf_pos=0;
   rs->eof=0;
+  rs->env = env;
   rs->filename="*READLINE*";
   return rs;
 }
 
-reader_stream *limo_rs_from_file(FILE *f, char *filename)
+reader_stream *limo_rs_from_file(FILE *f, char *filename, limo_data *env)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
   memset(rs, 0, sizeof *rs);
@@ -189,10 +193,11 @@ reader_stream *limo_rs_from_file(FILE *f, char *filename)
   rs->filename = filename;
   rs->line = 0;
   rs->pos = 0;
+  rs->env = env;
   return rs;
 }
 
-reader_stream *limo_rs_from_string(char *str)
+reader_stream *limo_rs_from_string(char *str, limo_data *env)
 {
   reader_stream *rs = (reader_stream *)GC_malloc(sizeof (reader_stream));
   memset(rs, 0, sizeof *rs);
@@ -204,6 +209,7 @@ reader_stream *limo_rs_from_string(char *str)
   rs->filename = "*STRING*";
   rs->line = 0;
   rs->pos = 0;
+  rs->env = env;
   return rs;
 }
 
@@ -217,7 +223,7 @@ limo_annotation *limo_rs_annotation(reader_stream *rs)
   switch (rs->type) {
   case RS_FILE:
     return make_annotation(rs->filename, rs->line, rs->pos);
-  
+
   case RS_STR:
     return make_annotation("*STRING*", 0, rs->pos);
 
@@ -232,8 +238,8 @@ int read_skip_space_comments(reader_stream *f)
 {
   int c;
   c=limo_getc(f);
-  while ((isspace(c) || c==';' || c=='#') && !(c==EOF) && !limo_eof(f)) {
-    if (c == ';' || c=='#')
+  while ((isspace(c) || c==';') && !(c==EOF) && !limo_eof(f)) {
+    if (c == ';')
       while (c != '\n')
 	c=limo_getc(f);
     else
@@ -261,7 +267,7 @@ limo_data *read_list(reader_stream *f)
     else {
       (*ld_into)->type = limo_TYPE_CONS;
     }
-      
+
     limo_ungetc(c, f);
     CAR((*ld_into)) = reader(f);
 
@@ -385,7 +391,6 @@ inline limo_data *annotate(limo_data *ld, limo_annotation *la)
 limo_data *reader(reader_stream *f)
 {
   int c;
-  limo_data *ld;
   limo_annotation *la;
 
   prompt = "\xce\001\xbb\002imo > ";   // the lambda is a wide-char, so we ignore one char to get readline to count the prompt length correctly
@@ -404,7 +409,7 @@ limo_data *reader(reader_stream *f)
   else if (c=='[') { // (BRACKET list...)
     return annotate(make_cons(make_sym("BRACKET"), read_list(f)), la);
   }
-  else if (c=='"') 
+  else if (c=='"')
     return annotate(read_string(f), la);
   else if (strchr("'`,", c)) {  // reader-macro-chars
     limo_ungetc(c, f);
@@ -416,6 +421,31 @@ limo_data *reader(reader_stream *f)
   }
   else if (c=='{') {  // limpy start
     return limpy_block_reader(f);
+  }
+  else if (c=='#') {  // dispatch-char
+    char disp_char[2]="\0\0";
+    limo_data *readtable;
+    limo_data *readtable_entry;
+    limo_data *res;
+    disp_char[0] = limo_getc(f);
+
+    // get dispatch function
+    readtable = var_lookup(f->env, make_sym("*READTABLE*")); // throws exception if *READTABLE* doesn't exist.
+    readtable_entry = dict_get_place(readtable, make_string(disp_char))->cons;    // returns nil, if entry doesn't exist
+    if (!readtable_entry)
+      throw(make_sym("MACRO-DISPATCH-ERROR"));
+    res = eval(make_cons(CDR(readtable_entry),
+                         make_cons(make_special(sym_reader_stream, f),
+                                   nil)),
+               f->env);
+    if (is_nil(res))
+      return reader(f);
+    else {
+      if (res->type != limo_TYPE_CONS)
+        throw(make_cons(make_sym("MACRO-DISPATCH-ERROR"), make_string("reader macro must return either nil or a cons")));
+
+      return CAR(res);
+    }
   }
   else {
     limo_ungetc(c, f);

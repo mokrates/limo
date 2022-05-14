@@ -548,7 +548,7 @@ BUILTIN(builtin_read_string)
   if (str->type != limo_TYPE_STRING)
     limo_error("given arg is no STRING");
 
-  return reader(limo_rs_from_string(str->d_string));
+  return reader(limo_rs_from_string(str->d_string, env));
 }
 
 BUILTIN(builtin_symbolp)
@@ -669,4 +669,49 @@ BUILTIN(builtin_set_finalizer)
   fun = eval(SECOND_ARG, env);
   GC_register_finalizer(obj, finalization_proc, make_cons(fun, env), NULL, &ofun_cons);
   return ofun_cons?CAR(ofun_cons):nil;
+}
+
+/////// reader-macros
+BUILTINFUN(builtin_reader_stream_getc)
+{
+  char c[2] = "\0\0";
+  reader_stream *rs;
+
+  REQUIRE_ARGC_FUN("READER-STREAM-GETC", 1);
+  rs = (reader_stream *)get_special(argv[0], sym_reader_stream);
+  c[0] = limo_getc(rs);
+  return make_string(c);
+}
+
+BUILTINFUN(builtin_reader_stream_ungetc)
+{
+  reader_stream *rs;
+
+  REQUIRE_ARGC_FUN("READER-STREAM-UNGETC", 2);
+  rs = (reader_stream *)get_special(argv[0], sym_reader_stream);
+  REQUIRE_TYPE("READER-STREAM-UNGETC", argv[1], limo_TYPE_STRING);
+  limo_ungetc(argv[1]->d_string[0], rs);
+  return nil;
+}
+
+BUILTINFUN(builtin_reader_stream_eof)
+{
+  reader_stream *rs;
+
+  REQUIRE_ARGC_FUN("READER-STREAM-EOF", 1);
+  rs = (reader_stream *)get_special(argv[0], sym_reader_stream);
+  if (limo_eof(rs))
+    return sym_true;
+  else
+    return nil;
+}
+
+
+BUILTINFUN(builtin_read)
+{
+  reader_stream *rs;
+
+  REQUIRE_ARGC_FUN("READ", 1);
+  rs = (reader_stream *)get_special(argv[0], sym_reader_stream);
+  return reader(rs);
 }

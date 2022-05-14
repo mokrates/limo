@@ -25,4 +25,15 @@
               hex
               "0"))
 
+        (defun my-hex-reader (rs)
+          (setq str "")
+          (setq c "")
+          (while (member (setf c (reader-stream-getc rs))
+                         (string-to-list "0123456789ABCDEFabcdef"))
+            (setf str (string-concat str c)))
+          (reader-stream-ungetc rs c)
+          (list (from-hex str)))
+
+        (dict-set *readtable* "x" my-hex-reader)
+
         (list from-hex to-hex)))

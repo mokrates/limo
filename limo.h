@@ -115,6 +115,7 @@ extern limo_data *sym_true;
 extern limo_data *sym_stacktrace;
 extern limo_data *sym_underscore;
 extern limo_data *sym_block;
+extern limo_data *sym_reader_stream;
 extern limo_data *nil;
 
 extern limo_data *traceplace;
@@ -148,6 +149,7 @@ typedef struct limo_READER_STREAM {
   int ungetc_buf_pos;
   int eof; // only for readline
   char *filename;
+  limo_data *env; // for dispatching
 } reader_stream;
 
 struct INLINE_MODLIST_ITEM { char *name; void (* fun)(limo_data *env); };
@@ -155,9 +157,9 @@ extern struct INLINE_MODLIST_ITEM inline_mod_funs[];
 
 int limo_getc(reader_stream *);
 char limo_eof(reader_stream *);
-reader_stream *limo_rs_from_file(FILE *, char *filename);
-reader_stream *limo_rs_from_string(char *);
-reader_stream *limo_rs_make_readline(void);
+reader_stream *limo_rs_from_file(FILE *, char *filename, limo_data *env);
+reader_stream *limo_rs_from_string(char *, limo_data *env);
+reader_stream *limo_rs_make_readline(limo_data *env);
 void limo_ungetc(char, reader_stream *);
 limo_annotation *limo_rs_annotation(reader_stream *rs);
 
@@ -344,6 +346,13 @@ BUILTIN(builtin_get_dynamic_env);
 BUILTIN(builtin_with_dynamic_env);
 
 BUILTIN(builtin_set_finalizer);
+
+// Reader-Macros
+BUILTINFUN(builtin_reader_stream_getc);
+BUILTINFUN(builtin_reader_stream_ungetc);
+BUILTINFUN(builtin_reader_stream_eof);
+BUILTINFUN(builtin_read);
+
 
 /////////////////////////////////
 // misc

@@ -11,7 +11,7 @@
 (load (string-concat _limo-prefix "rlcompleter.limo"))
 (load (string-concat _limo-prefix "exceptions.limo"))
 
-################################
+;;################################
 
 (setq executelist '(progn))
 (while (and argv ;; not empty
