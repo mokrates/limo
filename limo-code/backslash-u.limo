@@ -20,6 +20,10 @@
                       (result+= (chr (+ 128 (idiv (mod unicode 4096) 64))))
                       (result+= (chr (+ 128 (mod unicode 64))))))
                (incf i 6)))
+            ((and (= (string-nth i str) "\\")
+                  (= (string-nth (+ i 1) str) "\\"))
+             (result+= "\\")
+             (incf i 2))
             (:else
              (result+= (string-nth i str))
              (incf i))))
