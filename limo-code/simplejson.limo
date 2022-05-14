@@ -152,6 +152,19 @@
 			'("}")))
 	       "{}")))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; json reader macro
+(scope                    ;; don't clutter the namespace
+ (defun json-reader (rs)
+   (defun charlist ()
+     (dcons (reader-stream-getc rs) (charlist)))
+   (list (list 'quote (json-load-charlist (charlist)))))   ;; has to be returned inside a list
+ 
+ (dict-set *readtable* "j" json-reader))
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; help
+
 (defhelp json-load-charlist "JSON-LOAD-CHARLIST function:
 \(json-load-charlist s\)
 s: list of characters
