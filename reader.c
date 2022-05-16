@@ -269,7 +269,7 @@ limo_data *read_dispatch_macro(reader_stream *f)
   readtable = var_lookup(f->env, make_sym("*READTABLE*")); // throws exception if *READTABLE* doesn't exist.
   readtable_entry = dict_get_place(readtable, make_string(disp_char))->cons;    // returns nil, if entry doesn't exist
   if (!readtable_entry)
-    throw(make_sym("MACRO-DISPATCH-ERROR"));
+    throw(make_cons(make_sym("MACRO-DISPATCH-ERROR"), make_string(disp_char)));
   res = eval(make_cons(CDR(readtable_entry),
 		       make_cons(make_special(sym_reader_stream, f),
 				 nil)),
@@ -304,13 +304,33 @@ limo_data *read_list(reader_stream *f)
       (*ld_into)->type = limo_TYPE_CONS;
     }
 
-    limo_ungetc(c, f);
-    CAR((*ld_into)) = reader(f);
+    if (c == '#') {
+      limo_data *mres = read_dispatch_macro(f);
+      if (!mres) {
+        c=read_skip_space_comments(f);
+        continue;
+      }
+      
+      CAR((*ld_into)) = mres;
+    }
+    else {
+      limo_ungetc(c, f);
+      CAR((*ld_into)) = reader(f);
+    }
 
     c=read_skip_space_comments(f);
     if (c=='.') { // pair
-      CDR(*ld_into) = reader(f);
+      CDR(*ld_into) = reader(f); // read exactly one item
       c=read_skip_space_comments(f);
+      
+      while (c=='#') {
+        // this reads ( item1 ... itemN . #|comment1_after_dot|# item_after_dot #|>>HERE<<|#)
+        limo_data *mres = read_dispatch_macro(f);
+        if (mres)
+          limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
+        c=read_skip_space_comments(f);
+      }
+        
       if (c != ')' && c != ']')
 	limo_error("syntax error (read_list) (%s, %i)", f->filename, f->line);
       break;

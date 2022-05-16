@@ -924,6 +924,14 @@
                          (= (reader-stream-getc rs) "\n"))
                (line-comment-reader rs)))))
 
+(dict-set *readtable* "~"
+          (lambda (rs)
+            (let ((name ""))
+              (while (and (not (reader-stream-eof rs))
+                          (!= "~" (setq c (reader-stream-getc rs))))
+                (setf name (string-concat name c)))
+              ((dict-getvalue *readtable* name) rs))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; not so cool stuff
