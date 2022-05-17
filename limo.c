@@ -80,7 +80,7 @@ void load_limo_file(char *filename, limo_data *env)
 void limo_repl_sigint(int signum)
 {
   if (rl_readline_state & RL_STATE_SIGHANDLER) {
-    limo_error("Keybord Interrupt");
+    limo_error("Keyboard Interrupt");
   }
   else
     limo_register |= LR_SIGINT;
