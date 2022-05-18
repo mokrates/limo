@@ -924,6 +924,9 @@
                          (= (reader-stream-getc rs) "\n"))
                (line-comment-reader rs)))))
 
+(dict-set *readtable* "p" (lambda (rs) (list (read rs))))  ;; does nothing really. for #p"path..." tab-completion
+(dict-set *readtable* "P" (lambda (rs) (list (read rs)))) 
+
 (dict-set *readtable* "~"
           (lambda (rs)
             (let ((name ""))

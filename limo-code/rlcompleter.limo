@@ -58,6 +58,12 @@
 		       (dict-to-list (cdr (env-extract env))))
 		(allsyms (car (env-extract env))))
 	()))
+
+  (defun basepath (path)
+    (list-to-string (reverse (member "/" (reverse (string-to-list path))))))
+
+  (defun rest-half-path (path)
+    (string-slice path (string-length (basepath path)) (string-length path)))
   
   (setq res nil)
   
@@ -65,6 +71,8 @@
   (setq br-dot (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)\\s+\\.$" text 2 (dict-getvalue regex-const 'reg_extended) 0))
   (setq br-match (regex-match "\\[\\s*([[:alnum:]$*-_/+~%&]*)\\s+(\\.\\s)?\\s*([[:alnum:]$*-_/+~%&]*)$"
 			      text 4 (dict-getvalue regex-const 'reg_extended) 0))
+
+  (setq path-match (regex-match "#[Pp]\"([^\"]*)$" text 2 (dict-getvalue regex-const 'reg_extended) 0))
 
   (cond (br-match-obj      ;; complete [incompl...
 	 (setq lword (cadr br-match-obj))
@@ -91,7 +99,26 @@
 		 (dfilter (curry string-startswith (upcase-str rword))
 			  (dmap1 (lambda (x) (symbol-to-string x))
 				 (allsyms theenv))))))
-	
+
+        (path-match
+         (setq half-path (cadr path-match))
+         (setq bp (basepath half-path))
+         (setq prefix (string-slice text 0 (- (string-length text) (string-length half-path))))
+         (try
+          (progn                 
+           (setq dir (file-readdir (if (= "" bp) "." bp)))
+           (map1 (curry string-concat prefix)
+                 (dmap1 (curry string-concat bp)
+                        (dfilter (curry string-startswith (rest-half-path half-path))
+                                 (apply append
+                                        (dmap1 (lambda (x) (if (= "d" (cadr x))
+                                                          (list (string-concat (car x) "/")
+                                                                (string-concat (car x) "\""))
+                                                          (list (string-concat (car x) "\""))))
+                                               dir))))))
+          ()))
+               
+	  
 	(:t       ;; complete the rest
 	 (setq lword (car (regex-match "[[:alnum:]$*-_/+~%&]*$" text 1 (dict-getvalue regex-const 'reg_extended) 0)))
 	 (setq prefix (string-slice text 0 (- (string-length text) (string-length lword))))

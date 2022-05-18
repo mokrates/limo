@@ -1,5 +1,7 @@
 #include <limo.h>
 #include <errno.h>
+#include <dirent.h>
+#include <sys/types.h>
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
 #define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f))
@@ -162,6 +164,44 @@ BUILTIN(builtin_file_tell)
   return make_number_from_long_long(ftell((FILE *)get_special(eval(FIRST_ARG, env), sym_file)));
 }
 
+BUILTINFUN(builtin_file_readdir)
+{
+  DIR *d;
+  struct dirent *de;
+  limo_data *ld_res, ld_de;
+  char f_type[2] = "\0\0";
+
+  REQUIRE_ARGC_FUN("FILE-READDIR", 1);
+  REQUIRE_TYPE("FILE-READDIR", argv[0], limo_TYPE_STRING);
+  d = opendir(argv[0]->d_string);
+  if (!d)
+    limo_error_errno(make_sym("READDIR-ERROR"));
+
+  ld_res = nil;
+  errno=0;
+  while (de = readdir(d)) {
+    switch (de->d_type) {
+    case DT_BLK: f_type[0] = 'b'; break;
+    case DT_CHR: f_type[0] = 'c'; break;
+    case DT_DIR: f_type[0] = 'd'; break;
+    case DT_FIFO: f_type[0] = 'p'; break;
+    case DT_LNK: f_type[0] = 'l'; break;
+    case DT_REG: f_type[0] = '-'; break;
+    case DT_SOCK: f_type[0] = 's'; break;
+    default: f_type[0] = '?';
+    }
+    ld_res = make_cons(make_cons(make_string(de->d_name),
+                                 make_cons(make_string(f_type), nil)),
+                       ld_res);
+  }
+  if (errno)
+    limo_error_errno(make_sym("READDIR-ERROR"));
+
+  closedir(d);
+
+  return ld_res;
+}
+
 void limo_init_file(limo_data *env)
 {
   sym_file = make_sym("FILE");
@@ -175,6 +215,8 @@ void limo_init_file(limo_data *env)
   INSBUILTIN(builtin_file_seek, "FILE-SEEK");
   INSBUILTIN(builtin_file_tell, "FILE-TELL");
   INSBUILTIN(builtin_file_write, "FILE-WRITE");
+
+  INSBUILTINFUN(builtin_file_readdir, "FILE-READDIR");
   setq(env, make_sym("FILE-SEEK-SET"), make_number_from_long_long(SEEK_SET));
   setq(env, make_sym("FILE-SEEK-CUR"), make_number_from_long_long(SEEK_CUR));
   setq(env, make_sym("FILE-SEEK-END"), make_number_from_long_long(SEEK_END));

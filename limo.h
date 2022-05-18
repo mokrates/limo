@@ -174,6 +174,7 @@ void load_limo_file(char *fname, limo_data *env);
 limo_data *make_limo_data();
 limo_data *make_nil();
 limo_data *make_cons(limo_data *, limo_data *);
+limo_data *make_list(int start, ...);          // start is ignored
 limo_data *make_sym(char *);
 limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *, limo_data *);
