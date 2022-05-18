@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   pk_gmpq_next_set(&make_gmpq_next);
 
   init_syms();
-  stacktrace = nil;
+  stacktrace = make_nil();
   pk_stacktrace_set(&stacktrace);
   pk_exception_set(nil);
   pk_finallystack_set(NULL);

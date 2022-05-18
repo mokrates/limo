@@ -63,10 +63,15 @@ OUTPUT: (example-error \"this is an example\")
 -> (example-error \"this is an example\")
 
 INTERNA:
-In the catch-clause, there are two variables defined:
+In the catch-clause, there are three variables defined:
 _EXCEPTION: the exception which was caught
 _RETHROW: a variable whose value, when returned, triggers the rethrow of
 the original exception.
+_STACKTRACE: the call at the moment of the raising of the exception.
+CAUTION: This cannot be returned! The data this points to loses its
+validity after leaving the try-catch-clause. Returning it or making it
+available to other code WILL result in a segfault. If you want to make
+it available, you have to copy it first. UNDYN will do this.
 ")
 
 (defhelp catch "MACRO (catch <catch-clause> <catch-clause>...)

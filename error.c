@@ -56,7 +56,7 @@ void throw(limo_data *excp)
   }
 
   pk_exception_set(excp);
-  setq(globalenv, sym_stacktrace, *pk_stacktrace_get());   // TODO: no!
+  //setq(globalenv, sym_stacktrace, *pk_stacktrace_get());   // TODO: no!
 
   //if (*pk_ljbuf_get())
   siglongjmp(*pk_ljbuf_get(), 1);

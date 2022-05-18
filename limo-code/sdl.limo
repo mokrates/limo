@@ -1,7 +1,7 @@
 (mod-load "sdl")
 
-(defhelp _sdl "
-  MODULE _sdl
+(defhelp _sdl
+  "MODULE _sdl
   Functions:
   SDL-SETVIDEOMODE
   SDL-LINE
@@ -12,8 +12,8 @@
   SDL-MAKECOLOR
 ")
 
-(defhelp [_sdl . sdl-setvideomode] "
-  FUNCTION [_sdl . sdl-setvideomode]
+(defhelp [_sdl . sdl-setvideomode]
+  "FUNCTION [_sdl . sdl-setvideomode]
 ([_sdl . sdl-setvideomode] <width> <height> <bpp> <flags>) -> <surface>
 Opens and returns a <screen>.
 
@@ -21,64 +21,64 @@ Example:
 (setq *scr* ([_sdl . SDL-SETVIDEOMODE] 1024 768 24 [_sdl . SDL_DOUBLEBUF]))
 ")
 
-(defhelp [_sdl . sdl-line] "
-  FUNCTION [_sdl . sdl-line]
+(defhelp [_sdl . sdl-line]
+  "FUNCTION [_sdl . sdl-line]
 ([_sdl . sdl-line] <surface> (cons x1 y1) (cons x2 y2) <pcolor>)
 Draws a line from (x1 y1) to (x2 y2) in color <pcolor>.
 <pcolor> can be obtained by sdl-surface-rgbpcolor.
 ")
 
-(defhelp [_sdl . sdl-plot] "
-  FUNCTION [_sdl . sdl-plot]
+(defhelp [_sdl . sdl-plot]
+  "FUNCTION [_sdl . sdl-plot]
 ([_sdl . sdl-plot] <surface> (cons <x1> <y1>) <pcolor>)
 Plots a pixel at (x1 y1) with color <pcolor>
 <pcolor> can be obtained by sdl-surface-rgbpcolor.
 ")
 
-(defhelp [_sdl . sdl-flip] "
-  FUNCTION [_sdl . sdl-flip]
+(defhelp [_sdl . sdl-flip]
+  "FUNCTION [_sdl . sdl-flip]
 ([_sdl . sdl-flip] <surface>)
 Updates the Screen/Surface to reflect the changes made to it.
 Needs to be called to actually display anything drawn.
 ")
 
-(defhelp [_sdl . clearsurface] "
-  FUNCTION [_sdl . clearsurface]
+(defhelp [_sdl . clearsurface]
+  "FUNCTION [_sdl . clearsurface]
 ([_sdl . clearsurface] <surface> <pcolor>)
 Fills the <surface> with color <pcolor>.
 <pcolor> can be obtained by sdl-surface-rgbpcolor.
 ")
 
-(defhelp [_sdl . sdl-surface-rgbpcolor] "
-  FUNCTION [_sdl . sdl-surface-rgbpcolor]
+(defhelp [_sdl . sdl-surface-rgbpcolor]
+  "FUNCTION [_sdl . sdl-surface-rgbpcolor]
 ([_sdl . sdl-surface-rgbpcolor] <surface> <r> <g> <b>) -> <pcolor>
 ")
 
-(defhelp [_sdl . sdl-makecolor] "
-  FUNCTION [_sdl . sdl-makecolor]
+(defhelp [_sdl . sdl-makecolor]
+  "FUNCTION [_sdl . sdl-makecolor]
 ([_sdl . sdl-makecolor] <r> <g> <b>) -> <color>
 Mind that this function returns a different color-type than
 sdl-surface-rgbpcolor.
 ")
 
-(defhelp [_sdl . sdl-ttf-init] "
-  FUNCTION [_sdl . sdl-ttf-init]
+(defhelp [_sdl . sdl-ttf-init]
+  "FUNCTION [_sdl . sdl-ttf-init]
 ([_sdl . sdl-ttf-init])
 Initialize the sdl-ttf subsystem
 ")
 
-(defhelp [_sdl . sdl-ttf-openfont] "
-  FUNCTION [_sdl . sdl-ttf-openfont]
+(defhelp [_sdl . sdl-ttf-openfont]
+  "FUNCTION [_sdl . sdl-ttf-openfont]
 ([_sdl . sdl-ttf-openfont] <fontfile.ttf> <ptsize>) -> <font>
 ")
 
-(defhelp [_sdl . sdl-ttf-sizetext] "
-  FUNCTION [_sdl . sdl-ttf-sizetext]
+(defhelp [_sdl . sdl-ttf-sizetext]
+  "FUNCTION [_sdl . sdl-ttf-sizetext]
 ([_sdl . sdl-ttf-sizetext <font> <string>) -> (<width> <height>)
 ")
 
-(defhelp [_sdl . sdl-ttf-rendertext-blended] "
-  FUNCTION [_sdl . sdl-ttf-rendertext-blended]
+(defhelp [_sdl . sdl-ttf-rendertext-blended]
+  "FUNCTION [_sdl . sdl-ttf-rendertext-blended]
 ([_sdl . sdl-ttf-rendertext-blended] <font> <string> <color>) -> <surface>
 The color can be obtained with [_sdl . sdl-makecolor]
 ")

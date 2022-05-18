@@ -1,7 +1,7 @@
 (mod-load "regex")
 
-(defhelp regex-match "
-  FUNCTION regex-match
+(defhelp regex-match
+  "FUNCTION regex-match
 (regex-match <pattern> <string> <ngroups> <cflags> <eflags>)
 example:
 (regex-match \"(.*)\" \"foo!\" 2 (dict-getvalue regex-const 'reg_extended) 0)

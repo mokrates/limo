@@ -12,15 +12,15 @@
   (defmethod join (self)
     ([_threading . thread-join] [self . _thread])))
 
-(defhelp thread "
-  CLASS thread
+(defhelp thread
+  "CLASS thread
 Methods:
   init (self fun)  --   <fun> is the thread-worker-function
   run  (self)      --   run the thread.
   join (self)      --   join the thread.
 ")
-(defhelp [thread . init] "
-  METHOD [thread . init]
+(defhelp [thread . init]
+  "METHOD [thread . init]
 (new thread <fun>)
 Constructor to create a thread-object. 
 The thread is defined to run function <fun>
@@ -37,8 +37,8 @@ The thread is defined to run function <fun>
     ([_threading . mutex-unlock] [self . _mutex]))
   (defmethod trylock (self)
     ([_threading . mutex-trylock] [self . _mutex])))
-(defhelp mutex "
-  CLASS mutex
+(defhelp mutex
+  "CLASS mutex
 Methods:
   init (self . type)   -- initialized thread object
   lock (self)
@@ -142,8 +142,8 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
   [writer-thread run]
   (reader-fun))
 
-(defhelp parallel-iterator "
-  FUNCTION parallel-iterator
+(defhelp parallel-iterator
+  "FUNCTION parallel-iterator
 (parallel-iterator fun)
 -> <dynamic list>
 
@@ -170,10 +170,56 @@ example:
     [w join])
   packages)
 
-(defhelp pmap "
-  FUNCTION pmap
+(defhelp pmap
+  "FUNCTION pmap
 (pmap nworker fun xs)
 Like map1, applies <fun> to <xs> and returns new list.
 Unlike map1, pmap spreads the work to <nworker> threads.
 Because of this, <fun> has to be threadsafe
+")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro generator (args . body)
+  (with-gensym (outqueue innerfun consfun thr)
+      `(scope
+        (setq ,outqueue (new queue-lock 1))
+        (setq ,thr ())
+        
+        (defun yield (item)
+          [,outqueue put item])
+        
+        (defun ,innerfun ,args
+          (finally (progn ,@body)
+                   [,outqueue finish]))
+        
+        (defun ,consfun ()
+          (if [,outqueue has-next]
+              (dcons [,outqueue get] (,consfun))
+              (progn [,thr join] ())))
+        
+        (lambda x (progn 
+              (setf ,thr (new thread (lambda () (apply ,innerfun x))))
+              [,thr run]
+              (,consfun))))))
+  
+(defmacro defgenerator (name args . body)
+  `(setq ,name (generator ,args ,@body)))
+
+(defhelp defgenerator
+  "MACRO defgenerator
+(defgenerator name (args ...)
+  (function like a normal defun-function. but can yield items using (yield <value>)))
+  similar to python generators, but realised usings threads
+
+EX:
+(defgenerator xrange (from to)
+  (setq x from)
+  (while (< x to)
+    (yield x)
+    (incf x)))
+
+(for-each x (xrange 0 10)
+  (write x))
 ")

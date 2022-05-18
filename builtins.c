@@ -287,6 +287,7 @@ BUILTIN(builtin_try)
     limo_data *exception = pk_exception_get();
     limo_data *rethrow   = make_nil();
     env = make_env(env);
+    setq(env, sym_stacktrace, *pk_stacktrace_get());
     setq(env, make_sym("_EXCEPTION"), exception?exception:nil);
     setq(env, make_sym("_RETHROW"), rethrow);
     res = eval(SECOND_ARG, env);
