@@ -3,6 +3,7 @@
 
 BUILTINFUN(builtin_numberp)
 {
+  REQUIRE_ARGC_FUN("NUMBERP", 1);
   if (argv[0]->type == limo_TYPE_GMPQ)
     return sym_true;
   else
@@ -158,6 +159,7 @@ CALC1_BUILTINFUN(mpq_inv)
 
 BUILTINFUN(builtin_ltn)
 {
+  REQUIRE_ARGC_FUN("LTN", 2);
   if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) < 0)
     return sym_true;
   else
@@ -166,6 +168,7 @@ BUILTINFUN(builtin_ltn)
 
 BUILTINFUN(builtin_gtn)
 {
+  REQUIRE_ARGC_FUN("GTN", 2);
   if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) > 0)
     return sym_true;
   else
