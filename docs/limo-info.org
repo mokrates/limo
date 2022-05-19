@@ -1,0 +1,10 @@
+# -*- mode:org; eval:(auto-fill-mode t) -*-
+
+#+TITLE: Limo Documentation
+#+STARTUP: indent
+
+* Heading 1
+Content 1
+
+* Heading 2
+Content 2

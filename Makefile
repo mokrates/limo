@@ -28,13 +28,13 @@ exelimo.o: $(HEADERS) limo.c
 inlined_mods.c: inlined.mods
 	./make-inlined_mods-c.sh
 
-limo: $(OBJ) libs
+limo: $(OBJ) libs info
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
 
-limo-almost-static: $(OBJ) libs
+limo-almost-static: $(OBJ) libs info
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
 
-limo-wsl: limo-almost-static
+limo-wsl: limo-almost-static info
 
 libs:
 	make -C libs
@@ -44,13 +44,18 @@ TAGS:
 
 $(OBJ): $(HEADERS) Makefile
 
+info:
+	make -C docs docs
+
 clean:	
 	rm -f *.o *~
 	rm -f inlined_mods.c
 	make -C libs clean
+	make -C docs clean
 
 realclean: clean
 	make -C libs realclean
+	make -C docs realclean
 	rm -f limo
 
 install:
@@ -59,6 +64,7 @@ install:
 	cp -f libs/*/*.so $(LIMO_PREFIX)
 	cp -f libs/*/*.ttf $(LIMO_PREFIX)
 	cp -rf limo-code/* $(LIMO_PREFIX)
+	cp -f docs/limo-info.info $(LIMO_PREFIX)
 	mkdir -p $(INSTALL_PREFIX)/bin
 	cp -f limo $(INSTALL_PREFIX)/bin
 

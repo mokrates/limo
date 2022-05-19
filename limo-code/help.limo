@@ -28,6 +28,11 @@
             `(setq ,name (lambda ,args ,(cons 'progn body))))))
 (freezeq defun)
 
+(defun info opt-node-name
+  (if opt-node-name
+      (system (string-concat "/usr/bin/info " _limo-prefix "/limo-info.info '" (car opt-node-name) "'"))
+      (system (string-concat "/usr/bin/info " _limo-prefix "/limo-info.info"))))
+
 ;; use this to ask for help
 (defun help sym
   (if (not sym)
@@ -56,6 +61,12 @@ See (help help)
   "FUNCTION (help object)
 Lets you request help on <object>.
 Example: (help help)
+")
+
+(defhelp info
+  "FUNCTION info
+(info)              Open the Limo Handbook. Requires 'info'
+(info \"Introduction\")  Directly open the Chapter 'Introduction'
 ")
 
 (defhelp mod-load
