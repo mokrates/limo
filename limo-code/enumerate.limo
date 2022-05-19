@@ -1,0 +1,15 @@
+(defun enumerate (l)
+  "FUNCTION enumerate
+dynamic function:
+
+(enumerate '(a b c d)) 
+-> ((0 . a) . #<thunk>)
+
+(undyn (enumerate '(a b c d)))
+(1 . b) (2 . c) (3 . d))
+"
+  (defun enumerate-helper (s l)
+    (if l
+	(dcons (cons s (car l)) (enumerate-helper (+ 1 s) (cdr l)))
+	()))
+  (enumerate-helper 0 l))
