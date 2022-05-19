@@ -1,6 +1,36 @@
 (mod-load "vector")
+(import "enumerate.limo")
 
 (dict-set _place-setters 'vector-ref 'vector-set)
+
+(defun vector (vlist)
+  (setq v (make-vector (list-length vlist)))
+  (for-each e (enumerate vlist)
+    (setf (vector-ref v (car e)) (cdr e)))
+  v)
+
+(dict-set *readtable* "(" (lambda (rs)
+			    (progn
+			     (reader-stream-ungetc rs "(")
+			     `((vector ',(read rs))))))
+
+(defhelp vector "FUNCTION vector
+(vector vlist)
+creates a vector from the elements of vlist
+
+(setq v (vector '(a b c))) -> #<vector>
+(vector-len v)             -> 3
+(vector-ref v 2)           -> C
+
+There is a reader macro for this:
+(setq v #(1 2 3))  -> vector of length 3
+
+CAUTION:
+#(f o o) does NOT contain the values of the
+variables f and o but the symbols themselves.
+(this is like it is in clisp)
+")
+
 (defhelp vectorp "BUILTIN-FUNCTION vectorp
 (vectorp arg)
 Checks if arg is of type vector
