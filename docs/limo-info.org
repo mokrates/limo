@@ -3,8 +3,93 @@
 #+TITLE: Limo Documentation
 #+STARTUP: indent
 
-* Heading 1
-Content 1
+* Introduction
+** Limo is a toy
+First things first: This is a hobby project I do, so everything here
+is as I like it.  And it means some certain things:
 
-* Heading 2
-Content 2
+- It's incomplete.  You miss something? Drop me a message, but perhaps
+  I'm not down to implement your idea.  But perhaps I am.  Try it! I
+  love to hear that someone plays with this thing.
+
+- It's slow.  Yes, I tried to make it faster in a lot of ways, but real
+  optimization is really complicated and requires a lot of work, which
+  is not fun.
+
+- It's insecure and unsafe.  It's a toy.  You can build any sort of
+  things in limo, it's a real language, even web applications
+  containing their own http server.  But be aware that it will crash,
+  eat your data, have saved data not be readable again and if you put
+  it online, hackers will break in in ways we didn't even know about.
+
+- Many things could be done better or differently or in a more
+  consistent or organized way.  But I am too lazy to do it or don't
+  know any better
+
+- The interface and language may break at any time.
+
+But it's fuuuuuuuun.  And for simple projects it may be easy to augment
+it to your needs or to be integrated into other projects.
+
+** Limo is a LISP
+Limo is a LISP.  My name is Moritz, so it is Limo.  I spell it "λimo"
+because it is fun.
+
+I didn't know how LISP worked and there were so many implementation
+all of which I didn't really learn or understand, only in a very basic
+way.  But somehow it's nerdiness and beauty got me.  So for a very long
+time I wanted to build my own.  In 2012 I did.  Later I wrote my
+bachelor thesis about it.
+
+Being a LISP it has very simple but expandable syntax.
+
+** Limo is interpreted
+Limo is interpreted much like python.  You get a REPL, you get
+tab-completion, you get a builtin ~(help)~ and ~(info)~ command.
+
+Limo doesn't use a bytecode in any way, it directly interprets the
+list-structures it reads in. (Sometimes it modifies them for
+optimization purposes)
+
+* Attributions
+See attributions.txt in the git tree.
+
+* How to build
+Usually in Linux you just go into the ~limo/~ directory, and type
+#+BEGIN_SRC bash
+bash build.sh bin
+#+END_SRC
+This will build you a limo
+- which will run on Linux and WSL, perhaps it also runs on Mac OS
+- which will place limo into ~~/.local~, which on modern desktop linux
+  distributions should be in the ~$PATH~, so you should be able to
+  just start it with ~limo~.
+
+** TODO dependencies
+** TODO building limogtk
+** TODO customizing your build
+
+* TODO First Steps
+** TODO Basic Syntax
+
+* TODO Syntax
+TBD
+
+* TODO Standard Library
+TBD
+
+* TODO Lambdas, Macros, Builtins
+TBD
+
+* TODO Tail-Recursion
+TBD
+
+* TODO Dynamic Lists
+TBD
+
+* TODO Threading
+TBD
+
+* Limo-Mode
+There is a ~emacs/limo.el~ which contains a simple Limo-Mode for
+emacs. I use it to write my own limo programs.
