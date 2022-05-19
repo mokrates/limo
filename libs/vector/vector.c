@@ -1,6 +1,7 @@
 #include <limo.h>
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f))
 
 limo_data *sym_vector;
 
@@ -75,6 +76,18 @@ BUILTIN(builtin_vector_ref)
   return vec->contents[n]?vec->contents[n]:nil;
 }
 
+BUILTINFUN(builtin_vectorp)
+{
+  REQUIRE_ARGC_FUN("VECTORP", 1);
+  if (argv[0]->type != limo_TYPE_SPECIAL)
+    return nil;
+  else
+    if (limo_equals(CAR(argv[0]->d_special), sym_vector))
+      return sym_true;
+    else
+      return nil;
+}
+
 void limo_init_vector(limo_data *env)
 {
   sym_vector = make_sym("VECTOR");
@@ -82,4 +95,5 @@ void limo_init_vector(limo_data *env)
   INSBUILTIN(builtin_vector_ref, "VECTOR-REF");
   INSBUILTIN(builtin_vector_set, "VECTOR-SET");
   INSBUILTIN(builtin_vector_len, "VECTOR-LEN");
+  INSBUILTINFUN(builtin_vectorp, "VECTORP");
 }
