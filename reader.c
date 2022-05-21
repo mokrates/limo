@@ -2,9 +2,13 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "limo.h"
+#ifndef NO_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "limo.h"
+#endif //!NO_READLINE
+
 
 #define BUFFER_SIZE 257
 
@@ -12,6 +16,7 @@ extern char **environ;
 
 char *prompt=NULL;
 
+#ifndef NO_READLINE
 ///// history file for readline
 
 // TODO: the two following functions stink
@@ -59,7 +64,7 @@ void limo_history_read_history(void)
     read_history(history_file_name);
   }
 }
-
+#endif //!NO_READLINE
 
 ///// !history file for readline
 
@@ -118,6 +123,7 @@ int limo_getc(reader_stream *rs)
     else
       return rs->stream.str[rs->pos++];
 
+#ifndef NO_READLINE
   case RS_READLINE:
     if (!rs->stream.readline[rs->pos]) {
       char *rl = readline(prompt);
@@ -143,6 +149,7 @@ int limo_getc(reader_stream *rs)
       }
     }
     return rs->stream.readline[rs->pos++];
+#endif //!NO_READLINE
 
   default:
     throw(make_sym("UNKNOWN-READER-STREAM-TYPE"));
@@ -154,12 +161,17 @@ char limo_eof(reader_stream *rs)
   switch (rs->type) {
   case RS_FILE: return feof(rs->stream.file);
   case RS_STR: return rs->stream.str[rs->pos]=='\0';
+
+#ifndef NO_READLINE
   case RS_READLINE: return rs->eof;
+#endif //!NO_READLINE
+
   default:
     throw(make_sym("UNKNOWN-READER-STREAM-TYPE"));
   }
 }
 
+#ifndef NO_READLINE
 int limo_rl_inited = 0;
 reader_stream *limo_rs_make_readline(limo_data *env)
 {
@@ -184,6 +196,7 @@ reader_stream *limo_rs_make_readline(limo_data *env)
   rs->filename="*READLINE*";
   return rs;
 }
+#endif //!NO_READLINE
 
 reader_stream *limo_rs_from_file(FILE *f, char *filename, limo_data *env)
 {

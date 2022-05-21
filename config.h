@@ -10,3 +10,10 @@
 #ifndef LIMO_PREFIX
 #define LIMO_PREFIX "/usr/local/lib/limo/"
 #endif
+
+
+//////////////////////// PLATFORMS
+#ifdef ANDROID
+#define NO_READLINE
+#define NO_EXECINFO
+#endif

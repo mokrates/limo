@@ -1,9 +1,14 @@
 #include "limo.h"
 #include <assert.h>
 #include <signal.h>
+#ifndef NO_EXECINFO
 #include <execinfo.h>
+#endif // !NO_EXECINFO
 #include <pthread.h>
+
+#ifndef NO_EXECINFO
 #include <readline/readline.h>
+#endif //!NO_EXECINFO
 
 unsigned long long limo_register;
 
@@ -79,13 +84,17 @@ void load_limo_file(char *filename, limo_data *env)
 
 void limo_repl_sigint(int signum)
 {
+#ifndef NO_READLINE
   if (rl_readline_state & RL_STATE_SIGHANDLER) {
     limo_error("Keyboard Interrupt");
   }
   else
+#endif //!NO_READLINE
+    
     limo_register |= LR_SIGINT;
 }
 
+#ifndef NO_EXECINFO
 void sigsegv_handler(int sig) {
   void *array[10];
   size_t size;
@@ -98,6 +107,7 @@ void sigsegv_handler(int sig) {
   backtrace_symbols_fd(array, size, 2);
   exit(1);
 }
+#endif //!NO_EXECINFO
 
 int main(int argc, char **argv)
 {
@@ -146,7 +156,10 @@ int main(int argc, char **argv)
   pk_dynamic_vars_set(dynamic_env);
    
   signal(SIGINT, limo_repl_sigint);
+  
+#ifndef NO_EXECINFO
   signal(SIGSEGV, sigsegv_handler);
+#endif //!NO_EXECINFO
 
 #ifdef LIMO_MAKE_EXECUTABLE
   rs = limo_rs_from_string(limo_program_cstr);
@@ -180,9 +193,15 @@ int main(int argc, char **argv)
       printf("\nUNHANDLED EXCEPTION CAUGHT\n");
       if (pk_exception_get()) {
         signal(SIGINT, limo_repl_sigint);
+
+#ifndef NO_READLINE
         rl_readline_state &= ~RL_STATE_SIGHANDLER;
         rl_reset_after_signal();
     	rs = limo_rs_make_readline(env);
+#else // NO_READLINE
+	rs = limo_rs_from_file(stdin, "STDIN", env);
+#endif //!NO_READLINE
+
     	print_stacktrace(stacktrace);
         stacktrace = nil;
     	writer(pk_exception_get());
@@ -202,6 +221,6 @@ int main(int argc, char **argv)
   }
 
   GC_reachable_here(dynamic_env);
-  
+
   return 0;
 }
