@@ -183,7 +183,11 @@ int main(int argc, char **argv)
     }
   }
 
+#ifndef NO_READLINE
   rs = limo_rs_make_readline(env);
+#else //!NO_READLINE
+  rs = limo_rs_from_file(stdin, "STDIN", env);
+#endif //!NO_READLINE
 
   while (!limo_eof(rs)) { // REPL
     limo_data *ld;
