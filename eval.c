@@ -1,4 +1,4 @@
-#include <gc/gc.h>
+#include <gc.h>
 #include <alloca.h>
 #include "limo.h"
 #include <assert.h>

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#include <gc/gc.h>   // boehm GC
+#include <gc.h>   // boehm GC
 
 // seit vigra_c
 #ifdef __cplusplus

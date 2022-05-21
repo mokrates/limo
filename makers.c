@@ -1,5 +1,5 @@
 #include "limo.h"
-#include <gc/gc.h>
+#include <gc.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
