@@ -9,8 +9,9 @@ OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
 BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o \
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
-	dict.o special.o block.o limpy.o misc.o inlined_mods.o dynamicvars.c
-OBJ=limo.o $(BASEOBJ)
+	dict.o special.o block.o limpy.o misc.o inlined_mods.o dynamicvars.o \
+	limo.o
+OBJ=main.o $(BASEOBJ)
 EXEOBJ=exelimo.o $(BASEOBJ)
 HEADERS=limo.h config.h
 

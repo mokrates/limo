@@ -10,28 +10,31 @@
 ;;        ((TYPE VAR) BODY))
 
 (defmacro catch args
-  `(cond
-    ,@(map
-       (lambda (clause)
-         (if (and (consp (car clause)) (car clause))
-             (if (caar clause)
-                 `((or (= ',(caar clause) (car _exception))
-                       (member ',(caar clause)
-                               (and (dict-has-key _exceptions (car _exception))
-                                    (dict-getvalue _exceptions (car _exception)))))
-                   (setq ,(cadar clause) _exception)
-                   ,@(cdr clause))
-                 `(:t (setq ,(cadar clause) _exception)
-                      ,@(cdr clause)))
-             (if (car clause)
-                 `((or (= ',(car clause) (car _exception))
-                       (member ',(car clause)
-                               (and (dict-has-key _exceptions (car _exception))
-                                    (dict-getvalue _exceptions (car _exception)))))
-                   ,@(cdr clause))
-                 `(:t ,@(cdr clause)))))
-       args)
-    (:else _rethrow)))
+  (with-gensym (exc)
+      `(progn
+        (setq ,exc (if (consp _exception) (car _exception) _exception))
+        (cond
+         ,@(map
+            (lambda (clause)
+              (if (and (consp (car clause)) (car clause))
+                  (if (caar clause)
+                      `((or (= ',(caar clause) ,exc)
+                            (member ',(caar clause)
+                                    (and (dict-has-key _exceptions ,exc)
+                                         (dict-getvalue _exceptions ,exc))))
+                        (setq ,(cadar clause) _exception)
+                        ,@(cdr clause))
+                      `(:t (setq ,(cadar clause) _exception)
+                           ,@(cdr clause)))
+                  (if (car clause)
+                      `((or (= ',(car clause) ,exc)
+                            (member ',(car clause)
+                                    (and (dict-has-key _exceptions ,exc)
+                                         (dict-getvalue _exceptions ,exc))))
+                        ,@(cdr clause))
+                      `(:t ,@(cdr clause)))))
+            args)
+         (:else _rethrow)))))
 
 (defhelp throw "BUILTIN (throw <exception>) 
 

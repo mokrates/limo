@@ -1,0 +1,40 @@
+;;; some examples what dynamic variables are and regression tests:
+
+(defun print-x ()
+  (print (dyn-getq x)))   ;; gets x
+
+(defun hello ()
+  (dyn-let ((x "hello"))   ;; sets x
+           (print-x)))
+
+(defun goodbye ()
+  (dyn-let ((x "goodbye, cruel"))  ;; sets x
+           (print-x)))
+
+(defun world ()
+  (dyn-let ((x " world\n"))   ;; sets x
+           (hello)
+           (print-x)
+           (goodbye)
+           (print-x)))
+
+(world)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(print "regression test.\n")
+
+(dyn-let ((x "0\n"))
+         (try                                       ;; a try-catch which DOES catch this exception has to be passed
+          (dyn-let ((x "1\n"))
+                   (try                             ;; a try-catch which DOESN'T catch this exception hast to be passed
+                    (dyn-let ((x "2\n"))
+                             (finally               ;; a finally that has to be passed
+                              (dyn-let ((x "3\n"))
+                                       (throw 'just_some_exception))
+                              (print (format "this should be 2: %s\n" (dyn-getq x)))))
+                    (catch (another_exception_type (print "this should not be printed\n"))))
+                   (print "this should not get printed, because the exception flies over it\n" (dyn-getq x)))
+          (catch (just_some_exception
+                  (print (format "this should be 0: %s\n" (dyn-getq x)))))))
+

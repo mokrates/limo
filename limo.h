@@ -120,6 +120,7 @@ extern limo_data *nil;
 
 extern limo_data *traceplace;
 extern int limo_rl_inited;
+extern limo_data *stacktrace;
 
 #define CAR(x) ((x)->car)
 #define CDR(x) ((x)->cdr)
@@ -154,6 +155,7 @@ typedef struct limo_READER_STREAM {
 struct INLINE_MODLIST_ITEM { char *name; void (* fun)(limo_data *env); };
 extern struct INLINE_MODLIST_ITEM inline_mod_funs[];
 
+limo_data *limo_init(int argc, char **argv);   // initialize the whole of limo
 int limo_getc(reader_stream *);
 char limo_eof(reader_stream *);
 reader_stream *limo_rs_from_file(FILE *, char *filename, limo_data *env);
