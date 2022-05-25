@@ -1,0 +1,68 @@
+(setq filenames '(
+		  "backslash-u.limo"
+		  "base64.limo"
+		  "binary.limo"
+		  "comprehension.limo"
+		  "enumerate.limo"
+		  "exceptions.limo"
+		  "file.limo"
+		  "freeze_builtins.limo"
+		  "help.limo"
+		  "hex.limo"
+		  "limpy.limo"
+		  "list.limo"
+		  "minmax.limo"
+		  "ncurses.limo"
+		  "pmatch.limo"
+		  "popen.limo"
+		  "progbar.limo"
+		  "random.limo"
+		  "regex.limo"
+		  "rlcompleter.limo"
+		  "sdl.limo"
+		  "simplejson.limo"
+		  "socket.limo"
+		  "std.limo"
+		  "string.limo"
+		  "threading.limo"
+		  "thr.limo"
+		  "turtle.limo"
+		  "urlencode.limo"
+		  "vector.limo"
+		  "wrappers.limo"
+		  ))
+
+
+(setq resultlist '())
+
+;; android-init
+(with-file-open (string-concat _limo-prefix "android-init.limo") "r" f
+  (setq res "")
+  (while (not (file-eof f))
+    (setf res (string-concat res (file-getc f))))
+  
+  (setf resultlist (cons (read-string (string-concat "(progn " res " )")) resultlist)))
+
+;; program -> variable: _text
+(with-file-open (car argv) "r" f
+  (setq res "")
+  (while (not (file-eof f))
+    (setf res (string-concat res (file-getc f))))
+
+  (setf res (read-string (string-concat "(progn " res " )")))
+  
+  (setf resultlist (cons `(setq _text ,res) resultlist)))
+
+;; limo-codes
+(for-each filename filenames
+  (with-file-open (string-concat _limo-prefix filename) "r" f
+    (setq res "")
+    (while (not (file-eof f))
+      (setf res (string-concat res (file-getc f)))))
+  (setf res (string-concat "(progn " res " )"))
+  (setf resultlist (cons `(dict-set _modules ,filename ,res) resultlist)))
+
+(setf resultlist (cons `(setq _modules (make-dict)) resultlist))
+(setf resultlist (cons 'progn resultlist))
+
+(write resultlist)

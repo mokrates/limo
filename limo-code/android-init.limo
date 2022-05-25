@@ -1,0 +1,16 @@
+
+(eval (read-string (cdr (dict-get _modules "std.limo"))))
+
+;; import from _modules. don't read files.
+;; overwrite import function
+(defmacro import (name)
+  `(eval (read-string (cdr (dict-get ,name)))))
+
+(import "freeze_builtins.limo")
+(import "wrappers.limo")
+(import "list.limo")
+(import "string.limo")
+(import "help.limo")
+(import "file.limo")
+(import "limpy.limo")
+(import "exceptions.limo")
