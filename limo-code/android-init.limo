@@ -1,16 +1,30 @@
-
+(android-logi "android-init running")
 (eval (read-string (cdr (dict-get _modules "std.limo"))))
+
+(android-logi "std.limo loaded!")
 
 ;; import from _modules. don't read files.
 ;; overwrite import function
 (defmacro import (name)
-  `(eval (read-string (cdr (dict-get ,name)))))
+  (list 'progn
+	(list 'android-logi (list 'string-concat "loading " name))
+	(list 'eval (list 'read-string (list 'cdr (list 'dict-get '_modules name))))
+	(list 'android-logi (list 'string-concat "loaded " name))))
+
+(android-logi "redefined import!")
 
 (import "freeze_builtins.limo")
 (import "wrappers.limo")
 (import "list.limo")
 (import "string.limo")
-(import "help.limo")
-(import "file.limo")
+;; (import "help.limo")
+
+(defun defhelp (x y)
+  ())  ;; do nothing
+
+;; (import "file.limo")
 (import "limpy.limo")
 (import "exceptions.limo")
+
+
+(eval _text)

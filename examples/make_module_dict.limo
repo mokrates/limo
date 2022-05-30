@@ -51,7 +51,7 @@
 
   (setf res (read-string (string-concat "(progn " res " )")))
   
-  (setf resultlist (cons `(setq _text ,res) resultlist)))
+  (setf resultlist (cons `(setq _text ',res) resultlist)))
 
 ;; limo-codes
 (for-each filename filenames
