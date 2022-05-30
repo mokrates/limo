@@ -12,6 +12,7 @@ add_library (limo
   error.c
   eval.c
   helpers.c
+  inlined_mods.c
   limo.c
   limpy.c
   makers.c
@@ -22,6 +23,7 @@ add_library (limo
   vars.c
   writer.c)
 
-target_link_libraries (limo)
+add_subdirectory (libs/string_builtins)
+target_link_libraries (limo string_builtins)
 
 target_include_directories (limo SYSTEM PUBLIC ${ANDROID_NDK}/sources/android/native_app_glue ../gc-8.0.6/include ../gmp/${CMAKE_ANDROID_ARCH_ABI})
