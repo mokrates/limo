@@ -47,7 +47,7 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_limo_data_next_key, NULL);
   pthread_key_create(&pk_stacktrace_free_key, NULL);
   pthread_key_create(&pk_dict_next_key, NULL);
-  pthread_key_create(&pk_gmpq_next_key, NULL);  
+  pthread_key_create(&pk_gmpq_next_key, NULL);
   pthread_key_create(&pk_dynamic_vars_key, NULL);
 }
 
@@ -98,7 +98,9 @@ limo_data *limo_init(int argc, char **argv)
   GC_init();
   //int free_space_divisor = GC_call_with_alloc_lock(GC_get_free_space_divisor, NULL);
   GC_call_with_alloc_lock(GC_set_free_space_divisor, 1);
+#ifdef LIMO_THREADING
   GC_allow_register_threads();
+#endif
 
   assert(GC_thread_is_registered());
 
@@ -116,13 +118,13 @@ limo_data *limo_init(int argc, char **argv)
   pk_stacktrace_set(&stacktrace);
   pk_exception_set(nil);
   pk_finallystack_set(NULL);
- 
+
   env = make_globalenv(argc, argv);
   globalenv = env;
 
   dynamic_env = make_env(nil);
   pk_dynamic_vars_set(dynamic_env);
   setq(globalenv, make_sym("_dyn-env"), dynamic_env);
-  
+
   return globalenv;
 }
