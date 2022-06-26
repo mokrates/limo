@@ -26,4 +26,7 @@ add_library (limo
 add_subdirectory (libs/string_builtins)
 target_link_libraries (limo string_builtins)
 
+add_subdirectory (libs/file)
+target_link_libraries (limo file)
+
 target_include_directories (limo SYSTEM PUBLIC ${ANDROID_NDK}/sources/android/native_app_glue ../gc-8.0.6/include ../gmp/${CMAKE_ANDROID_ARCH_ABI})
