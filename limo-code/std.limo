@@ -544,7 +544,9 @@
 	  `(progn
 	    (defun ,recur (,it)
 	      (when ,it 
-		(setq ,x (car ,it)) 
+		,(if (consp x)
+                     `(unify ,x (car ,it))
+                     `(setq ,x (car ,it)))
 		,(continue-frame body)
 		(,recur (cdr ,it))))
 	    (,recur ,l))))))
@@ -625,13 +627,18 @@
   `(progn
     (setq ,index ,v)
     ,@(loop (l l akku ())
-	    (if l 
-		(recur (cdr l) 
-		       (append akku
-			       `((setq ,(car l) (car ,index))
-				 (setq ,index (cdr ,index)))))
-		akku))
-    (unsetq ,index)))
+	    (cond ((consp l)
+		   (recur (cdr l) 
+		          (append akku
+			          `((setq ,(car l) (car ,index))
+				    (setq ,index (cdr ,index))))))
+                  
+                  (l
+                   (append akku `((setq ,l ,index))))
+
+                  (:else
+                   akku)))
+  (unsetq ,index)))
 (freezeq unify)
 
 (defmacro unifyf (l v)       ; destructuring assignment.
@@ -639,12 +646,17 @@
   `(progn
     (setq ,index ,v)
     ,@(loop (l l akku ())
-	    (if l 
-		(recur (cdr l) 
-		       (append akku
-			       `((setf ,(car l) (car ,index))
-				 (setf ,index (cdr ,index)))))
-		akku))
+	    (cond ((consp l)
+		   (recur (cdr l) 
+		          (append akku
+			          `((setf ,(car l) (car ,index))
+				    (setf ,index (cdr ,index))))))
+                  
+                  (l
+                   (append akku `((setf ,l ,index))))
+                  
+                  (:else
+                   akku)))
     (unsetq ,index)))
 (freezeq unifyf)
 
