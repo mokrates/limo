@@ -9,4 +9,4 @@ Ein einfaches Tetris in Limo
 
 ## Ein Formeleditor in Limo ##
 
-![Formeleditor](https://mokrates.github.io/limo/formeleditor.mp4 "Limo Formeleditor in Emacs") 
+![Formeleditor](https://mokrates.github.io/limo/formeleditor.gif "Limo Formeleditor in Emacs") 
