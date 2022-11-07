@@ -2,5 +2,5 @@
 
 ## Tetris ##
 
-![Tetris](https://mokrates.github.io/tetris.gif "Tetris in Limo")
+![Tetris](https://mokrates.github.io/limo/tetris.gif "Tetris in Limo")
 
