@@ -4,7 +4,7 @@ Beispielprogramme, die Limos Fähigkeiten demonstrieren
 
 ## Tetris ##
 
-Ein einfaches Tetris in Limo
+Ein einfaches Tetris in Limo  
 `limo/examples/tetris.limo`
 ![Tetris](https://mokrates.github.io/limo/tetris.gif "Tetris in Limo")
 
