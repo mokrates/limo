@@ -15,3 +15,8 @@ Ein einfaches Tetris in Limo
 ## Die Mandelbrotmenge ##
 `limo/examples/mandelbrot.limo`
 ![Mandelbrot](https://mokrates.github.io/limo/mandelbrot.gif "Das Mandelbrot gerendert von Limo")
+
+## Ein selbstspielendes Snake ##
+`limo/examples/autosnake2.limo`
+![Autosnake](https://mokrates.github.io/limo/autosnake.gif "Limo besiegt Snake")
+
