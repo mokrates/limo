@@ -1,0 +1,9 @@
+(= "f(x)"
+   (jux "sin"
+	(sub
+	 (par
+	  (frac
+	   (sup "e" (* "x" "i"))
+	   (- (sup (par (frac pi 3))
+		   (frac "i" 3))
+	      (frac 1 3 )))) "y")))

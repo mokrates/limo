@@ -1,0 +1,181 @@
+(import "pmatch.limo")
+
+;; non-nil: propagate the baseline from the inner to the outer of parentheses
+(setq *propagate-par-baseline* ())
+
+(defun string-mult (str times)
+  (apply string-concat 
+	 (map (lambda (x) str) (drange 0 times 1))))
+
+(defun abs (x)
+  (if (< x 0)
+      (* -1 x)
+      x))
+
+(defun writerender (x)
+  (for-each line (car (render x))
+    (print (format "%s\n" line))))
+
+(defun render (term)
+  (pmatch term
+	  (pi
+	   (list (list "π") 0))
+	  (,x
+	   (guard (numberp x))
+	   (list (list (format "%n" x)) 0))
+	  (,x
+	   (guard (symbolp x))
+	   (list (list (symbol-to-string x)) 0))
+	  (,x
+	   (guard (stringp x))
+	   (list (list (format "%s" x)) 0))
+	  
+	  ((par ,rest)
+	   (unify (restbox restbaseline) (render rest))
+	   (if (= (list-length restbox) 1)
+	       (list (list (format "(%s)" (car restbox))) 0)
+	       (let ((lparenl (append '("⎛")
+				      (map (lambda (x) '"⎜")
+					   (drange 2 (list-length restbox) 1))
+				      '("⎝")))
+		     (rparenl (append '("⎞")
+				      (map (lambda (x) '"⎟")
+					   (drange 2 (list-length restbox) 1))
+				      '("⎠"))))
+		 (list (map string-concat lparenl restbox rparenl)
+		       (if *propagate-par-baseline*
+			   restbaseline
+			   (floor (/ (list-length lparenl) 2)))))))
+	  
+	  ((frac ,num ,den)
+	   (unify (numbox numbase) (render num))
+	   (unify (denbox denbase) (render den))
+	   (let* ((numwidth (string-utf8-length (car numbox)))
+		    (denwidth (string-utf8-length (car denbox)))
+		    (width (+ 2 (if (> numwidth denwidth)
+				    numwidth
+				    denwidth)))
+		    (lspcn (floor (/ (- width numwidth) 2)))
+		    (rspcn (- width numwidth lspcn))
+		    (lspcd (floor (/ (- width denwidth) 2)))
+		    (rspcd (- width denwidth lspcd)))
+	     
+	     (list (append (map (lambda (x) (string-concat (string-mult " " lspcn)
+						      x
+						      (string-mult " " rspcn)))
+				numbox)
+			   (list (string-mult "⎼" width))
+			   (map (lambda (x) (string-concat (string-mult " " lspcd)
+						      x
+						      (string-mult " " rspcd)))
+				denbox))
+		   (list-length numbox))))
+
+	  ((sup ,bas ,exp)
+	   (unify (basbox basbase) (render bas))
+	   (unify (expbox expbase) (render exp))
+	   (let* ((baswidth (string-utf8-length (car basbox)))
+		    (expwidth (string-utf8-length (car expbox)))
+		    (width (+ baswidth expwidth)))
+	     (list
+	      (append (map (lambda (x) (string-concat (string-mult " " baswidth) x))
+			   expbox)
+		      (map (lambda (x) (string-concat x (string-mult " " expwidth)))
+			   basbox))
+	      (+ basbase (list-length expbox)))))
+
+	  ((sub ,bas ,ssr)
+	   (unify (basbox basbase) (render bas))
+	   (unify (ssrbox ssrbase) (render ssr))
+	   (let* ((baswidth (string-utf8-length (car basbox)))
+		    (ssrwidth (string-utf8-length (car ssrbox)))
+		    (width (+ baswidth ssrwidth)))
+	     (list
+	      (append (map (lambda (x) (string-concat x (string-mult " " ssrwidth)))
+			   basbox)
+		      (map (lambda (x) (string-concat (string-mult " " baswidth) x))
+			   ssrbox))
+	      basbase)))
+
+	  ((jux ,rand1 ,rand2)
+	   (unify (rand1box rand1base) (render rand1))
+	   (unify (rand2box rand2base) (render rand2))
+	   (let* ((rand1width (string-utf8-length (car rand1box)))
+		    (rand2width (string-utf8-length (car rand2box)))
+		    (maxbase (if (> rand1base rand2base)
+				 rand1base
+				 rand2base))
+		    (rand1box (append (map (lambda (_) (string-mult " " rand1width))
+					   (drange 0 (- rand2base rand1base) 1))
+				      rand1box))
+		    (rand2box (append (map (lambda (_) (string-mult " " rand2width))
+					   (drange 0 (- rand1base rand2base) 1))
+				      rand2box))
+		    (rand1box (append rand1box
+				      (map (lambda (_) (string-mult " " rand1width))
+					   (drange 0 (- (list-length rand2box)
+							(list-length rand1box)) 1))))
+		    (rand2box (append rand2box
+				      (map (lambda (_) (string-mult " " rand2width))
+					   (drange 0 (- (list-length rand1box)
+							(list-length rand2box)) 1)))))
+	     (list (map (lambda (x y) (string-concat x " " y)) rand1box rand2box)
+		   maxbase)))
+
+	   
+	  ((,rator ,rand1 ,rand2)
+	   (guard (member rator '(+ * - = => -> <= <- < > >= ~)))
+	   
+	   (unify (rand1box rand1base) (render rand1))
+	   (unify (rand2box rand2base) (render rand2))
+	   (let* ((rator (if (symbolp rator) (symbol-to-string rator) rator))
+		    (rand1width (string-utf8-length (car rand1box)))
+		    (rand2width (string-utf8-length (car rand2box)))
+		    (maxbase (if (> rand1base rand2base)
+				 rand1base
+				 rand2base))
+		    (rand1box (append (map (lambda (_) (string-mult " " rand1width))
+					   (drange 0 (- rand2base rand1base) 1))
+				      rand1box))
+		    (rand2box (append (map (lambda (_) (string-mult " " rand2width))
+					   (drange 0 (- rand1base rand2base) 1))
+				      rand2box))
+		    (rand1box (append rand1box
+				      (map (lambda (_) (string-mult " " rand1width))
+					   (drange 0 (- (list-length rand2box)
+							(list-length rand1box)) 1))))
+		    (rand2box (append rand2box
+				      (map (lambda (_) (string-mult " " rand2width))
+					   (drange 0 (- (list-length rand1box)
+							(list-length rand2box)) 1))))
+		    (ratorpadabv (map (lambda (_) (string-mult " "
+							   (+ 2 (string-utf8-length rator))))
+				      (drange 0 maxbase 1)))
+		    (ratorpadblw (map (lambda (_) (string-mult " "
+							  (+ 2 (string-utf8-length rator))))
+				      (drange 0
+					      (- (list-length rand1box)
+						 maxbase)
+					      1)))
+		    (ratorbox (append ratorpadabv
+		    		      (list (string-concat " " rator " "))
+		    		      ratorpadblw)))
+	     (list (map string-concat rand1box ratorbox rand2box)
+		   maxbase)))
+	  
+	  ((quote ,rest)
+	   (unify (restbox restbase) (render rest))
+	   (list (append (list
+			  (string-concat "╭"
+					 (string-mult "─" (string-utf8-length (car restbox)))
+					 "╮"))
+			 (map (lambda (x) (string-concat "│" x "│"))
+			      restbox)
+			 (list
+			  (string-concat "╰"
+					 (string-mult "─" (string-utf8-length (car restbox)))
+					 "╯")))
+		 (+ 1 restbase)))
+	  
+	  (,_
+	   '(("[BROKEN]") 0))))
