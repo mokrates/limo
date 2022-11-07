@@ -29,4 +29,4 @@ sowie ein Brainfuck-Compiler, Turtle-Graphik, Anonyme Rekursion
 mithilfe Haskell Currys Y-Kombinator...
 
 
-Herunterladen und ausprobieren unter <https://github.com/mokrates.limo>
+Herunterladen und ausprobieren unter <https://github.com/mokrates/limo>
