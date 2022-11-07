@@ -20,6 +20,10 @@ Ein einfaches Tetris in Limo
 `limo/examples/autosnake2.limo`  
 ![Autosnake](https://mokrates.github.io/limo/autosnake.gif "Limo besiegt Snake")
 
+## Sogar bis auf Android hat Limo es geschafft ##
+<https://github.com/mokrates/limo-on-android>  
+![LimoOnAndroid](https://github.com/mokrates/limo-on-android/raw/main/screenshot.png "Limo läuft nativ auf einem Amazon Fire Tablet")
+
 # Weiteres #
 Es gibt im `examples/`-Verzeichnis noch eine ganze Reihe weiterer
 Beispielprogramme, die verschiedene Fähigkeiten Limos demonstrieren:
