@@ -1,3 +1,0 @@
--Llibs/simplesdl -l:simplesdl.a
-# the next can be substituted with the output of sdl-config --libs
--lSDL

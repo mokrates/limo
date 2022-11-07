@@ -1,8 +1,0 @@
-(mod-load "socket")
-
-(defun ip-to-string (n)
-  (setq fourth (mod n 256))
-  (setq third (mod (idiv n 256) 256))
-  (setq second (mod (idiv n (* 256 256)) 256))
-  (setq first (mod (idiv n (* 256 256 256)) 256))
-  (format "%n.%n.%n.%n" fourth third second first))
