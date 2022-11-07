@@ -20,3 +20,10 @@ Ein einfaches Tetris in Limo
 `limo/examples/autosnake2.limo`
 ![Autosnake](https://mokrates.github.io/limo/autosnake.gif "Limo besiegt Snake")
 
+# Weiteres #
+Es gibt im `examples/`-Verzeichnis noch eine ganze Reihe weiterer
+Beispielprogramme, die verschiedene Fähigkeiten Limos demonstrieren:
+Threading, Networking, SSL, ein minimaler Webserver, Donald Knuths
+"Man or Boy"-Test, dynamische Variablen, ein Brainfuck-Interpreter
+sowie ein Brainfuck-Compiler, Turtle-Graphik, Anonyme Rekursion
+mithilfe Haskell Currys Y-Kombinator...
