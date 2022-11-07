@@ -9,7 +9,7 @@ Ein einfaches Tetris in Limo
 ![Tetris](https://mokrates.github.io/limo/tetris.gif "Tetris in Limo")
 
 ## Ein Formeleditor in Limo ##
-`limo/examples/frender/`  
+`limo/examples/formula-renderer/`  
 ![Formeleditor](https://mokrates.github.io/limo/formeleditor.gif "Limo Formeleditor in Emacs") 
 
 ## Die Mandelbrotmenge ##
