@@ -3,7 +3,7 @@
 (mod-load "ncurses")
 
 (defclass screen ()
-  (defmethod init (self scr)
+  (defmethod %init (self scr)
     (setmember [self . _scr] scr))
   (defmethod keypad (self onoff)
     ([_ncurses . keypad] [self . _scr] onoff))

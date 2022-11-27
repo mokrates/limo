@@ -109,7 +109,7 @@ see defmethod
 
 example:
 (defclass foo ()                 ; defining class
-  (defmethod init (self) ())     ; must exist to instantiate
+  (defmethod %init (self) ())     ; must exist to instantiate
   (defmethod print-something (self) (print \"foo\\n\"))  ; example-method
 
   ;; properties are the 'public interface' for data-members

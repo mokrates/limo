@@ -812,7 +812,7 @@
 ;; a class is an env.
 ;; (setq new-class (make-class parent-class))
 ;; (defmethod the-class init (args ...) body)
-;; defining init is required.
+;; defining %init is required.
 
 (defmacro class (parentclass . methods)
   (with-gensym (classname)
@@ -862,10 +862,10 @@
 ;; methods will be curried, and called with 'self' as first parameter (python-style)
 ;; slow. obviously. there CANNOT be any non-method-members in the class because
 ;; EVERY item is curried which makes no sense for non-lambdas.
-;; non-method-members HAVE to be created in the init-method.
+;; non-method-members HAVE to be created in the %init-method.
 (defun new (c . args)
   (setq ret (make-env c))
-  (apply [ret . init] (cons ret args))  ; call the constructor
+  (apply [ret . %init] (cons ret args))  ; call the constructor
   ret)
 (freezeq new)
 

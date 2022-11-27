@@ -58,7 +58,7 @@
 (freezeq string-split)
 
 (defclass string@ ()      ; string-class
-  (defmethod init (self s)
+  (defmethod %init (self s)
     (setmember [self . _s] s))
   (defmethod @ (self)     ; unbox
     [self . _s])

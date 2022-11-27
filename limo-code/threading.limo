@@ -4,7 +4,7 @@
 (mod-load "threading")
 
 (defclass thread ()
-  (defmethod init (self fun)
+  (defmethod %init (self fun)
     (setmember [self . _fun] fun))
   (defmethod run (self)
     (setmember [self . _thread] ([_threading . thread-create] [self . _fun]))
@@ -15,19 +15,19 @@
 (defhelp thread
   "CLASS thread
 Methods:
-  init (self fun)  --   <fun> is the thread-worker-function
+  %init (self fun)  --   <fun> is the thread-worker-function
   run  (self)      --   run the thread.
   join (self)      --   join the thread.
 ")
-(defhelp [thread . init]
-  "METHOD [thread . init]
+(defhelp [thread . %init]
+  "METHOD [thread . %init]
 (new thread <fun>)
 Constructor to create a thread-object. 
 The thread is defined to run function <fun>
 ")
 
 (defclass mutex ()
-  (defmethod init (self . type)
+  (defmethod %init (self . type)
     (if type
         (setmember [self . _mutex] ([_threading . mutex-create] (car type)))
         (setmember [self . _mutex] ([_threading . mutex-create]))))
@@ -40,7 +40,7 @@ The thread is defined to run function <fun>
 (defhelp mutex
   "CLASS mutex
 Methods:
-  init (self . type)   -- initialized thread object
+  %init (self . type)   -- initialized thread object
   lock (self)
   unlock (self)
   trylock (self)
@@ -52,7 +52,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 ")
 
 (defclass condition-lock ()
-  (defmethod init (self)
+  (defmethod %init (self)
     (setmember [self . _cond] ([_threading . cond-create])))
   (defmethod wait (self mutex)
     ([_threading . cond-wait] [self . _cond] [mutex . _mutex]))
@@ -72,7 +72,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 
 
 (defclass queue-lock ()
-  (defmethod init (self)
+  (defmethod %init (self)
     (setmember [self . _mutex] (new mutex :recursive))
     (setmember [self . _cond] (new condition-lock))
     (setmember [self . _queue] (cons () ()))
