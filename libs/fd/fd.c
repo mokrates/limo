@@ -152,6 +152,4 @@ void limo_init_fd(limo_data *env)
   INS_FD_VAR(make_number_from_long_long(POLLHUP), "POLLHUP");
 #endif
   setq(env, make_sym("_FD"), limo_fd_env);
-
-  printf("fd.dll loaded\n");
 }

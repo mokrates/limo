@@ -1,18 +1,22 @@
-OBJ = string_builtins.o 
+LIBNAME=string_builtins
+OBJ = $(LIBNAME).o 
 CFLAGS +=  -I../..
 
-string_builtins.so: $(OBJ) Makefile
-	$(CC) $(CFLAGS) -o string_builtins.so -shared $(OBJ)
+$(LIBNAME).so: $(OBJ) Makefile
+	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ)
 
-string_builtins.a: $(OBJ) Makefile
-	$(AR) rcs string_builtins.a $(OBJ)
+$(LIBNAME).dll: $(OBJ) Makefile
+	$(CC) $(CFLAGS) -o $(LIBNAME).dll -shared  ../../limodll.dll $(OBJ) -lgc -lgmp
 
-string_builtins.o: string_builtins.c
-	$(CC) $(CFLAGS) -fPIC -c string_builtins.c
+$(LIBNAME).a: $(OBJ) Makefile
+	$(AR) rcs $(LIBNAME).a $(OBJ)
+
+$(LIBNAME).o: $(LIBNAME).c
+	$(CC) $(CFLAGS) -fPIC -c $(LIBNAME).c
 
 .PHONY: clean
 clean :
 	rm -f *.[oa] *~
 
 realclean: clean
-	rm -f string_builtins.so
+	rm -f $(LIBNAME).so

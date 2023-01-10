@@ -1,12 +1,16 @@
+LIBNAME=simplesdl
 OBJ = simplesdl.o endisabl.o fpics.o geo.o line.o main.o pics.o plot.o event.o
 CC = gcc -g -fPIC `sdl-config --cflags` -I../..
 
-simplesdl.a : $(OBJ) Makefile
-	ar cr simplesdl.a $(OBJ)
+$(LIBNAME).a : $(OBJ) Makefile
+	ar cr $(LIBNAME).a $(OBJ)
 
-simplesdl.so: $(OBJ) Makefile
-	$(CC) -c simplesdl.c
-	gcc -o simplesdl.so -shared $(OBJ) `sdl-config --libs`
+$(LIBNAME).so: $(OBJ) Makefile
+	$(CC) -c $(LIBNAME).c
+	gcc -o $(LIBNAME).so -shared $(OBJ) `sdl-config --libs`
+
+$(LIBNAME).dll: $(OBJ) Makefile
+	$(CC) $(CFLAGS) -o $(LIBNAME).dll -shared  ../../limodll.dll $(OBJ) -lgc -lgmp `sdl-config --libs`
 
 .PHONY: clean
 clean :

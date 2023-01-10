@@ -1,9 +1,8 @@
 if [ "$1" == "bin" ]; then
-    make INSTALL_PREFIX=~/.local/ realclean
-    make INSTALL_PREFIX=~/.local/ TAGS
-    make INSTALL_PREFIX=~/.local/ limo-cygwin
-    make INSTALL_PREFIX=~/.local/ install
+    make INSTALL_PREFIX=/usr/local/ realclean
+    make INSTALL_PREFIX=/usr/local/ TAGS
+    make INSTALL_PREFIX=/usr/local/ limo-cygwin
+    make INSTALL_PREFIX=/usr/local/ install
 else
-    make INSTALL_PREFIX=~/.local/ install
+    make INSTALL_PREFIX=/usr/local/ install
 fi
-

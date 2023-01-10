@@ -102,7 +102,16 @@ limo_data *make_globalenv(int argc, char **argv)
   setq(env, make_sym("ARGV"), args_start);
   setq(env, make_sym("_INTERNED-SYMBOLS"), interned_symbols);
   setq(env, make_sym("_LIMO-PREFIX"), make_string(LIMO_PREFIX));
-
+#if defined(ANDROID)
+  setq(env, make_sym("_ARCH"), make_string("ANDROID"));
+#elif defined(__CYGWIN__)
+  setq(env, make_sym("_ARCH"), make_string("CYGWIN"));
+#elif defined(__MINGW32__)
+  setq(env, make_sym("_ARCH"), make_string("MINGW"));
+#else
+  setq(env, make_sym("_ARCH"), make_string("LINUX"));
+#endif
+  
   number_builtins(env);
 
   return env;

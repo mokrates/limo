@@ -102,9 +102,14 @@
   `(,_import ,name ,(string-split _import_path ":")))
 
 (defmacro mod-load (name)
+  (setq dllsuffix
+	(cond ((= _arch "ANDROID") ".so")
+	      ((= _arch "CYGWIN") ".dll")
+	      ((= _arch "MINGW") ".dll")
+	      ((= _arch "LINUX") ".so")))
   `(if (mod-isinline ,name)
        (mod-loadinline ,name)
-       (loaddll (string-concat (string-concat _limo-prefix ,name) ".so")
+       (loaddll (string-concat (string-concat _limo-prefix ,name) ,dllsuffix)
 		  (string-concat "limo_init_" ,name))))
 
 (defun reverse (l) ;; used by quasiquote
