@@ -180,16 +180,7 @@ BUILTINFUN(builtin_file_readdir)
   ld_res = nil;
   errno=0;
   while (de = readdir(d)) {
-    switch (de->d_type) {
-    case DT_BLK: f_type[0] = 'b'; break;
-    case DT_CHR: f_type[0] = 'c'; break;
-    case DT_DIR: f_type[0] = 'd'; break;
-    case DT_FIFO: f_type[0] = 'p'; break;
-    case DT_LNK: f_type[0] = 'l'; break;
-    case DT_REG: f_type[0] = '-'; break;
-    case DT_SOCK: f_type[0] = 's'; break;
-    default: f_type[0] = '?';
-    }
+    f_type[0] = '?';
     ld_res = make_cons(make_cons(make_string(de->d_name),
                                  make_cons(make_string(f_type), nil)),
                        ld_res);

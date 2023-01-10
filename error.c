@@ -94,3 +94,10 @@ void segfault()
 {
   *((int *)NULL) = 123;
 }
+
+#ifdef __MINGW32__
+void strerror_r(int err_no, char *buf, int buflen)
+{
+  strncpy(buf, strerror(err_no), buflen);
+}
+#endif

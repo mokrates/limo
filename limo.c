@@ -83,14 +83,18 @@ limo_data *limo_init(int argc, char **argv)
 {
   limo_data *env;
   limo_data *dynamic_env;
+  #ifndef __MINGW32__
   sigset_t sigset;
+  #endif
 
   ////// initializing GC
   GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
 
+  #ifndef __MINGW32__
   sigemptyset(&sigset);
   sigaddset(&sigset, SIGINT);
   pthread_sigmask(SIG_BLOCK, &sigset, NULL);
+  #endif
 
   // hopefully, the GC-thread gets spawned here
   // and inherits the NO SIGINT
@@ -103,8 +107,9 @@ limo_data *limo_init(int argc, char **argv)
 #endif
 
   assert(GC_thread_is_registered());
-
+#ifndef __MINGW32__
   pthread_sigmask(SIG_UNBLOCK, &sigset, NULL);
+#endif
   /////////////////////
 
   init_pthread_keys();

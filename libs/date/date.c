@@ -5,6 +5,14 @@
 
 limo_data *sym_date;
 
+#ifdef __MINGW32__
+struct tm *localtime_r(time_t *tt, struct tm *tm)
+{
+  memcpy(tm, localtime(tt), sizeof (struct tm));
+  return tm;
+}
+#endif
+
 limo_data *structtm2ld(struct tm *tm)
 {
   limo_data *ld;

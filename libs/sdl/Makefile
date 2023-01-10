@@ -4,10 +4,10 @@ CFLAGS += -Wall -g -I../.. -fPIC `sdl-config --cflags`
 CC=gcc
 
 $(LIBNAME).so: $(OBJ) Makefile
-	$(CC) -o $(LIBNAME).so -shared $(OBJ) `sdl-config --libs` -lSDL_ttf
+	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ) `sdl-config --libs` -lSDL_ttf
 
 $(LIBNAME).a: $(OBJ) Makefile
-	ar rcs $(LIBNAME).a $(OBJ)
+	$(AR) rcs $(LIBNAME).a $(OBJ)
 
 .PHONY: clean
 clean :

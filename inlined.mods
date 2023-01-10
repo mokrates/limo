@@ -1,3 +1,13 @@
-file
-string_builtins
-ncurses
+#file
+#string_builtins
+#ncurses
+
+###########
+# windows
+###########
+#fd
+#date
+#regex
+#rlcompleter
+#vector
+#limogtk

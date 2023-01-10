@@ -1,13 +1,13 @@
 LIBNAME=ssl
 OBJ = $(LIBNAME).o 
 CFLAGS += -I../.. -fPIC
-CC=gcc $(CFLAGS)
+
 
 $(LIBNAME).so: $(OBJ) Makefile
-	$(CC) -o $(LIBNAME).so -shared $(OBJ) -lssl
+	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ) -lssl
 
 $(LIBNAME).a: $(OBJ) Makefile
-	ar rcs $(LIBNAME).a $(OBJ)
+	$(AR) rcs $(LIBNAME).a $(OBJ)
 
 .PHONY: clean
 clean :

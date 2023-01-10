@@ -3,7 +3,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifndef __MINGW32__
 #include <poll.h>
+#endif
 #include <limo.h>
 
 #define INS_FD_BUILTIN(f, name) setq(limo_fd_env, make_sym(name), make_builtin(f))
@@ -85,6 +87,7 @@ BUILTIN(builtin_fd_close)
   return nil;
 }
 
+#ifndef __MINGW32__
 BUILTIN(builtin_fd_poll)
 {
   limo_data *ld_pollfdlist, *ld_timeout, *ld_res, *ld_cursor;
@@ -121,6 +124,7 @@ BUILTIN(builtin_fd_poll)
   ld_cursor->type=limo_TYPE_NIL;
   return ld_res;
 }
+#endif
 
 void limo_init_fd(limo_data *env)
 {
@@ -133,16 +137,21 @@ void limo_init_fd(limo_data *env)
   INS_FD_BUILTIN(builtin_fd_write, "FD-WRITE");
   INS_FD_BUILTIN(builtin_fd_open, "FD-OPEN");
   INS_FD_BUILTIN(builtin_fd_close, "FD-CLOSE");
+#ifndef __MINGW32__
   INS_FD_BUILTIN(builtin_fd_poll, "FD-POLL");
+#endif
 
   INS_FD_VAR(make_number_from_long_long(O_APPEND), "O_APPEND");
   INS_FD_VAR(make_number_from_long_long(O_RDONLY), "O_RDONLY");
   INS_FD_VAR(make_number_from_long_long(O_WRONLY), "O_WRONLY");
   INS_FD_VAR(make_number_from_long_long(O_RDWR), "O_RDWR");
+#ifndef __MINGW32__
   INS_FD_VAR(make_number_from_long_long(POLLIN), "POLLIN");
   INS_FD_VAR(make_number_from_long_long(POLLOUT), "POLLOUT");
   INS_FD_VAR(make_number_from_long_long(POLLERR), "POLLERR");
   INS_FD_VAR(make_number_from_long_long(POLLHUP), "POLLHUP");
-
+#endif
   setq(env, make_sym("_FD"), limo_fd_env);
+
+  printf("fd.dll loaded\n");
 }

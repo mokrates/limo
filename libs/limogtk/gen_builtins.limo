@@ -1,6 +1,12 @@
 (import "regex.limo")
 (import "progbar.limo")
 
+(setq ignore-functions '("g_io_module_unload"
+			 "g_io_module_load"
+			 "g_dbus_method_invocation_return_value_with_unix_fd_list"
+			 "g_dbus_message_set_unix_fd_list"
+			 "g_dbus_message_get_unix_fd_list"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; shouldn't this be standard?
 ;; but perhaps importable... idk
@@ -59,7 +65,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass gtktype ()
-  (defmethod init (self typename)
+  (defmethod %init (self typename)
     (setmember [self . _typename] typename))
   (defmethod typename (self)
     [self . _typename])
@@ -127,14 +133,17 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
            fname
            (create-limo-data-vars arguments)
            (create-c-vars arguments)
-           limofname (list-length arguments)
+           limofname
+	   (list-length arguments)
            (get-arguments arguments)
            (list-to-string (map (lambda (x) (format "%s" [(car x) l2c-assign (cadr x) limofname])) arguments))
            [return-type c2l-to-result (format "%s(%s)" fname argumentlist)])))
 
 
 (defun output-file (list-of-functions)
-  (setq results (dmap (lambda (x) (apply create-limo-fun x)) (progress-bar-w list-of-functions 80)))
+  (setq results (dmap (lambda (x) (apply create-limo-fun x))
+		      (dfilter (lambda (y) (not (member (cadr y) ignore-functions)))
+			       (progress-bar-w list-of-functions 80))))
 
   (setq fun-file  (file-open "_gtk-functions.h" "w"))
   (setq insert-file (file-open "_gtk-inserts.h" "w"))
@@ -508,7 +517,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
          (process-fn-def function-def))
 
         ((and (string-startswith line "cairo_") (member "(" (string-to-list line)))
-         (setq function-def (list (format "%s %s" (string-strip last-line) line)))
+         (setq function-def (list (format "%s %s" (string-strip last-line) line))) ;
          (while :t :breakable
            (when (string-endswith line ";")
              (break))

@@ -1,13 +1,13 @@
 LIBNAME=socket
 OBJ = $(LIBNAME).o 
 CFLAGS += -I../.. -fPIC
-CC=gcc $(CFLAGS)
+
 
 $(LIBNAME).so: $(OBJ) Makefile
-	$(CC) -o $(LIBNAME).so -shared $(OBJ)
+	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ)
 
 $(LIBNAME).a: $(OBJ) Makefile
-	ar rcs $(LIBNAME).a $(OBJ)
+	$(AR) rcs $(LIBNAME).a $(OBJ)
 
 .PHONY: clean
 clean :

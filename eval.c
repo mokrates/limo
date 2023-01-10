@@ -1,5 +1,12 @@
+#ifdef __MINGW32__
+#include <malloc.h>
+#endif
 #include <gc.h>
+
+#ifndef __MINGW32__
 #include <alloca.h>
+#endif
+
 #include "limo.h"
 #include <assert.h>
 

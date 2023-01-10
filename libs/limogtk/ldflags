@@ -1,1 +1,1 @@
-libs/limogtk/limogtk.a $(pkg-config gtk+-3.0 --libs)
+libs/limogtk/limogtk.a -lgdk-3 -lgdi32 -limm32 -lshell32 -lole32 -Wl,-luuid -lwinmm -ldwmapi -lsetupapi -lcfgmgr32 -lz -lpangowin32-1.0 -lpango-1.0 -lglib-2.0 -lintl -lgobject-2.0 -lpangocairo-1.0 -lcairo -lgdk_pixbuf-2.0 -lcairo-gobject -latk-1.0 -lgio-2.0 -lgtk-3 -lgthread-2.0 -lgmodule-2.0 -ldbus-glib-1 -ldbus-1

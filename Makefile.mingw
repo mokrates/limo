@@ -1,6 +1,13 @@
 # -*- makefile -*-
-INSTALL_PREFIX=/usr/local
-LIMO_PREFIX=$(INSTALL_PREFIX)/lib/limo/
+
+CC=i686-w64-mingw32-gcc
+DLLSOURCEDIR=/usr/i686-w64-mingw32/sys-root/mingw/bin
+export CC
+AR=$(CC)-ar
+export AR
+
+INSTALL_PREFIX=c:/limo/
+LIMO_PREFIX=$(INSTALL_PREFIX)
 
 DEBUG=-g -Wall #-DNDEBUG
 PROFILING= # -pg -no-pie
@@ -16,38 +23,28 @@ EXEOBJ=exelimo.o $(BASEOBJ)
 HEADERS=limo.h config.h
 
 CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
+export CFLAGS
 
 .PHONY: all libs clean realclean install uninstall
 
 all: TAGS libs limo
 
 exelimo: $(EXEOBJ)
-	ar rcs liblimo.a $(EXEOBJ)
+	$(AR) rcs liblimo.a $(EXEOBJ)
 exelimo.o: $(HEADERS) limo.c
 	$(CC) $(DEBUG) -c -DLIMO_MAKE_EXECUTABLE limo.c -o exelimo.o
 
 inlined_mods.c: inlined.mods
 	./make-inlined_mods-c.sh
 
-limo: $(OBJ) libs info
-	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
+limo-mingw: $(OBJ) libs info
+	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -lgc -lpthread -lgmp -ldl -lreadline -o limo
 
-limo-almost-static: $(OBJ) libs info
-	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
-
-limo-cygwin-exe: $(OBJ)
-	$(CC) $(BASEOBJ) $(PROFILING) -shared `./inline-cfg.sh` -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limodll.dll
-	$(CC) main.o $(PROFILING) limodll.dll -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limo.exe
-
-limo-cygwin: limo-cygwin-exe libs-cygwin info
 
 limo-wsl: limo-almost-static info
 
 libs:
-	make -C libs
-
-libs-cygwin:
-	make -C libs lib-cygwin
+	$(MAKE) -C libs
 
 TAGS:
 	etags.emacs --regex='{c}/BUILTIN\(FUN\)?(\([^)]+\)/\2/' *.c *.h libs/*/*.c libs/*/*.h
@@ -55,16 +52,16 @@ TAGS:
 $(OBJ): $(HEADERS) Makefile
 
 info:
-	make -C docs docs
+	$(MAKE) -C docs docs
 
 clean:	
 	rm -f *.o *~
 	rm -f inlined_mods.c
-	make -C libs clean
-	make -C docs clean
+	$(MAKE) -C libs clean
+	$(MAKE) -C docs clean
 
 realclean: clean
-	make -C libs realclean
+	$(MAKE) -C libs realclean
 	make -C docs realclean
 	rm -f limo
 
@@ -74,9 +71,19 @@ install:
 #	cp -f libs/*/*.so $(LIMO_PREFIX)
 	cp -f libs/*/*.ttf $(LIMO_PREFIX)
 	cp -rf limo-code/* $(LIMO_PREFIX)
-	cp -f docs/limo-info.info $(LIMO_PREFIX)
+#	cp -f docs/limo-info.info $(LIMO_PREFIX)
 	mkdir -p $(INSTALL_PREFIX)/bin
 	cp -f limo $(INSTALL_PREFIX)/bin
+
+install-mingw:
+	mkdir -p $(LIMO_PREFIX)
+	cp -f *.limo $(LIMO_PREFIX)
+#	cp -f libs/*/*.so $(LIMO_PREFIX)
+	cp -f libs/*/*.ttf $(LIMO_PREFIX)
+	cp -rf limo-code/* $(LIMO_PREFIX)
+#	cp -f docs/limo-info.info $(LIMO_PREFIX)
+	mkdir -p $(INSTALL_PREFIX)
+	cp -f limo.exe $(INSTALL_PREFIX)
 
 uninstall:
 	rm -rf $(LIMO_PREFIX)

@@ -23,3 +23,21 @@
 #define NO_EXECINFO
 #undef  LIMO_THREADING
 #endif
+
+
+////// mingw / cygwin (windows)
+#if defined(__MINGW32__) || defined(__CYGWIN__)
+#define NO_EXECINFO
+#undef LIMO_THREADING
+#endif
+
+#ifdef __MINGW32__
+/// strerror_r
+void strerror_r(int err_no, char *buf, int buflen);
+
+/// setjmp
+#define sigsetjmp(env, sigs) setjmp(env)
+#define siglongjmp longjmp
+#define sigjmp_buf jmp_buf
+
+#endif // !mingw

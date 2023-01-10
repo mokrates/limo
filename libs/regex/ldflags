@@ -1,1 +1,1 @@
-libs/regex/regex.a
+libs/regex/regex.a -lregex

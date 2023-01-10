@@ -1,7 +1,12 @@
+#ifdef __MINGW32__
+#include <malloc.h>
+#endif
 #include "limo.h"
 #include <unistd.h>
 #include <assert.h>
+#ifndef __MINGW32__
 #include <alloca.h>
+#endif
 
 BUILTIN(builtin_quote)
 {

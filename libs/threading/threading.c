@@ -2,6 +2,14 @@
 #include <pthread.h>
 #include <limo.h>
 
+#ifdef __CYGWIN__
+#define        PTHREAD_MUTEX_FAST_NP                   PTHREAD_MUTEX_NORMAL
+#define        PTHREAD_MUTEX_RECURSIVE_NP              PTHREAD_MUTEX_RECURSIVE
+#define        PTHREAD_MUTEX_ERRORCHECK_NP             PTHREAD_MUTEX_ERRORCHECK
+#define        PTHREAD_MUTEX_TIMED_NP                  PTHREAD_MUTEX_NORMAL
+#define        PTHREAD_MUTEX_ADAPTIVE_NP               PTHREAD_MUTEX_NORMAL
+#endif /* __CYGWIN__ */
+
 // had to use GC_pthread_create and GC_pthread_join to make this work.
 // segfaulted with the usual functions
 
