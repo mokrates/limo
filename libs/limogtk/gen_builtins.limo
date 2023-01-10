@@ -476,7 +476,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                        f-stuff)))
      ;;;; !!several parameters divided by commas
 
-     (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+) ?\\((.*)($|,|\\);)" (car f-stuff) 4))
+     (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+) ?\\(([^$,\\)]*)($|,|\\);)" (car f-stuff) 4))
 
      (if matches
          (progn

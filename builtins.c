@@ -404,7 +404,7 @@ BUILTIN(builtin_loaddll)
   if (initfunction->type != limo_TYPE_STRING)
     limo_error("initfunction must be a string");
 
-  handle = dlopen(filename->d_string, RTLD_LAZY);
+  handle = dlopen(filename->d_string, RTLD_NOW);
 
   if (!handle)
     limo_error("dll load error: %s", dlerror());

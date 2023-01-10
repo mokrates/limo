@@ -86,7 +86,7 @@ install:
 	cp -f docs/limo-info.info $(LIMO_PREFIX)
 	mkdir -p $(INSTALL_PREFIX)/bin
 	[ ! -e limo ] || cp -f limo $(INSTALL_PREFIX)/bin
-	[ ! -e limodll.dll ] || mv $(LIMO_PREFIX)/limodll.dll $(INSTALL_PREFIX)/bin   # yeah, I'm sorry I move this around so much
+	[ ! -e limodll.dll ] || cp -f limodll.dll $(INSTALL_PREFIX)/bin
 	[ ! -e limo.exe ] || cp -f limo.exe $(INSTALL_PREFIX)/bin
 
 uninstall:

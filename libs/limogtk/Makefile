@@ -4,7 +4,10 @@ CFLAGS += -Wno-deprecated-declarations -Wno-discarded-qualifiers -g -I../.. `pkg
 #CFLAGS += -Wno-deprecated-declarations -Wno-discarded-qualifiers -g -I../.. `i686-w64-mingw32-pkg-config gtk+-win32-3.0 --cflags` -fPIC
 
 $(LIBNAME).so: $(OBJ) Makefile
-	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ) `pkg-config gtk+-3.0 --libs`
+	$(CC) $(CFLAGS) -o $(LIBNAME).so -shared $(OBJ) `pkg-config gtk+-3.0 --libs` `pkg-config gmodule-2.0 --libs` `pkg-config gthread-2.0 --libs`
+
+$(LIBNAME).dll: $(OBJ) Makefile
+	$(CC) $(CFLAGS) -o $(LIBNAME).dll -shared  ../../limodll.dll $(OBJ) -lgc -lgmp  `pkg-config gtk+-3.0 --libs` `pkg-config gmodule-2.0 --libs` `pkg-config gthread-2.0 --libs`
 
 $(LIBNAME).a: $(OBJ) Makefile
 	$(AR) rcs $(LIBNAME).a $(OBJ)
