@@ -90,3 +90,15 @@
       ""
       (list-to-string (cons (car l) (undyn (helper sep (cdr l)))))))
 (freezeq string-join)
+
+(defun string< (str1 str2)
+  (defun list< (x y)
+    (if x
+	(if y
+	    (if (= (car x) (car y))
+		(list< (cdr x) (cdr y))
+		(< (ord (car x)) (ord (car y))))
+	    ())
+	y))
+  (list< (string-to-list str1) (string-to-list str2)))
+		    

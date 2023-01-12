@@ -1,6 +1,9 @@
 ;; limo.init
 ;; do it in limo!
 
+;; TODO: dolist (like cl)
+;; TODO: dotimes (like cl)
+
 ;;(setq _trace :t)
 
 ;; lisp style defmacro and defun (but with schemy param lists)

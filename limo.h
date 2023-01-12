@@ -186,7 +186,7 @@ limo_data *make_builtinfun(limo_builtinfun);
 limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
-limo_data *make_string(char *);
+limo_data *make_string(const char *);
 limo_data *make_char(char);
 
 limo_data *make_globalenv(int, char **);

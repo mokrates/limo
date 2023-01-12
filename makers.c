@@ -142,7 +142,7 @@ limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env)
   return make_cons(car, make_thunk(dyncdr, env));
 }
 
-limo_data *make_string(char *msg)
+limo_data *make_string(const char *msg)
 {
   limo_data *str = make_limo_data();
   str->type = limo_TYPE_STRING;
