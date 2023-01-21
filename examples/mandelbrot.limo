@@ -54,5 +54,5 @@
     ([_sdl . sdl-flip] *surface*)))
 
 (main)
-(print "press RET to quit\n")
-(file-getc stdin)
+;; (print "press RET to quit\n")
+;; (file-getc stdin)

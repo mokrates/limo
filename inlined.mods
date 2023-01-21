@@ -1,6 +1,6 @@
-#file
-#string_builtins
-#ncurses
+file
+string_builtins
+ncurses
 
 ###########
 # windows

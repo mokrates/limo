@@ -159,16 +159,14 @@ limo_dict_item *dict_get_place(limo_data *dict, limo_data *key)
   unsigned int h = hash(key);
   unsigned int perturb = h;
   limo_dict *d = dict->d_dict;
-#define PERTURB_SHIFT 5;
-  
-  while (1) {
-    i = ((i<<2) + i + perturb + 1) % d->size;   // 5i + 1 (perturb gets eventually zero)
 
+  i=h & (d->size -1);
+  while (1) {
     if (d->store[i].cons == NULL ||
 	limo_equals(key, CAR(d->store[i].cons)))
       return &d->store[i];   // WILL be found!
     
-    perturb >>= PERTURB_SHIFT;
+    i = (i+1) & (d->size -1);
   }
 
   limo_error("dict_get_place(): this should not happen!");
