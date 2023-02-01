@@ -8,9 +8,9 @@ BUILTIN(builtin_sdl_blitsurface)
   ld_srcsurface = eval(FIRST_ARG, env);
   ld_dstsurface = eval(SECOND_ARG, env);
   ld_dstpoint   = eval(THIRD_ARG, env);
-  dstrect.x = GETINTFROMMPQ(CAR(ld_dstpoint));
-  dstrect.y = GETINTFROMMPQ(CDR(ld_dstpoint));
+  dstrect.x = GETINTFROMNUMBER(CAR(ld_dstpoint));
+  dstrect.y = GETINTFROMNUMBER(CDR(ld_dstpoint));
   srcsurface = get_special(ld_srcsurface, sym_sdl_surface);
   dstsurface = get_special(ld_dstsurface, sym_sdl_surface);
-  return make_number_from_long_long(SDL_BlitSurface(srcsurface, NULL, dstsurface, &dstrect));
+  return make_rational_from_long_long(SDL_BlitSurface(srcsurface, NULL, dstsurface, &dstrect));
 }

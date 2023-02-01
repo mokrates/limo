@@ -56,7 +56,7 @@ BUILTIN(builtin_fd_write)
 	      ld_buf->string_length);
   
   if (res < 0) limo_error_errno(sym_fd);
-  return make_number_from_long_long(res);
+  return make_rational_from_long_long(res);
 }
 
 BUILTIN(builtin_fd_open)
@@ -71,7 +71,7 @@ BUILTIN(builtin_fd_open)
   REQUIRE_TYPE("FD-OPEN", ld_flags, limo_TYPE_GMPQ);
   res = open(ld_pathname->d_string, GETINTFROMMPQ(ld_flags));
   if (res < 0) limo_error_errno(sym_fd);
-  return make_number_from_long_long(res);
+  return make_rational_from_long_long(res);
 }
 
 BUILTIN(builtin_fd_close)
@@ -119,7 +119,7 @@ BUILTIN(builtin_fd_poll)
   ld_cursor = ld_res;
   
   for (i=0; i<pollfdlist_length; ++i,CDR(ld_cursor)=make_cons(nil, nil), ld_cursor=CDR(ld_cursor))
-    CAR(ld_res) = make_number_from_long_long(pfds[i].revents);
+    CAR(ld_res) = make_rational_from_long_long(pfds[i].revents);
   
   ld_cursor->type=limo_TYPE_NIL;
   return ld_res;
@@ -141,15 +141,15 @@ void limo_init_fd(limo_data *env)
   INS_FD_BUILTIN(builtin_fd_poll, "FD-POLL");
 #endif
 
-  INS_FD_VAR(make_number_from_long_long(O_APPEND), "O_APPEND");
-  INS_FD_VAR(make_number_from_long_long(O_RDONLY), "O_RDONLY");
-  INS_FD_VAR(make_number_from_long_long(O_WRONLY), "O_WRONLY");
-  INS_FD_VAR(make_number_from_long_long(O_RDWR), "O_RDWR");
+  INS_FD_VAR(make_rational_from_long_long(O_APPEND), "O_APPEND");
+  INS_FD_VAR(make_rational_from_long_long(O_RDONLY), "O_RDONLY");
+  INS_FD_VAR(make_rational_from_long_long(O_WRONLY), "O_WRONLY");
+  INS_FD_VAR(make_rational_from_long_long(O_RDWR), "O_RDWR");
 #ifndef __MINGW32__
-  INS_FD_VAR(make_number_from_long_long(POLLIN), "POLLIN");
-  INS_FD_VAR(make_number_from_long_long(POLLOUT), "POLLOUT");
-  INS_FD_VAR(make_number_from_long_long(POLLERR), "POLLERR");
-  INS_FD_VAR(make_number_from_long_long(POLLHUP), "POLLHUP");
+  INS_FD_VAR(make_rational_from_long_long(POLLIN), "POLLIN");
+  INS_FD_VAR(make_rational_from_long_long(POLLOUT), "POLLOUT");
+  INS_FD_VAR(make_rational_from_long_long(POLLERR), "POLLERR");
+  INS_FD_VAR(make_rational_from_long_long(POLLHUP), "POLLHUP");
 #endif
   setq(env, make_sym("_FD"), limo_fd_env);
 }

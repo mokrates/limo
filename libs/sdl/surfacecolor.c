@@ -14,11 +14,11 @@ BUILTIN(builtin_sdl_surface_rgbpcolor)
   ld_b = eval(FOURTH_ARG, env);
 
   surface = get_special(ld_surface, sym_sdl_surface);
-  r = GETINTFROMMPQ(ld_r);
-  g = GETINTFROMMPQ(ld_g);
-  b = GETINTFROMMPQ(ld_b);
+  r = GETINTFROMNUMBER(ld_r);
+  g = GETINTFROMNUMBER(ld_g);
+  b = GETINTFROMNUMBER(ld_b);
 
-  return make_number_from_long_long(SDL_MapRGB(surface->format, r,g,b));
+  return make_rational_from_long_long(SDL_MapRGB(surface->format, r,g,b));
 }
 
 BUILTIN(builtin_sdl_surface_rgbapcolor)
@@ -35,12 +35,12 @@ BUILTIN(builtin_sdl_surface_rgbapcolor)
   ld_a = eval(FIFTH_ARG, env);
 
   surface = get_special(ld_surface, sym_sdl_surface);
-  r = GETINTFROMMPQ(ld_r);
-  g = GETINTFROMMPQ(ld_g);
-  b = GETINTFROMMPQ(ld_b);
-  a = GETINTFROMMPQ(ld_a);
+  r = GETINTFROMNUMBER(ld_r);
+  g = GETINTFROMNUMBER(ld_g);
+  b = GETINTFROMNUMBER(ld_b);
+  a = GETINTFROMNUMBER(ld_a);
 
-  return make_number_from_long_long(SDL_MapRGBA(surface->format, r,g,b,a));
+  return make_rational_from_long_long(SDL_MapRGBA(surface->format, r,g,b,a));
 }
 
 BUILTIN(builtin_sdl_makecolor)
@@ -55,8 +55,8 @@ BUILTIN(builtin_sdl_makecolor)
   ld_g = eval(SECOND_ARG, env);
   ld_b = eval(THIRD_ARG, env);
   
-  sc_result->r = GETINTFROMMPQ(ld_r);
-  sc_result->g = GETINTFROMMPQ(ld_g);
-  sc_result->b = GETINTFROMMPQ(ld_b);
+  sc_result->r = GETINTFROMNUMBER(ld_r);
+  sc_result->g = GETINTFROMNUMBER(ld_g);
+  sc_result->b = GETINTFROMNUMBER(ld_b);
   return make_special(sym_sdl_color, sc_result);
 }

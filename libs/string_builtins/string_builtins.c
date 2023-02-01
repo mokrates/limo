@@ -41,7 +41,7 @@ BUILTIN(builtin_string_length)
   if (str->type != limo_TYPE_STRING)
     limo_error("(string-length STRING)");
 
-  return make_number_from_long_long(str->string_length);
+  return make_rational_from_long_long(str->string_length);
 }
 
 BUILTIN(builtin_stringp)
@@ -62,7 +62,7 @@ BUILTIN(builtin_ord)
   ld = eval(FIRST_ARG, env);
   if (ld->type != limo_TYPE_STRING)
     limo_error("(ORD string)");
-  return make_number_from_long_long((unsigned char)ld->d_string[0]);
+  return make_rational_from_long_long((unsigned char)ld->d_string[0]);
 }
 
 BUILTIN(builtin_chr)
@@ -104,7 +104,7 @@ BUILTIN(builtin_string_utf8_length) {
   while (*s) {
     count += (*s++ & 0xC0) != 0x80;
   }
-  return make_number_from_long_long(count);
+  return make_rational_from_long_long(count);
 }
 
 BUILTINFUN(builtin_list_to_string)

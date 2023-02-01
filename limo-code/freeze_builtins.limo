@@ -54,3 +54,7 @@
 (freezeq ENV-SETQ)
 (freezeq ENV-SETF)
 (freezeq ENV-GETQ)
+(freezeq _ADD)
+(freezeq _SUB)
+(freezeq _MUL)
+(freezeq _DIV)

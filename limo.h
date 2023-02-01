@@ -130,6 +130,7 @@ extern limo_data *stacktrace;
 #define BUILTINFUN(x) limo_data *x(int argc, limo_data **argv)
 
 #define REQUIRE_TYPE(fun, x, T) { if (x->type != T) limo_error(fun " - Argument Error: " #T " expected."); }
+#define REQUIRE_NUMBER(fun, x) { if ((x)->type != limo_TYPE_GMPQ && (x)->type != limo_TYPE_DOUBLE) limo_error(fun " - Argument Error: NUMBER expected."); }
 //#define REQUIRE_ARGC(fun, n)    { if (list_length(arglist) < (n+1)) limo_error(fun " - at least " #n " arguments expected.");}
 #define REQUIRE_ARGC(fun, n)    do { int _ra_i; limo_data *_ra_al; for (_ra_i=0, _ra_al=arglist; !is_nil(_ra_al); _ra_al=CDR(_ra_al), ++_ra_i) \
 								     ; \
@@ -188,6 +189,7 @@ limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);
 limo_data *make_string(const char *);
 limo_data *make_char(char);
+limo_data *make_float_from_str(const char *);
 
 limo_data *make_globalenv(int, char **);
 
@@ -380,12 +382,15 @@ void file_builtins(limo_data *env);
 #define LIMO_MPQ(x) (*((x)->d_mpq))
 #define GETINTFROMMPQ(mpq)     ((long long)mpq_get_d(*(mpq)->d_mpq))
 #define GETDOUBLEFROMMPQ(mpq)  (mpq_get_d(*(mpq)->d_mpq))
+#define GETINTFROMNUMBER(number) ((long long)((number)->type==limo_TYPE_DOUBLE ? (number)->d_double : mpq_get_d(*(number)->d_mpq)))
+#define COERCETODOUBLE(number) ((number)->type == limo_TYPE_DOUBLE ? (number)->d_double : (mpq_get_d(*(number)->d_mpq)))
 char *repr_number(limo_data *ld);
-limo_data *make_number(void);
-limo_data *make_number_from_str(char *);
-limo_data *make_number_from_long_long(long long i);
-limo_data *make_number_from_double(double d);
-double make_double_from_number(limo_data *n);
+limo_data *make_float(double);
+limo_data *make_rational(void);
+limo_data *make_rational_from_str(char *);
+limo_data *make_rational_from_long_long(long long i);
+limo_data *make_rational_from_double(double d);
+double make_double_from_rational(limo_data *n);
 
 limo_data *make_special(limo_data *type_symbol, void *content);
 void *get_special(limo_data *expr, limo_data *type_symbol);

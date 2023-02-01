@@ -36,7 +36,7 @@ BUILTIN(builtin_socket_make_socket)
   domain   = GETINTFROMMPQ(ld_domain);
   type     = GETINTFROMMPQ(ld_type);
   protocol = GETINTFROMMPQ(ld_protocol);
-  return make_number_from_long_long(socket(domain, type, protocol));
+  return make_rational_from_long_long(socket(domain, type, protocol));
 }
 
 BUILTIN(builtin_socket_listen)
@@ -67,7 +67,7 @@ BUILTIN(builtin_socket_accept)
   if (0>res)
     limo_error_errno(sym_socket);
 
-  return make_number_from_long_long(res);
+  return make_rational_from_long_long(res);
 }
 
 BUILTIN(builtin_socket_make_sockaddr)
@@ -99,7 +99,7 @@ BUILTIN(builtin_socket_inet_addr)
   REQUIRE_ARGC("INET-ADDR", 1);
   ld_in = eval(FIRST_ARG, env);
   REQUIRE_TYPE("INET-ADDR", ld_in, limo_TYPE_STRING);
-  return make_number_from_long_long(inet_addr(ld_in->d_string));
+  return make_rational_from_long_long(inet_addr(ld_in->d_string));
 }
 
 BUILTIN(builtin_socket_connect)
@@ -149,7 +149,7 @@ BUILTIN(builtin_socket_gethostbyname)
 
   if (!he) throw(make_cons(sym_socket, make_string("couldn't resolve hostname")));
 
-  ld_res = make_number_from_long_long(*(in_addr_t *)(he->h_addr));
+  ld_res = make_rational_from_long_long(*(in_addr_t *)(he->h_addr));
   return ld_res;
 }
 
@@ -170,10 +170,10 @@ void limo_init_socket(limo_data *env)
   INS_SOCKET_BUILTIN(builtin_socket_bind, "BIND");
   INS_SOCKET_BUILTIN(builtin_socket_gethostbyname, "GETHOSTBYNAME");
 
-  INS_SOCKET_VAR(make_number_from_long_long(AF_INET), "AF_INET");
-  INS_SOCKET_VAR(make_number_from_long_long(SOCK_STREAM), "SOCK_STREAM");
-  INS_SOCKET_VAR(make_number_from_long_long(SOCK_DGRAM), "SOCK_DGRAM");
-  INS_SOCKET_VAR(make_number_from_long_long(SOCK_NONBLOCK), "SOCK_NONBLOCK");
+  INS_SOCKET_VAR(make_rational_from_long_long(AF_INET), "AF_INET");
+  INS_SOCKET_VAR(make_rational_from_long_long(SOCK_STREAM), "SOCK_STREAM");
+  INS_SOCKET_VAR(make_rational_from_long_long(SOCK_DGRAM), "SOCK_DGRAM");
+  INS_SOCKET_VAR(make_rational_from_long_long(SOCK_NONBLOCK), "SOCK_NONBLOCK");
   
   setq(env, make_sym("_SOCKET"), limo_socket_env);
 }

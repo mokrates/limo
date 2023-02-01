@@ -59,9 +59,9 @@ BUILTIN(builtin_sdl_plot)
   ld_point = eval(SECOND_ARG, env);
   ld_color = eval(THIRD_ARG, env);
 
-  x = GETINTFROMMPQ(CAR(ld_point));
-  y = GETINTFROMMPQ(CDR(ld_point));
-  color = GETINTFROMMPQ(ld_color);
+  x = GETINTFROMNUMBER(CAR(ld_point));
+  y = GETINTFROMNUMBER(CDR(ld_point));
+  color = GETINTFROMNUMBER(ld_color);
 
   limo_sdl_plot(get_special(ld_surface, sym_sdl_surface), x, y, color);
 

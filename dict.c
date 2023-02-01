@@ -33,6 +33,9 @@ inline int limo_equals(limo_data *a, limo_data *b)
   case limo_TYPE_GMPQ:
     return !mpq_cmp(LIMO_MPQ(a), LIMO_MPQ(b));
 
+  case limo_TYPE_DOUBLE:
+    return a->d_double == b->d_double;
+
   case limo_TYPE_NIL:
     return b->type == limo_TYPE_NIL;
   }

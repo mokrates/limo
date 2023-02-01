@@ -10,7 +10,7 @@ BUILTIN(builtin_sdl_clearsurface)
   ld_color = eval(SECOND_ARG, env);
 
   surface = get_special(ld_surface, sym_sdl_surface);
-  color = GETINTFROMMPQ(ld_color);
+  color = GETINTFROMNUMBER(ld_color);
 
   SDL_FillRect(surface, NULL, color);
 

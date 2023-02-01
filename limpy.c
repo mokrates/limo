@@ -154,7 +154,7 @@ int limpy_gettoken(reader_stream *rs, limo_data **ld)
     buf[i]='\0';
 
     if (isdigit(buf[0])) {
-      *ld = make_number_from_str(buf);
+      *ld = make_rational_from_str(buf);
       annotate(*ld, la);
       return limpy_TOKEN_NUMBER;
     }

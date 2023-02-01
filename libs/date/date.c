@@ -16,15 +16,15 @@ struct tm *localtime_r(time_t *tt, struct tm *tm)
 limo_data *structtm2ld(struct tm *tm)
 {
   limo_data *ld;
-  ld = make_cons(make_number_from_long_long(tm->tm_isdst), nil);
-  ld = make_cons(make_number_from_long_long(tm->tm_yday), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_wday), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_year), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_mon), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_mday), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_hour), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_min), ld);
-  ld = make_cons(make_number_from_long_long(tm->tm_sec), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_isdst), nil);
+  ld = make_cons(make_rational_from_long_long(tm->tm_yday), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_wday), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_year), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_mon), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_mday), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_hour), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_min), ld);
+  ld = make_cons(make_rational_from_long_long(tm->tm_sec), ld);
   return ld;
 }
 

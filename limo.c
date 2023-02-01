@@ -124,11 +124,12 @@ limo_data *limo_init(int argc, char **argv)
   pk_exception_set(nil);
   pk_finallystack_set(NULL);
 
-  env = make_globalenv(argc, argv);
-  globalenv = env;
-
   dynamic_env = make_env(nil);
   pk_dynamic_vars_set(dynamic_env);
+  
+  env = make_globalenv(argc, argv);  // needs dynamic_env already
+  globalenv = env;
+
   setq(globalenv, make_sym("_dyn-env"), dynamic_env);
 
   return globalenv;

@@ -52,11 +52,11 @@ BUILTIN(builtin_sdl_line)
   ld_color = eval(FOURTH_ARG, env);
 
   surface = get_special(ld_surface, sym_sdl_surface);
-  x1 = GETINTFROMMPQ(CAR(ld_point1));
-  y1 = GETINTFROMMPQ(CDR(ld_point1));
-  x2 = GETINTFROMMPQ(CAR(ld_point2));
-  y2 = GETINTFROMMPQ(CDR(ld_point2));
-  color = GETINTFROMMPQ(ld_color);
+  x1 = GETINTFROMNUMBER(CAR(ld_point1));
+  y1 = GETINTFROMNUMBER(CDR(ld_point1));
+  x2 = GETINTFROMNUMBER(CAR(ld_point2));
+  y2 = GETINTFROMNUMBER(CDR(ld_point2));
+  color = GETINTFROMNUMBER(ld_color);
 
   limo_sdl_line(surface, x1, y1, x2, y2, color);
 

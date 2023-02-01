@@ -41,9 +41,9 @@ BUILTIN(builtin_sdl_event)
      break; */
   switch (ev->type) {
   case SDL_ACTIVEEVENT: sdl_activeevent = (SDL_ActiveEvent *)ev;
-    return make_cons(make_number_from_long_long(ev->type),
-                     make_cons(make_number_from_long_long(sdl_activeevent->gain),
-                               make_cons(make_number_from_long_long(sdl_activeevent->state), nil)));
+    return make_cons(make_rational_from_long_long(ev->type),
+                     make_cons(make_rational_from_long_long(sdl_activeevent->gain),
+                               make_cons(make_rational_from_long_long(sdl_activeevent->state), nil)));
     break;
   case SDL_KEYDOWN: 
   case SDL_KEYUP: sdl_keyboardevent = (SDL_KeyboardEvent *)ev;

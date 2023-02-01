@@ -13,11 +13,11 @@ BUILTIN(builtin_sdl_setvideomode)
   ld_bpp = eval(THIRD_ARG, env);
   ld_flags = eval(FOURTH_ARG, env);
   
-  flags = GETINTFROMMPQ(ld_flags);
-  width = GETINTFROMMPQ(ld_width);
-  height = GETINTFROMMPQ(ld_height);
-  bpp = GETINTFROMMPQ(ld_bpp);
-  flags = GETINTFROMMPQ(ld_flags);
+  flags = GETINTFROMNUMBER(ld_flags);
+  width = GETINTFROMNUMBER(ld_width);
+  height = GETINTFROMNUMBER(ld_height);
+  bpp = GETINTFROMNUMBER(ld_bpp);
+  flags = GETINTFROMNUMBER(ld_flags);
   
   surface = SDL_SetVideoMode(width, height, bpp, flags);
   if (surface == NULL)		    

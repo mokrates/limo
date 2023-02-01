@@ -132,7 +132,7 @@ BUILTIN(builtin_file_write)
     limo_error("(file-write FILE STRING)");
 
   ret = fwrite(str->d_string, str->string_length, 1, f);
-  return make_number_from_long_long(ret);
+  return make_rational_from_long_long(ret);
 }
 
 BUILTIN(builtin_file_flush)
@@ -161,7 +161,7 @@ BUILTIN(builtin_file_seek)
 BUILTIN(builtin_file_tell)
 {
   REQUIRE_ARGC("FILE-TELL", 1);
-  return make_number_from_long_long(ftell((FILE *)get_special(eval(FIRST_ARG, env), sym_file)));
+  return make_rational_from_long_long(ftell((FILE *)get_special(eval(FIRST_ARG, env), sym_file)));
 }
 
 BUILTINFUN(builtin_file_readdir)
@@ -221,8 +221,8 @@ void limo_init_file(limo_data *env)
   INSBUILTIN(builtin_file_write, "FILE-WRITE");
 
   INSBUILTINFUN(builtin_file_readdir, "FILE-READDIR");
-  setq(env, make_sym("FILE-SEEK-SET"), make_number_from_long_long(SEEK_SET));
-  setq(env, make_sym("FILE-SEEK-CUR"), make_number_from_long_long(SEEK_CUR));
-  setq(env, make_sym("FILE-SEEK-END"), make_number_from_long_long(SEEK_END));
+  setq(env, make_sym("FILE-SEEK-SET"), make_rational_from_long_long(SEEK_SET));
+  setq(env, make_sym("FILE-SEEK-CUR"), make_rational_from_long_long(SEEK_CUR));
+  setq(env, make_sym("FILE-SEEK-END"), make_rational_from_long_long(SEEK_END));
 }
 

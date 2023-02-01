@@ -12,7 +12,7 @@ BUILTIN(builtin_sdl_init)
   REQUIRE_ARGC("SDL-INIT", 1);
   ld_flags = eval(FIRST_ARG, env);
   
-  if (SDL_Init(GETINTFROMMPQ(ld_flags)))
+  if (SDL_Init(GETINTFROMNUMBER(ld_flags)))
     throw(make_cons(sym_sdl_error, make_string("could not initialize SDL")));
   
   return nil;
@@ -24,7 +24,7 @@ BUILTIN(builtin_sdl_initsubsystem)
   REQUIRE_ARGC("SDL-INITSUBSYSTEM", 1);
   ld_flags = eval(FIRST_ARG, env);
   
-  if (SDL_InitSubSystem(GETINTFROMMPQ(ld_flags)))
+  if (SDL_InitSubSystem(GETINTFROMNUMBER(ld_flags)))
     throw(make_cons(sym_sdl_error, make_string("could not initialize SDL-subsystem")));
   
   return nil;
@@ -42,7 +42,7 @@ BUILTIN(builtin_sdl_quitsubsystem)
   REQUIRE_ARGC("SDL-QUITSUBSYSTEM", 1);
   ld_flags = eval(FIRST_ARG, env);
   
-  SDL_QuitSubSystem(GETINTFROMMPQ(ld_flags));
+  SDL_QuitSubSystem(GETINTFROMNUMBER(ld_flags));
   return nil;
 }
 
@@ -52,7 +52,7 @@ BUILTIN(builtin_sdl_wasinit)
   REQUIRE_ARGC("SDL-WASINIT", 1);
   ld_flags = eval(FIRST_ARG, env);
 
-  return make_number_from_long_long(SDL_WasInit(GETINTFROMMPQ(ld_flags)));
+  return make_rational_from_long_long(SDL_WasInit(GETINTFROMNUMBER(ld_flags)));
 }
 
 BUILTIN(builtin_sdl_flip)
@@ -75,25 +75,25 @@ void limo_init_sdl(limo_data *env)
   sym_sdl_event = make_sym("SDL-EVENT");
 
   /// constants
-  limo_data *limo_SDL_INIT_TIMER = make_number_from_long_long(SDL_INIT_TIMER);
-  limo_data *limo_SDL_INIT_AUDIO = make_number_from_long_long(SDL_INIT_AUDIO);
-  limo_data *limo_SDL_INIT_VIDEO = make_number_from_long_long(SDL_INIT_VIDEO);
-  limo_data *limo_SDL_INIT_CDROM = make_number_from_long_long(SDL_INIT_CDROM);
-  limo_data *limo_SDL_INIT_JOYSTICK = make_number_from_long_long(SDL_INIT_JOYSTICK);
-  limo_data *limo_SDL_INIT_EVERYTHING = make_number_from_long_long(SDL_INIT_EVERYTHING);
-  limo_data *limo_SDL_INIT_NOPARACHUTE = make_number_from_long_long(SDL_INIT_NOPARACHUTE);
-  limo_data *limo_SDL_INIT_EVENTTHREAD = make_number_from_long_long(SDL_INIT_EVENTTHREAD);
+  limo_data *limo_SDL_INIT_TIMER = make_rational_from_long_long(SDL_INIT_TIMER);
+  limo_data *limo_SDL_INIT_AUDIO = make_rational_from_long_long(SDL_INIT_AUDIO);
+  limo_data *limo_SDL_INIT_VIDEO = make_rational_from_long_long(SDL_INIT_VIDEO);
+  limo_data *limo_SDL_INIT_CDROM = make_rational_from_long_long(SDL_INIT_CDROM);
+  limo_data *limo_SDL_INIT_JOYSTICK = make_rational_from_long_long(SDL_INIT_JOYSTICK);
+  limo_data *limo_SDL_INIT_EVERYTHING = make_rational_from_long_long(SDL_INIT_EVERYTHING);
+  limo_data *limo_SDL_INIT_NOPARACHUTE = make_rational_from_long_long(SDL_INIT_NOPARACHUTE);
+  limo_data *limo_SDL_INIT_EVENTTHREAD = make_rational_from_long_long(SDL_INIT_EVENTTHREAD);
 
-  limo_data *limo_SDL_SWSURFACE = make_number_from_long_long(SDL_SWSURFACE);
-  limo_data *limo_SDL_HWSURFACE = make_number_from_long_long(SDL_HWSURFACE);
-  limo_data *limo_SDL_ASYNCBLIT = make_number_from_long_long(SDL_ASYNCBLIT);
-  limo_data *limo_SDL_ANYFORMAT = make_number_from_long_long(SDL_ANYFORMAT);
-  limo_data *limo_SDL_HWPALETTE = make_number_from_long_long(SDL_HWPALETTE);
-  limo_data *limo_SDL_DOUBLEBUF = make_number_from_long_long(SDL_DOUBLEBUF);
-  limo_data *limo_SDL_FULLSCREEN = make_number_from_long_long(SDL_FULLSCREEN);
-  limo_data *limo_SDL_OPENGL = make_number_from_long_long(SDL_OPENGL);
-  limo_data *limo_SDL_OPENGLBLIT = make_number_from_long_long(SDL_OPENGLBLIT);
-  limo_data *limo_SDL_RESIZABLE = make_number_from_long_long(SDL_RESIZABLE);
+  limo_data *limo_SDL_SWSURFACE = make_rational_from_long_long(SDL_SWSURFACE);
+  limo_data *limo_SDL_HWSURFACE = make_rational_from_long_long(SDL_HWSURFACE);
+  limo_data *limo_SDL_ASYNCBLIT = make_rational_from_long_long(SDL_ASYNCBLIT);
+  limo_data *limo_SDL_ANYFORMAT = make_rational_from_long_long(SDL_ANYFORMAT);
+  limo_data *limo_SDL_HWPALETTE = make_rational_from_long_long(SDL_HWPALETTE);
+  limo_data *limo_SDL_DOUBLEBUF = make_rational_from_long_long(SDL_DOUBLEBUF);
+  limo_data *limo_SDL_FULLSCREEN = make_rational_from_long_long(SDL_FULLSCREEN);
+  limo_data *limo_SDL_OPENGL = make_rational_from_long_long(SDL_OPENGL);
+  limo_data *limo_SDL_OPENGLBLIT = make_rational_from_long_long(SDL_OPENGLBLIT);
+  limo_data *limo_SDL_RESIZABLE = make_rational_from_long_long(SDL_RESIZABLE);
 
   /// insert constants into environment
   limo_sdl_env = make_env(nil);
@@ -117,22 +117,22 @@ void limo_init_sdl(limo_data *env)
   setq(limo_sdl_env, make_sym("SDL_OPENGLBLIT"), limo_SDL_OPENGLBLIT);
   setq(limo_sdl_env, make_sym("SDL_RESIZABLE"), limo_SDL_RESIZABLE);
 
-  setq(limo_sdl_env, make_sym("SDL_ACTIVEEVENT"), make_number_from_long_long(SDL_ACTIVEEVENT));
-  setq(limo_sdl_env, make_sym("SDL_KEYDOWN"), make_number_from_long_long(SDL_KEYDOWN));
-  setq(limo_sdl_env, make_sym("SDL_KEYUP"), make_number_from_long_long(SDL_KEYUP));
-  setq(limo_sdl_env, make_sym("SDL_MOUSEMOTION"), make_number_from_long_long(SDL_MOUSEMOTION));
-  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONDOWN"), make_number_from_long_long(SDL_MOUSEBUTTONDOWN));
-  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONUP"), make_number_from_long_long(SDL_MOUSEBUTTONUP));
-  setq(limo_sdl_env, make_sym("SDL_JOYAXISMOTION"), make_number_from_long_long(SDL_JOYAXISMOTION));
-  setq(limo_sdl_env, make_sym("SDL_JOYBALLMOTION"), make_number_from_long_long(SDL_JOYBALLMOTION));
-  setq(limo_sdl_env, make_sym("SDL_JOYHATMOTION"), make_number_from_long_long(SDL_JOYHATMOTION));
-  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONDOWN"), make_number_from_long_long(SDL_JOYBUTTONDOWN));
-  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONUP"), make_number_from_long_long(SDL_JOYBUTTONUP));
-  setq(limo_sdl_env, make_sym("SDL_QUIT"), make_number_from_long_long(SDL_QUIT));
-  setq(limo_sdl_env, make_sym("SDL_SYSWMEVENT"), make_number_from_long_long(SDL_SYSWMEVENT));
-  setq(limo_sdl_env, make_sym("SDL_VIDEORESIZE"), make_number_from_long_long(SDL_VIDEORESIZE));
-  setq(limo_sdl_env, make_sym("SDL_VIDEOEXPOSE"), make_number_from_long_long(SDL_VIDEOEXPOSE));
-  setq(limo_sdl_env, make_sym("SDL_USEREVENT"), make_number_from_long_long(SDL_USEREVENT));
+  setq(limo_sdl_env, make_sym("SDL_ACTIVEEVENT"), make_rational_from_long_long(SDL_ACTIVEEVENT));
+  setq(limo_sdl_env, make_sym("SDL_KEYDOWN"), make_rational_from_long_long(SDL_KEYDOWN));
+  setq(limo_sdl_env, make_sym("SDL_KEYUP"), make_rational_from_long_long(SDL_KEYUP));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEMOTION"), make_rational_from_long_long(SDL_MOUSEMOTION));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONDOWN"), make_rational_from_long_long(SDL_MOUSEBUTTONDOWN));
+  setq(limo_sdl_env, make_sym("SDL_MOUSEBUTTONUP"), make_rational_from_long_long(SDL_MOUSEBUTTONUP));
+  setq(limo_sdl_env, make_sym("SDL_JOYAXISMOTION"), make_rational_from_long_long(SDL_JOYAXISMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYBALLMOTION"), make_rational_from_long_long(SDL_JOYBALLMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYHATMOTION"), make_rational_from_long_long(SDL_JOYHATMOTION));
+  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONDOWN"), make_rational_from_long_long(SDL_JOYBUTTONDOWN));
+  setq(limo_sdl_env, make_sym("SDL_JOYBUTTONUP"), make_rational_from_long_long(SDL_JOYBUTTONUP));
+  setq(limo_sdl_env, make_sym("SDL_QUIT"), make_rational_from_long_long(SDL_QUIT));
+  setq(limo_sdl_env, make_sym("SDL_SYSWMEVENT"), make_rational_from_long_long(SDL_SYSWMEVENT));
+  setq(limo_sdl_env, make_sym("SDL_VIDEORESIZE"), make_rational_from_long_long(SDL_VIDEORESIZE));
+  setq(limo_sdl_env, make_sym("SDL_VIDEOEXPOSE"), make_rational_from_long_long(SDL_VIDEOEXPOSE));
+  setq(limo_sdl_env, make_sym("SDL_USEREVENT"), make_rational_from_long_long(SDL_USEREVENT));
 
   INS_SDL_BUILTIN(builtin_sdl_init, "SDL-INIT");
   INS_SDL_BUILTIN(builtin_sdl_initsubsystem, "SDL-INITSUBSYSTEM");

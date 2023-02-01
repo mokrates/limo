@@ -163,6 +163,14 @@ limo_data *make_char(char c)
   return str;
 }
 
+limo_data *make_float_from_str(const char *msg)
+{
+  limo_data *f = make_limo_data();
+  f->type = limo_TYPE_DOUBLE;
+  sscanf(msg, "%lf", &f->d_double);
+  return f;
+}
+
 limo_data *make_const(limo_data *name, limo_data *ld)
 {
   limo_data *res;

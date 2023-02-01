@@ -200,13 +200,13 @@ BUILTIN(builtin_popen)
                is_nil(ld_wstdin)?NULL:&out_stdin,
                is_nil(ld_wstdout)?NULL:&out_stdout,
                is_nil(ld_wstderr)?NULL:&out_stderr);
-  return make_cons(make_cons(make_sym("PID"), make_number_from_long_long(ret)),
+  return make_cons(make_cons(make_sym("PID"), make_rational_from_long_long(ret)),
                    make_cons(make_cons(make_sym("STDIN"),
-                                       make_number_from_long_long(out_stdin)),
+                                       make_rational_from_long_long(out_stdin)),
                              make_cons(make_cons(make_sym("STDOUT"),
-                                                 make_number_from_long_long(out_stdout)),
+                                                 make_rational_from_long_long(out_stdout)),
                                        make_cons(make_cons(make_sym("STDERR"),
-                                                           make_number_from_long_long(out_stderr)),
+                                                           make_rational_from_long_long(out_stderr)),
                                                  make_nil()))));
 }
 
@@ -227,7 +227,7 @@ BUILTIN(builtin_popen_wait)
     strerror_r(errno, buf, 512);
     throw(make_cons(make_sym("WAIT"), make_cons(make_string(buf), nil)));
   }
-  return make_number_from_long_long(WEXITSTATUS(stat_loc));
+  return make_rational_from_long_long(WEXITSTATUS(stat_loc));
 }
 
 void limo_init_popen(limo_data *env)

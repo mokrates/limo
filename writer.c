@@ -112,8 +112,8 @@ void writer(limo_data *ld) // not threadsafe!
   case limo_TYPE_NIL: printf("()"); break;
   case limo_TYPE_STRING: string_writer(ld); break;
   case limo_TYPE_GMPQ: number_writer(ld); break;
+  case limo_TYPE_DOUBLE: number_writer(ld); break;    
   case limo_TYPE_INT: printf("{int:%i}", ld->d_int); break;
-  case limo_TYPE_DOUBLE: printf("{dbl:%lf}", ld->d_double); break;
   case limo_TYPE_CONS: cons_writer(ld); break;
   case limo_TYPE_SYMBOL: printf("%s", ld->d_string); break;
   case limo_TYPE_BUILTIN: printf("#<builtin:%p>", ld->d_builtin); break;
@@ -175,16 +175,12 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
   case limo_TYPE_NIL: list_put_str(dest, "()"); break;
   case limo_TYPE_STRING: l_string_writer(dest, ld); break;
   case limo_TYPE_GMPQ: l_number_writer(dest, ld); break;
+  case limo_TYPE_DOUBLE: l_number_writer(dest, ld); break;    
   case limo_TYPE_INT:
     snprintf(buf, 99, "{int: %i}", ld->d_int);
     list_put_str(dest, buf);
     break;
 
-  case limo_TYPE_DOUBLE:
-    snprintf(buf, 99, "{dbl: %lf}", ld->d_double);
-    list_put_str(dest, buf);
-    break;
-      
   case limo_TYPE_CONS: l_cons_writer(dest, ld); break;
   case limo_TYPE_SYMBOL: list_put_str(dest, ld->d_string); break;
   case limo_TYPE_BUILTIN:

@@ -13,47 +13,47 @@ void limo_closure_marshal(GClosure *closure, GValue *return_value, guint n_param
   for (i=0; i<n_param_values; ++i){ 
    switch (G_VALUE_TYPE(&param_values[i])) {
     case G_TYPE_CHAR:
-      arg = make_number_from_long_long(g_value_get_char(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_char(&param_values[i]));
       break;
 
     case G_TYPE_UCHAR:
-      arg = make_number_from_long_long(g_value_get_uchar(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_uchar(&param_values[i]));
       break;
 
     case G_TYPE_BOOLEAN:
-      arg = make_number_from_long_long(g_value_get_boolean(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_boolean(&param_values[i]));
       break;
 
     case G_TYPE_INT:
-      arg = make_number_from_long_long(g_value_get_int(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_int(&param_values[i]));
       break;
 
     case G_TYPE_UINT:
-      arg = make_number_from_long_long(g_value_get_uint(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_uint(&param_values[i]));
       break;
 
     case G_TYPE_LONG:
-      arg = make_number_from_long_long(g_value_get_long(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_long(&param_values[i]));
       break;
 
     case G_TYPE_ULONG:
-      arg = make_number_from_long_long(g_value_get_ulong(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_ulong(&param_values[i]));
       break;
 
     case G_TYPE_INT64:
-      arg = make_number_from_long_long(g_value_get_int64(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_int64(&param_values[i]));
       break;
 
     case G_TYPE_UINT64:
-      arg = make_number_from_long_long(g_value_get_uint64(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_uint64(&param_values[i]));
       break;
 
     case G_TYPE_ENUM:
-      arg = make_number_from_long_long(g_value_get_enum(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_enum(&param_values[i]));
       break;
 
     case G_TYPE_FLAGS:
-      arg = make_number_from_long_long(g_value_get_flags(&param_values[i]));
+      arg = make_rational_from_long_long(g_value_get_flags(&param_values[i]));
       break;
 
     case G_TYPE_FLOAT:
@@ -114,7 +114,7 @@ BUILTIN(builtin_g_signal_connect)
   ld_closure = make_cons(ld_handler, env);  
   closure = limogtk_closure_new(ld_closure);
     
-  if (make_number_from_long_long(g_signal_connect_closure(G_OBJECT(CDR(ld_instance->d_special) -> d_special_intern),
+  if (make_rational_from_long_long(g_signal_connect_closure(G_OBJECT(CDR(ld_instance->d_special) -> d_special_intern),
                                                           ld_signal->d_string,
                                                           closure,
                                                           !is_nil(ld_after))))

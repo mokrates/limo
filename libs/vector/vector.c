@@ -36,7 +36,7 @@ BUILTIN(builtin_vector_len)
 
   REQUIRE_ARGC("VECTOR-LEN", 1);
   vector = eval(FIRST_ARG, env);
-  return make_number_from_long_long(((struct VECTOR *)get_special(vector, sym_vector))->length);
+  return make_rational_from_long_long(((struct VECTOR *)get_special(vector, sym_vector))->length);
 }
 
 BUILTIN(builtin_vector_set)
@@ -50,9 +50,9 @@ BUILTIN(builtin_vector_set)
   ld_n   = eval(SECOND_ARG, env);
   ld_val = eval(THIRD_ARG, env);
 
-  n = GETINTFROMMPQ(ld_n);
+  n = GETINTFROMNUMBER(ld_n);
   vec = get_special(ld_vec, sym_vector);
-  if (n>vec->length)
+  if (!(n<vec->length))
     limo_error("VECTOR-SET: Index out of bounds!");
   vec->contents[n] = ld_val;
 
@@ -69,9 +69,9 @@ BUILTIN(builtin_vector_ref)
   ld_vec = eval(FIRST_ARG, env);
   ld_n   = eval(SECOND_ARG, env);
 
-  n = GETINTFROMMPQ(ld_n);
+  n = GETINTFROMNUMBER(ld_n);
   vec = get_special(ld_vec, sym_vector);
-  if (n>vec->length)
+  if (!(n<vec->length))
     limo_error("VECTOR-REF: Index out of bounds!");
   return vec->contents[n]?vec->contents[n]:nil;
 }

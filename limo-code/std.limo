@@ -395,24 +395,24 @@
 
 ;; (defun * os
 ;;   (if os
-;;       (reduce mpq_mul os)
+;;       (reduce _mul os)
 ;;       1))
-(setq * mpq_mul)
+(setq * _mul)
 (freezeq *)
 
 ;; (defun + os
 ;;   (if os
 ;;       (if (numberp (car os))
-;; 	  (reduce mpq_add os)
+;; 	  (reduce _add os)
 ;; 	  (apply string-concat os))
 ;;       0))
-(setq + mpq_add)
+(setq + _add)
 (freezeq +)
 
-(setq - mpq_sub)
+(setq - _sub)
 (freezeq -)
 
-(setq / mpq_div)
+(setq / _div)
 (freezeq /)
 
 (setq < ltn)   (freezeq <)
@@ -436,19 +436,19 @@
   (defun helper (n akku)
     (if (eq n 1) 
 	akku
-	(helper (mpq_sub n 1) (mpq_mul akku n))))
+	(helper (_sub n 1) (_mul akku n))))
   (helper n 1))
 (freezeq fak)
 
 (defun nth (n l)
   (cond ((eq n 0) (car l))
-	(:else (nth (mpq_sub n 1) (cdr l)))))
+	(:else (nth (_sub n 1) (cdr l)))))
 (freezeq nth)
 
 (defun drange (start end step)
   (if (>= start end)
       ()
-      (dcons start (drange (mpq_add start step) end step))))
+      (dcons start (drange (_add start step) end step))))
 (freezeq drange)
 
 (defun range (start end step)  ;; recursive! with generator: drange.

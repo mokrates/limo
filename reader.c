@@ -401,7 +401,10 @@ limo_data *read_sym_num(reader_stream *f)
 
   if (isdigit(buf[0]) ||
       (buf[0] == '-' && isdigit(buf[1])))
-    return make_number_from_str(buf);
+    if (strchr(buf, '.') || strchr(buf, 'e') || strchr(buf, 'E'))
+      make_float_from_str(buf);
+    else
+      return make_rational_from_str(buf);
   else 
     return make_sym(buf);
 }

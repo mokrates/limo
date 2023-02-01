@@ -315,7 +315,7 @@ BUILTIN(builtin_ssl_write)
   if (res < 0)
     throw(make_cons(sym_ssl, make_string("could't write to ssl-connection")));
   
-  return make_number_from_long_long(res);
+  return make_rational_from_long_long(res);
 }
 
 void limo_init_ssl(limo_data *env)
@@ -349,7 +349,7 @@ void limo_init_ssl(limo_data *env)
   INS_SSL_BUILTIN(builtin_ssl_ctx_use_certificate_file, "SSL-CTX-USE-CERTIFICATE-FILE");
   INS_SSL_BUILTIN(builtin_ssl_use_privatekey_file, "SSL-USE-PRIVATEKEY-FILE");
 
-  INS_SSL_VAR(make_number_from_long_long(SSL_FILETYPE_PEM), "SSL_FILETYPE_PEM");
+  INS_SSL_VAR(make_rational_from_long_long(SSL_FILETYPE_PEM), "SSL_FILETYPE_PEM");
   
   setq(env, make_sym("_SSL"), limo_ssl_env);
 

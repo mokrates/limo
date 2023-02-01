@@ -89,7 +89,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
     (format "REQUIRE_TYPE(\"%s\", ld_%s, limo_TYPE_GMPQ);\narg_%s = (%s)GETINTFROMMPQ(ld_%s);\n"
             limofname vname vname [self . _typename] vname))
   (defmethod c2l-to-result (self sfuncall)
-    (format "ReSuLt = make_number_from_long_long(%s);\n" sfuncall)))
+    (format "ReSuLt = make_rational_from_long_long(%s);\n" sfuncall)))
 
 (defclass gtkstringtype gtktype
   (defmethod l2c-assign (self vname limofname)

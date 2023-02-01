@@ -31,7 +31,7 @@ BUILTIN(builtin_sdl_ttf_openfont)
   ld_file = eval(FIRST_ARG, env);
   ld_ptsize=eval(SECOND_ARG, env);
   filename = ld_file->d_string;
-  ptsize = GETINTFROMMPQ(ld_ptsize);
+  ptsize = GETINTFROMNUMBER(ld_ptsize);
   if (!(ttf_fnt = TTF_OpenFont(filename, ptsize)))
     throw(make_cons(sym_sdl_error, make_string("SDL-TTF-OPENFONT: could not open font-file")));
   return make_special(sym_sdl_font, (void *)ttf_fnt);
@@ -51,7 +51,7 @@ BUILTIN(builtin_sdl_ttf_sizetext)
   font = get_special(ld_font, sym_sdl_font);
   if (TTF_SizeText(font, text, &x, &y))
     throw(make_cons(sym_sdl_error, make_string("SDL-TTF-SIZETEXT error")));
-  return make_cons(make_number_from_long_long(x), make_number_from_long_long(y));
+  return make_cons(make_rational_from_long_long(x), make_rational_from_long_long(y));
 }
 
 BUILTIN(builtin_sdl_ttf_rendertext_blended)

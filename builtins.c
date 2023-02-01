@@ -592,7 +592,7 @@ BUILTIN(builtin_freezeq)
 BUILTIN(builtin_address_of)
 {
   REQUIRE_ARGC("ADDRESS-OF", 1);
-  return make_number_from_long_long((long long) eval(FIRST_ARG, env));
+  return make_rational_from_long_long((long long) eval(FIRST_ARG, env));
 }
 
 // Environment manipulation

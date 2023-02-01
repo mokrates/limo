@@ -1,13 +1,56 @@
 #include <math.h>
 #include "limo.h"
 
+#define ORDER_RATIONAL_RATIONAL ((limo_TYPE_GMPQ << 8)   | limo_TYPE_GMPQ)
+#define ORDER_RATIONAL_FLOAT    ((limo_TYPE_GMPQ << 8)   | limo_TYPE_DOUBLE)
+#define ORDER_FLOAT_RATIONAL    ((limo_TYPE_DOUBLE << 8) | limo_TYPE_GMPQ)
+#define ORDER_FLOAT_FLOAT       ((limo_TYPE_DOUBLE << 8) | limo_TYPE_DOUBLE)
+
 BUILTINFUN(builtin_numberp)
 {
   REQUIRE_ARGC_FUN("NUMBERP", 1);
+  if (argv[0]->type == limo_TYPE_GMPQ || argv[0]->type == limo_TYPE_DOUBLE)
+    return sym_true;
+  else
+    return nil;
+}
+
+BUILTINFUN(builtin_floatp)
+{
+  REQUIRE_ARGC_FUN("FLOATP", 1);
+  if (argv[0]->type == limo_TYPE_DOUBLE)
+    return sym_true;
+  else
+    return nil;
+}
+
+BUILTINFUN(builtin_rationalp)
+{
+  REQUIRE_ARGC_FUN("RATIONALP", 1);
   if (argv[0]->type == limo_TYPE_GMPQ)
     return sym_true;
   else
     return nil;
+}
+
+BUILTINFUN(builtin_int)
+{
+  REQUIRE_ARGC_FUN("INT", 1);
+  return make_rational_from_long_long((long long)(COERCETODOUBLE(argv[0])));
+}
+
+BUILTINFUN(builtin_float)
+{
+  REQUIRE_ARGC_FUN("FLOAT", 1);
+  REQUIRE_NUMBER("FLOAT", argv[0]);
+  return argv[0]->type == limo_TYPE_DOUBLE ? argv[0] : make_float(COERCETODOUBLE(argv[0]));
+}
+
+BUILTINFUN(builtin_rational)
+{
+  REQUIRE_ARGC_FUN("RATIONAL", 1);
+  REQUIRE_NUMBER("RATIONAL", argv[0]);
+  return argv[0]->type == limo_TYPE_GMPQ ? argv[0] : make_rational_from_double(argv[0]->d_double);
 }
 
 BUILTINFUN(builtin_reprn)
@@ -18,8 +61,8 @@ BUILTINFUN(builtin_reprn)
 
 BUILTINFUN(builtin_idivmod)
 {
-  limo_data *q = make_number();
-  limo_data *r = make_number();
+  limo_data *q = make_rational();
+  limo_data *r = make_rational();
   limo_data *res = make_cons(q, make_cons(r, nil));
 
   REQUIRE_ARGC_FUN("IDIVMOD", 2);
@@ -44,7 +87,7 @@ BUILTINFUN(builtin_mpq_numerator) {
   REQUIRE_ARGC_FUN("MPQ_NUMERATOR", 1);
   arg = argv[0];
   REQUIRE_TYPE("MPQ_NUMERATOR", arg, limo_TYPE_GMPQ);
-  res = make_number();  // 0/1
+  res = make_rational();  // 0/1
   mpq_set_num(LIMO_MPQ(res), mpq_numref(LIMO_MPQ(arg)));
   return res;
 }
@@ -56,162 +99,172 @@ BUILTINFUN(builtin_mpq_denominator)
   REQUIRE_ARGC_FUN("MPQ_DENONINATOR", 1);
   arg = argv[0];
   REQUIRE_TYPE("MPQ_DENONINATOR", arg, limo_TYPE_GMPQ);
-  res = make_number();  // 0/1
+  res = make_rational();  // 0/1
   mpq_set_num(LIMO_MPQ(res), mpq_denref(LIMO_MPQ(arg)));
   return res;
 }
 
-BUILTINFUN(builtin_mpq_add)
+BUILTINFUN(builtin_add)
 {
-  int i;
-  limo_data *res = make_number();
-  for (i=0; i<argc; ++i) {
-    REQUIRE_TYPE("MPQ_ADD", argv[i], limo_TYPE_GMPQ);
-    mpq_add(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+  limo_data *res;
+  
+  res = make_rational();
+
+  while (argc-- > 0) {
+    REQUIRE_NUMBER("_ADD", argv[0]);    
+    if (((res->type << 8) | argv[0]->type) == ORDER_RATIONAL_RATIONAL)
+      mpq_add(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    else
+      res = make_float(COERCETODOUBLE(res) + COERCETODOUBLE(argv[0]));
+
+    ++argv;
   }
   return res;
-
 }
 
-BUILTINFUN(builtin_mpq_mul)
+BUILTINFUN(builtin_mul)
 {
-  int i;
-  limo_data *res = make_number();
+  limo_data *res;
+  
+  res = make_rational();
   mpq_set_ui(LIMO_MPQ(res), 1, 1);
-  for (i=0; i<argc; ++i) {
-    REQUIRE_TYPE("MPQ_MUL", argv[i], limo_TYPE_GMPQ);
-    mpq_mul(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
-  }
 
+  while (argc-- > 0) {
+    REQUIRE_NUMBER("_MUL", argv[0]);
+    if (((res->type << 8) | argv[0]->type) == ORDER_RATIONAL_RATIONAL)
+      mpq_mul(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+    else
+      res = make_float(COERCETODOUBLE(res) * COERCETODOUBLE(argv[0]));
+
+    ++argv;
+  }
   return res;
 }
 
-BUILTINFUN(builtin_mpq_sub)
+BUILTINFUN(builtin_sub)
 {
-  int i;
-  limo_data *res = make_number();
-  switch (argc) {
-  case 0:
-    limo_error("MPQ_SUB needs at least one argument");
-    break;
-
-  case 1:
-    REQUIRE_TYPE("MPQ_SUB", argv[0], limo_TYPE_GMPQ);    
-    mpq_neg(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
-    return res;
-
-  default:
-    REQUIRE_TYPE("MPQ_SUB", argv[0], limo_TYPE_GMPQ);
-    mpq_set(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
-    for (i=1; i<argc; ++i) {
-      REQUIRE_TYPE("MPQ_SUB", argv[i], limo_TYPE_GMPQ);
-      mpq_sub(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+  limo_data *res;
+  if (argc == 1) {
+    switch (argv[0]->type) {
+    case limo_TYPE_GMPQ: {
+      res = make_rational();
+      mpq_inv(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+      return res;
     }
-    return res;
+
+    case limo_TYPE_DOUBLE:
+      return make_float(-(argv[0]->d_double));
+
+    default:
+      limo_error("_SUB expects NUMBERS");
+    }
   }
-}
-
-BUILTINFUN(builtin_mpq_div)
-{
-  int i;
-  limo_data *res = make_number();
-  switch (argc) {
-  case 0:
-    limo_error("MPQ_DIV needs at least one argument");
-    break;
-
-  case 1:
-    REQUIRE_TYPE("MPQ_DIV", argv[0], limo_TYPE_GMPQ);
-    if (mpq_equal(LIMO_MPQ(res), LIMO_MPQ(argv[0])))  // zero?
-      limo_error("MPQ_DIV division by zero");
+  else {
+    REQUIRE_NUMBER("_SUB", argv[0]);
+    REQUIRE_NUMBER("_SUB", argv[1]);
     
-    mpq_inv(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
-    return res;
-
-  default:
-    REQUIRE_TYPE("MPQ_DIV", argv[0], limo_TYPE_GMPQ);    
-    mpq_set(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
-    for (i=1; i<argc; ++i) {
-      REQUIRE_TYPE("MPQ_DIV", argv[i], limo_TYPE_GMPQ);
-      if (mpq_sgn(LIMO_MPQ(argv[i])) == 0)
-        limo_error("MPQ_DIV division by zero");
-      mpq_div(LIMO_MPQ(res), LIMO_MPQ(res), LIMO_MPQ(argv[i]));
+    if (((argv[0]->type << 8) | argv[1]->type) == ORDER_RATIONAL_RATIONAL) {
+      res = make_rational();
+      mpq_sub(LIMO_MPQ(res), LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1]));
     }
+    else
+      res = make_float(COERCETODOUBLE(argv[0]) - COERCETODOUBLE(argv[1]));
     return res;
   }
 }
 
-#define CALC1_BUILTINFUN(fun) BUILTINFUN(builtin_##fun ) \
-{ \
-  limo_data *res = make_number(); \
-  limo_data *arg;		  \
-  if (argc != 1) \
-    limo_error(#fun " needs 1 arg!"); \
-  arg = argv[0]; \
-  REQUIRE_TYPE(#fun, arg, limo_TYPE_GMPQ); \
-  fun(LIMO_MPQ(res), LIMO_MPQ(arg)); \
-  return res; \
-}
+BUILTINFUN(builtin_div)
+{
+  limo_data *res;
+  REQUIRE_ARGC_FUN("_DIV", 2);
+  REQUIRE_NUMBER("_DIV", argv[0]);
+  REQUIRE_NUMBER("_DIV", argv[1]);
 
-CALC1_BUILTINFUN(mpq_neg)
-CALC1_BUILTINFUN(mpq_abs)
-CALC1_BUILTINFUN(mpq_inv)
+  if (((argv[0]->type << 8) | argv[1]->type) == ORDER_RATIONAL_RATIONAL) {
+    res = make_rational();
+    if (mpq_sgn(LIMO_MPQ(argv[1])) == 0)
+      limo_error("MPQ_DIV division by zero");
+    mpq_div(LIMO_MPQ(res), LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1]));
+  }
+  else {
+    double denom = COERCETODOUBLE(argv[1]);
+    if (denom == 0)
+      limo_error("MPQ_DIV division by zero");
+    res = make_float(COERCETODOUBLE(argv[0]) / denom);
+  }
+  return res;
+}
 
 BUILTINFUN(builtin_ltn)
 {
   REQUIRE_ARGC_FUN("LTN", 2);
-  if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) < 0)
-    return sym_true;
-  else
-    return nil;
+  REQUIRE_NUMBER("LTN", argv[0]);
+  REQUIRE_NUMBER("LTN", argv[1]);
+
+  if (((argv[0]->type << 8) | argv[1]->type) == ORDER_RATIONAL_RATIONAL) {
+    if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) < 0)
+      return sym_true;
+    else
+      return nil;
+  }
+  else {
+    if (COERCETODOUBLE(argv[0]) < COERCETODOUBLE(argv[1]))
+      return sym_true;
+    else
+      return nil;
+  }
 }
 
 BUILTINFUN(builtin_gtn)
 {
   REQUIRE_ARGC_FUN("GTN", 2);
-  if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) > 0)
-    return sym_true;
-  else
-    return nil;
+  REQUIRE_NUMBER("GTN", argv[0]);
+  REQUIRE_NUMBER("GTN", argv[1]);
+
+  if (((argv[0]->type << 8) | argv[1]->type) == ORDER_RATIONAL_RATIONAL) {
+    if (mpq_cmp(LIMO_MPQ(argv[0]), LIMO_MPQ(argv[1])) > 0)
+      return sym_true;
+    else
+      return nil;
+  }
+  else {
+    if (COERCETODOUBLE(argv[0]) > COERCETODOUBLE(argv[1]))
+      return sym_true;
+    else
+      return nil;
+  }
 }
 
 BUILTINFUN(builtin_sin)
 {
   REQUIRE_ARGC_FUN("SIN", 1);
-  return make_number_from_double(sin(make_double_from_number(argv[0])));
+  return make_float(sin(COERCETODOUBLE(argv[0])));
 }
 
 BUILTINFUN(builtin_cos)
 {
   REQUIRE_ARGC_FUN("COS", 1);
-  return make_number_from_double(cos(make_double_from_number(argv[0])));
+  return make_float(cos(COERCETODOUBLE(argv[0])));
 }
 
 BUILTINFUN(builtin_atan)
 {
   REQUIRE_ARGC_FUN("ATAN", 1);
-  return make_number_from_double(atan(make_double_from_number(argv[0])));
+  return make_float(atan(COERCETODOUBLE(argv[0])));
 }
 
 BUILTINFUN(builtin_asin)
 {
   REQUIRE_ARGC_FUN("ASIN", 1);
-  return make_number_from_double(asin(make_double_from_number(argv[0])));
+  return make_float(asin(COERCETODOUBLE(argv[0])));
 }
 
 BUILTINFUN(builtin_power)
 {
   REQUIRE_ARGC_FUN("POWER", 2);
-  return make_number_from_double(pow(make_double_from_number(argv[0]),
-				     make_double_from_number(argv[1])));
+  return make_float(pow(COERCETODOUBLE(argv[0]),
+                        COERCETODOUBLE(argv[1])));
 }
-
-BUILTINFUN(builtin_int)
-{
-  REQUIRE_ARGC_FUN("INT", 1);
-  return make_number_from_double((double)(long long)(make_double_from_number(argv[0])));
-}
-
 
 ////////////////////
 // Testfunctions
@@ -251,7 +304,7 @@ BUILTINFUN(builtin_test_intadd)
 
 ////////////////////
 
-limo_data *make_number(void)
+limo_data *make_rational(void)
 {
   limo_data *res = make_limo_data();
   void **make_gmpq_next = pk_gmpq_next_get();
@@ -267,39 +320,63 @@ limo_data *make_number(void)
   return res;
 }
 
+limo_data *make_float(double d)
+{
+  limo_data *res = make_limo_data();
+  res->type=limo_TYPE_DOUBLE;
+  res->d_double = d;
+  return res;
+}
+ 
 char *repr_number(limo_data *ld)
 {
-  return mpq_get_str(NULL, 10, LIMO_MPQ(ld));
+  if (ld->type == limo_TYPE_GMPQ)
+    return mpq_get_str(NULL, 10, LIMO_MPQ(ld));
+  else {
+    limo_data *format, *dyn_env = pk_dynamic_vars_get();
+    char *output;
+    int length;
+    
+    format=var_lookup(dyn_env, make_sym("_FLOAT-WRITER-FORMAT"));
+    if (!format)
+      limo_error("_FLOAT-WRITER-FORMAT not defined in _DYN-ENV");
+    if (format->type != limo_TYPE_STRING)
+      limo_error("_FLOAT-WRITER-FORMAT not a string");  
+    length = snprintf(NULL, 0, format->d_string, ld->d_double);
+    output = GC_malloc(length+1); // '\0'-terminator
+    snprintf(output, length+1, format->d_string, ld->d_double);
+    return output;
+  }
 }
 
-limo_data *make_number_from_str(char *str)
+limo_data *make_rational_from_str(char *str)
 {
-  limo_data *res = make_number();
+  limo_data *res = make_rational();
 
   mpq_set_str(LIMO_MPQ(res), str, 10);
   mpq_canonicalize(LIMO_MPQ(res));
   return res;
 }
 
-limo_data *make_number_from_long_long(long long i)
+limo_data *make_rational_from_long_long(long long i)
 {
-  limo_data *res = make_number();
+  limo_data *res = make_rational();
 
   mpq_set_d(LIMO_MPQ(res), (double)i);
   mpq_canonicalize(LIMO_MPQ(res));
   return res;
 }
 
-limo_data *make_number_from_double(double d)
+limo_data *make_rational_from_double(double d)
 {
-  limo_data *res = make_number();
+  limo_data *res = make_rational();
 
   mpq_set_d(LIMO_MPQ(res), (double)d);
   mpq_canonicalize(LIMO_MPQ(res));
   return res;
 }
 
-double make_double_from_number(limo_data *n)
+double make_double_from_rational(limo_data *n)
 {
   double d;
   d = mpq_get_d(LIMO_MPQ(n));
@@ -309,16 +386,20 @@ double make_double_from_number(limo_data *n)
 
 struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
   { "NUMBERP", builtin_numberp },
+  { "FLOATP", builtin_floatp },
+  { "RATIONALP", builtin_rationalp },
+
+  { "FLOAT", builtin_float },
+  { "RATIONAL", builtin_rational },
+  { "INT", builtin_int },
+  
   { "REPRN", builtin_reprn },
   { "LTN", builtin_ltn },
   { "GTN", builtin_gtn },
-  { "MPQ_NEG", builtin_mpq_neg },
-  { "MPQ_ABS", builtin_mpq_abs },
-  { "MPQ_INV", builtin_mpq_inv },
-  { "MPQ_ADD", builtin_mpq_add },
-  { "MPQ_SUB", builtin_mpq_sub },
-  { "MPQ_MUL", builtin_mpq_mul },
-  { "MPQ_DIV", builtin_mpq_div },
+  { "_ADD", builtin_add },
+  { "_SUB", builtin_sub },
+  { "_MUL", builtin_mul },
+  { "_DIV", builtin_div },
   { "IDIVMOD", builtin_idivmod },
   { "MPQ_NUMERATOR", builtin_mpq_numerator },
   { "MPQ_DENOMINATOR", builtin_mpq_denominator },
@@ -327,7 +408,7 @@ struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
   { "ATAN", builtin_atan },
   { "ASIN", builtin_asin },
   { "POWER", builtin_power },
-  { "INT", builtin_int },
+
 
   /// new double and int testfuns
   { "TEST-TOINT", builtin_test_toint },

@@ -115,7 +115,7 @@ void limo_init_regex(limo_data *env)
   limo_data *flagdict = make_dict();
   int i;
   for (i=0; i<sizeof flaglist / sizeof flaglist[0]; ++i)
-    dict_put(flagdict, make_sym(flaglist[i].name), make_number_from_long_long(flaglist[i].flag));
+    dict_put(flagdict, make_sym(flaglist[i].name), make_rational_from_long_long(flaglist[i].flag));
 
   setq(env, make_sym("REGEX-CONST"), flagdict);
   INSBUILTIN(builtin_regex_match, "REGEX-MATCH");

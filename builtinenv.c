@@ -114,5 +114,7 @@ limo_data *make_globalenv(int argc, char **argv)
   
   number_builtins(env);
 
+  setq(pk_dynamic_vars_get(), make_sym("_FLOAT-WRITER-FORMAT"), make_string("%g"));
+
   return env;
 }
