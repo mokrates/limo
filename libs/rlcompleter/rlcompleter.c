@@ -38,10 +38,11 @@ static char *rlcompleter_gen(const char *text, int state)
 	 !is_nil(llcur);
 	 ++i, llcur=CDR(llcur))
       disp_matches[i] = CAR(CDR(CAR(llcur)))->d_string;
+
+    disp_matches[i]=NULL;
   }
-  disp_matches[i]=NULL;
   
-  while (!is_nil(lookup_list)) {
+  if (!is_nil(lookup_list)) {
     res = (char *)malloc(strlen(CAR(CAR(lookup_list))->d_string)+1); // yes, malloc
     strcpy(res, CAR(CAR(lookup_list))->d_string);
     rl_completion_suppress_append = 1;  // just append space in completion function
