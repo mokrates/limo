@@ -148,7 +148,7 @@ BUILTINFUN(builtin_sub)
     switch (argv[0]->type) {
     case limo_TYPE_GMPQ: {
       res = make_rational();
-      mpq_inv(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
+      mpq_neg(LIMO_MPQ(res), LIMO_MPQ(argv[0]));
       return res;
     }
 
