@@ -16,10 +16,12 @@
   (list-rslice (list-lslice li up) lo))
 (freezeq list-slice)
 
-(defun list-split (l d) ;; list, delimiter
-  (defun split-helper (l d inner outer)
-    (cond ((not l) (reverse (cons (reverse inner) outer)))
-	  ((eq (car l) d) (split-helper (cdr l) d () (cons (reverse inner) outer)))
-	  (:else (split-helper (cdr l) d (cons (car l) inner) outer))))
-  (split-helper l d () ()))
+(defun list-split (l d . n?) ;; list, delimiter
+  (defun split-helper (l d inner outer n)
+    (cond ((= 0 n) (reverse (cons (undyn l) outer)))
+          ((not l) (reverse (cons (reverse inner) outer)))
+	  ((eq (car l) d) (split-helper (cdr l) d () (cons (reverse inner) outer) (- n 1)))
+	  (:else (split-helper (cdr l) d (cons (car l) inner) outer n))))
+  (split-helper l d () () (if n? (car n?) -1)))
 (freezeq list-split)
+  

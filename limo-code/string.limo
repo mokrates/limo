@@ -53,9 +53,10 @@
      (map1 (lambda (x) (string-nth x s)) (mdrange lo (if (< len up) len up))))))
 (freezeq string-slice)
 
-(defun string-split (s d)
-  (map1 list-to-string (list-split (string-to-list s) d)))
+(defun string-split (s d . n?)
+  (map1 list-to-string (list-split (string-to-list s) d (if n? (car n?) -1))))
 (freezeq string-split)
+
 
 (defclass string@ ()      ; string-class
   (defmethod %init (self s)
