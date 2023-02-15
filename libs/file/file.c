@@ -45,6 +45,7 @@ BUILTIN(builtin_file_fdopen)
   REQUIRE_TYPE("FILE-FDOPEN", mode, limo_TYPE_STRING);
 
   f = fdopen(GETINTFROMMPQ(fd), mode->d_string);
+  setbuf(f, NULL);   // disable buffering. currently I use fds mostly for networking
   if (f == NULL) {
     char buf[512];
     strerror_r(errno, buf, 512);
