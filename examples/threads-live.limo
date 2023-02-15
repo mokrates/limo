@@ -1,0 +1,50 @@
+(mod-load "simplesdl")
+(import "threading.limo")
+(ssdl-startgraphics)
+
+(setq color 15)    ;; white, I think
+(unify ( x1  y1  x2  y2) '(10 10 50 50))
+(unify (dx1 dy1 dx2 dy2) '( 2  2 -2  2))
+(setq delay 1/100)
+
+(defmacro invf (x) `(setf ,x (- ,x)))
+(setq m (new mutex))
+(setq stop? ())    ;; () = false
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sleep doesn't really work when using threads, so
+;; this is a busy sleeper
+(defun curtime () (+ (car (setq t (time))) (* (cadr t) 1/1000000)))
+(defun thrsleep (seconds)
+  (setq before (curtime))
+  (sleep seconds)
+  (let ((delta (- (curtime) before)))
+    (when (< delta seconds)
+      (thrsleep (- seconds delta)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun animate ()
+  (while (not (synchronized m stop?))
+    (unifyf (x1 y1 x2 y2)
+            (map + (list x1 y1 x2 y2) (list dx1 dy1 dx2 dy2)))
+    (when (or (= 0 x1) (= 640 x1)) (invf dx1))
+    (when (or (= 0 x2) (= 640 x2)) (invf dx2))
+    (when (or (= 0 y1) (= 480 y1)) (invf dy1))
+    (when (or (= 0 y2) (= 480 y2)) (invf dy2))
+    (ssdl-disablerefresh)
+    (ssdl-line x1 y1 x2 y2 color)
+    (ssdl-enablerefresh)
+    (thrsleep delay)))
+
+(setq thr (new thread animate))
+(defun stop-animation ()
+  (synchronized m (setf stop? :t))
+  [thr join])
+
+(print "
+you can now start the animation-thread by calling [thr run].
+you can edit the variables x1, y1, x2, y2 and color 
+and it will be reflected live in the animation
+
+quit by calling (stop-animation)
+")
