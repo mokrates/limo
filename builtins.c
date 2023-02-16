@@ -72,10 +72,11 @@ BUILTIN(builtin_macro)
 
 BUILTIN(builtin_macroexpand_1)
 {
-  limo_data *res;
+  limo_data *res, *arg;
 
   REQUIRE_ARGC("MACROEXPAND-1", 1);
-  res = real_eval(FIRST_ARG, env, NULL);
+  arg = eval(FIRST_ARG, env);   // we are a function, now.
+  res = real_eval(arg, env, NULL);
   if (res->type == limo_TYPE_THUNK) {
     return CDR(res);
   }
