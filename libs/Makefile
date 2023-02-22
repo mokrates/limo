@@ -12,11 +12,21 @@ $(LIBS):
 	make -C $@ $@.so
 	make -C $@ $@.a
 
+##########################
+## needed for cygwin
+#########################
+
+$(LIBS:%=%.a):
+	make -C $(@:.a=) $@
+
 $(LIBS:%=%.dll):
 	make -C $(@:.dll=) $(@:.dll=.a)
 	make -C $(@:.dll=) $@
 
-libs-cygwin: $(LIBS:%=%.dll)
+libs-cygwin-dll: $(LIBS:%=%.dll)
+libs-cygwin-a: $(LIBS:%=%.a)
+
+## !cygwin
 
 clean:
 	$(foreach X,$(LIBS), make -C $X clean ; )

@@ -48,10 +48,13 @@ limo-cygwin-exe: $(OBJ)
 	$(CC) $(BASEOBJ) $(PROFILING) -shared `./inline-cfg.sh` -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limodll.dll
 	$(CC) main.o $(PROFILING) limodll.dll -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limo.exe
 
-limo-cygwin: limo-cygwin-exe libs-cygwin info
+limo-cygwin: libs-cygwin-a limo-cygwin-exe libs-cygwin-dll info
 
-libs-cygwin:
-	make -C libs libs-cygwin
+libs-cygwin-a:
+	make -C libs libs-cygwin-a
+
+libs-cygwin-dll:
+	make -C libs libs-cygwin-dll
 
 ############################
 
