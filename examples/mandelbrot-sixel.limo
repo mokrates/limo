@@ -1,0 +1,53 @@
+(mod-load "sdl")
+(mod-load "vector")
+(import "sixel.limo")
+
+(defun csqr (c)
+  (cons (- (power (car c) 2)
+	      (power (cdr c) 2))
+	(* 2 (car c) (cdr c))))
+(freezeq csqr)
+
+(defun cadd (a b)
+  (cons (+ (car a) (car b))
+	(+ (cdr a) (cdr b))))
+(freezeq cadd)
+
+(defun mandelbrot (x y)
+  (floor (rational
+   (block fun
+     (progn
+      (setq z (cons x y))
+      (for-each n (drange 0. 16. 1.)
+        (if (>= (+ (power (car z) 2.) (power (cdr z) 2.)) 4.)
+	    (return-from fun n)
+	    (setf z (cadd (csqr z) (cons x y)))))
+      16.)))))
+(freezeq mandelbrot)
+
+(defun main ()
+  (print (sixel-start))
+  (print (sixel-colortable *sixel-colors*))  
+  (for-each y (drange 0 480 6)
+    (print (sixel-line 16 (map (lambda (cy)
+                                 (map (lambda (x)
+                                        (mandelbrot (/ (- x 320.) 128.) (/ (- cy 240.) 128.)))
+                                      (mdrange 0 640)))
+                               (mdrange y (+ y 6))))))
+  (print (sixel-end)))
+
+
+                                 
+
+;; (defun main ()
+;;   (for-each y (drange 0. 480. 1.)
+;;     (for-each x (drange 0. 640. 1.)
+;;       ([_sdl . sdl-plot] 
+;;        *surface*
+;;        (cons x y)
+;;        (vector-ref *colors*
+;; 		   (mandelbrot (/ (- x 320.) 128.) (/ (- y 240.) 128.)))))
+;;     ([_sdl . sdl-flip] *surface*)))
+
+(main)
+

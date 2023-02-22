@@ -1,4 +1,21 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;           SIXELS!!            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; works in
+;; xterm -ti 340
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; docs:
+;; https://en.wikipedia.org/wiki/Sixel
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (import "vector.limo")
+
+
 ;; https://en.wikipedia.org/wiki/Color_Graphics_Adapter
 ;; red   := 2/3×(colorNumber & 4)/4 + 1/3×(colorNumber & 8)/8
 ;; green := 2/3×(colorNumber & 2)/2 + 1/3×(colorNumber & 8)/8
