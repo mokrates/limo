@@ -1,0 +1,64 @@
+(import "vector.limo")
+;; https://en.wikipedia.org/wiki/Color_Graphics_Adapter
+;; red   := 2/3×(colorNumber & 4)/4 + 1/3×(colorNumber & 8)/8
+;; green := 2/3×(colorNumber & 2)/2 + 1/3×(colorNumber & 8)/8
+;; blue  := 2/3×(colorNumber & 1)/1 + 1/3×(colorNumber & 8)/8
+
+(setq *sixel-colors*
+      (scope
+       
+       (defun bit (n v)
+         (mod (floor (/ v n)) 2))
+       
+       ;; create a map of colors
+       (map (lambda (c) (map (curry + (car c)) (cdr c)))
+                    (map (lambda (n) (list (* (bit 8 n) 33)
+                                      (* 66 (bit 1 n))
+				      (* 66 (bit 2 n))
+				      (* 66 (bit 4 n))))
+			 (range 0 17 1)))))
+
+(defun sixel-start ()
+    (list-to-string (list (chr 27) "Pq\n")))
+
+(defun sixel-colortable (ct)
+  (string-concat
+   (list-to-string
+    (map (lambda (e) (apply (curry format "#%n;2;%n;%n;%n" (car e)) (cdr e)))
+         (enumerate ct)))
+   "\n"))
+
+(defun sixel-end ()
+  (list-to-string (list (chr 27) "\\")))
+
+(defun sixel-line (ncolors six-lists)
+  (string-concat
+   (list-to-string
+    (map (lambda (c)
+           (format "#%n%s$"
+                   c
+                   (list-to-string (apply (curry map (lambda (x0 x1 x2 x3 x4 x5)
+                                                       (chr
+                                                        (+ 63 (if (= x0 c) 1 0)
+                                                           (* 2  (if (= x1 c) 1 0))
+                                                           (* 4  (if (= x2 c) 1 0))
+                                                           (* 8  (if (= x3 c) 1 0))
+                                                           (* 16 (if (= x4 c) 1 0))
+                                                           (* 32 (if (= x5 c) 1 0))))))
+                                          six-lists))))
+         (mdrange ncolors)))
+   "-"))
+
+(setq *sixel-test-line*
+      '((04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04)
+        (04 04 14 04 04 04 04 04 14 04 14 04 04 04 14 04 04 14 14 04 04)
+        (04 04 04 14 04 04 04 04 14 04 14 14 04 14 14 04 14 04 04 14 04)
+        (04 04 04 14 14 04 04 04 14 04 14 04 14 04 14 04 14 04 04 14 04) 
+        (04 04 14 04 04 14 04 04 14 04 14 04 04 04 14 04 04 14 14 04 04)
+        (04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04)))
+
+(defun sixel-test ()
+  (print (string-concat (sixel-start)
+                        (sixel-colortable *sixel-colors*)
+                        (sixel-line 16 *sixel-test-line*)
+                        (sixel-end))))
