@@ -884,7 +884,7 @@
     (if up
 	(if (eq up c)
 	    :t
-	    (instancep up c))
+	    (instancep c up))
 	())))
 (freezeq instancep)
 
