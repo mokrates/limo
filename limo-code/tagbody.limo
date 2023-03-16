@@ -1,0 +1,68 @@
+(defmacro tagbody body
+  (defun fill-dict-from-body (body dct)
+    (cond ((not body) body)
+          ((consp (car body))
+           (cons (car body) (fill-dict-from-body (cdr body) dct)))
+          ((symbolp (car body))
+           (dict-set dct (car body) (fill-dict-from-body (cdr body) dct)))
+          (:else
+           (throw (list 'tagbody-error "this is not a legal tagbody tag" (car body))))))
+
+  (with-gensym (name-of-whole exc-sym name-of-tagfun name-of-trampoline name-of-tag name-of-jumptarget)
+      (setq dct (make-dict))
+    (dict-set dct name-of-whole (fill-dict-from-body body dct))
+
+    `(scope
+      (defmacro go (tag)
+        ;; -> (throw '(#:G20 foo))
+        (list 'throw (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
+      
+      (defun ,name-of-tagfun (,name-of-jumptarget)
+        (try
+         (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget)))
+         (catch ((,exc-sym e)
+                  e))))
+
+      (defun ,name-of-trampoline (,name-of-jumptarget)
+        (setq res (,name-of-tagfun ,name-of-jumptarget))
+        (if (and (consp res)
+                 (= (car res) ',exc-sym))
+            (,name-of-trampoline (cadr res))
+            nil))
+
+      (,name-of-trampoline ',name-of-whole))))
+
+
+
+;;; from the hyperspec
+;; ex1
+;; (write (let ((val ()))
+;;          (tagbody
+;;           (setf val 1)
+;;           (go point-a)
+;;           (incf val 16)
+;;           point-c
+;;           (incf val 04)
+;;           (go point-b)
+;;           (incf val 32)
+;;           point-a
+;;           (incf val 02)
+;;           (go point-c)
+;;           (incf val 64)
+;;           point-b
+;;           (incf val 08))
+;;          val))
+
+;; ;; ex2
+;; (defun f1 (flag)
+;;    (let ((n 1))
+;;      (tagbody 
+;;        (setq n (f2 flag (lambda () (go out))))
+;;       out
+;;       (write n))))
+
+;; (defun f2 (flag escape)
+;;   (if flag (escape) 2))
+
+;; (write (f1 nil))
+;; (write (f1 :t))
