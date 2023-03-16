@@ -1,0 +1,82 @@
+(defmacro tagbody body
+  (defun fill-dict-from-body (body dct)
+    (cond ((not body) body)
+          ((consp (car body))
+           (cons (car body) (fill-dict-from-body (cdr body) dct)))
+          ((symbolp (car body))
+           (dict-set dct (car body) (fill-dict-from-body (cdr body) dct)))
+          (:else
+           (throw (list 'tagbody-error "this is not a legal tagbody tag" (car body))))))
+
+  (with-gensym (name-of-block
+                name-of-whole
+                exc-sym
+                name-of-tagfun
+                name-of-trampoline
+                name-of-tag
+                name-of-jumptarget
+                name-of-jumptarget2)
+      (setq dct (make-dict))
+    (dict-set dct name-of-whole (fill-dict-from-body body dct))
+
+    `(scope
+      (defmacro go (tag)
+        ;; -> (throw '(#:G20 foo))
+        (list 'return-from ',name-of-block (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
+
+      ;; if this function uses name-of-jumptarget like ,name-of-trampoline instead of name-of-jumptarget2
+      ;; which *should* be possible, it segfaults.
+      ;; reason: (probably) that BLOCK opens a new scope, and a lcache-optimization on the
+      ;; *really identical* symbols points into garbage.
+      ;; really weird and probably dangerous. investigate!
+      (defun ,name-of-tagfun (,name-of-jumptarget2)
+        (block ,name-of-block
+          (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget2)))))
+
+      (defun ,name-of-trampoline (,name-of-jumptarget)
+        (setq res (,name-of-tagfun ,name-of-jumptarget))
+        (if (and (consp res)
+                 (= (car res) ',exc-sym))
+            (,name-of-trampoline (cadr res))
+            nil))
+      
+      (,name-of-trampoline ',name-of-whole))))
+
+
+
+;; trivial examples
+;; (tagbody (write "most trivial works"))
+;; (let ((x 0)) (tagbody ten (incf x) (write x) (when (< x 10) (go ten))))
+
+;;; from the hyperspec
+;; ex1
+;; (write (let ((val ()))
+;;          (tagbody
+;;           (setf val 1)
+;;           (go point-a)
+;;           (incf val 16)
+;;           point-c
+;;           (incf val 04)
+;;           (go point-b)
+;;           (incf val 32)
+;;           point-a
+;;           (incf val 02)
+;;           (go point-c)
+;;           (incf val 64)
+;;           point-b
+;;           (incf val 08))
+;;          val))
+
+;; ;; ;; ex2
+;; (defun f1 (flag)
+;;    (let ((n 1))
+;;      (tagbody 
+;;        (setq n (f2 flag (lambda () (go out))))
+;;       out
+;;       (write n))))
+
+;; (defun f2 (flag escape)
+;;   (if flag (escape) 2))
+
+;; (write (f1 nil))
+;; (write (f1 :t))
