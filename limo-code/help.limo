@@ -284,3 +284,17 @@ EX: (if (= x 3) \"x equals three!\" \"sadly, x is not three...\")
 
 The macro reorders if-clauses, if the condition consists of NOT, AND, and OR 
 for efficiency reasons.")
+
+(defhelp sym-no-opt
+  "BUILTINFUN (sym-no-opt <sym>)
+EX: (defmacro foo (x)
+      (sym-no-opt x)
+      `(defun (,x) ...))
+
+If you build macros with dynamic symbols as parameters, you should
+disable optimization, or weirdness will ensue, most likely the
+interpreter will segfault. 
+
+GENSYM and WITH-GENSYM does this automatically for generated syms.
+See examples/lcache-debug.limo.
+")

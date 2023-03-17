@@ -617,8 +617,8 @@
 (defun gensym x
   (setf _ngensym (+ 1 _ngensym))
   (if x 
-      (make-symbol (string-concat (car x) (reprn _ngensym)))
-      (make-symbol (string-concat "G" (reprn _ngensym)))))
+      (sym-no-opt (make-symbol (string-concat (car x) (reprn _ngensym))))
+      (sym-no-opt (make-symbol (string-concat "G" (reprn _ngensym))))))
 (freezeq gensym)
 
 ;; with-gensym

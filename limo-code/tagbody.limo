@@ -14,8 +14,7 @@
                 name-of-tagfun
                 name-of-trampoline
                 name-of-tag
-                name-of-jumptarget
-                name-of-jumptarget2)
+                name-of-jumptarget)
       (setq dct (make-dict))
     (dict-set dct name-of-whole (fill-dict-from-body body dct))
 
@@ -24,14 +23,9 @@
         ;; -> (throw '(#:G20 foo))
         (list 'return-from ',name-of-block (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
 
-      ;; if this function uses name-of-jumptarget like ,name-of-trampoline instead of name-of-jumptarget2
-      ;; which *should* be possible, it segfaults.
-      ;; reason: (probably) that BLOCK opens a new scope, and a lcache-optimization on the
-      ;; *really identical* symbols points into garbage.
-      ;; really weird and probably dangerous. investigate!
-      (defun ,name-of-tagfun (,name-of-jumptarget2)
+      (defun ,name-of-tagfun (,name-of-jumptarget)
         (block ,name-of-block
-          (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget2)))))
+          (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget)))))
 
       (defun ,name-of-trampoline (,name-of-jumptarget)
         (setq res (,name-of-tagfun ,name-of-jumptarget))
