@@ -8,20 +8,30 @@
           (:else
            (throw (list 'tagbody-error "this is not a legal tagbody tag" (car body))))))
 
-  (with-gensym (name-of-whole exc-sym name-of-tagfun name-of-trampoline name-of-tag name-of-jumptarget)
+  (with-gensym (name-of-block
+                name-of-whole
+                exc-sym
+                name-of-tagfun
+                name-of-trampoline
+                name-of-tag
+                name-of-jumptarget
+                name-of-jumptarget2)
       (setq dct (make-dict))
     (dict-set dct name-of-whole (fill-dict-from-body body dct))
 
     `(scope
       (defmacro go (tag)
         ;; -> (throw '(#:G20 foo))
-        (list 'throw (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
-      
-      (defun ,name-of-tagfun (,name-of-jumptarget)
-        (try
-         (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget)))
-         (catch ((,exc-sym e)
-                  e))))
+        (list 'return-from ',name-of-block (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
+
+      ;; if this function uses name-of-jumptarget like ,name-of-trampoline instead of name-of-jumptarget2
+      ;; which *should* be possible, it segfaults.
+      ;; reason: (probably) that BLOCK opens a new scope, and a lcache-optimization on the
+      ;; *really identical* symbols points into garbage.
+      ;; really weird and probably dangerous. investigate!
+      (defun ,name-of-tagfun (,name-of-jumptarget2)
+        (block ,name-of-block
+          (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget2)))))
 
       (defun ,name-of-trampoline (,name-of-jumptarget)
         (setq res (,name-of-tagfun ,name-of-jumptarget))
@@ -29,10 +39,14 @@
                  (= (car res) ',exc-sym))
             (,name-of-trampoline (cadr res))
             nil))
-
+      
       (,name-of-trampoline ',name-of-whole))))
 
 
+
+;; trivial examples
+;; (tagbody (write "most trivial works"))
+;; (let ((x 0)) (tagbody ten (incf x) (write x) (when (< x 10) (go ten))))
 
 ;;; from the hyperspec
 ;; ex1
@@ -53,7 +67,7 @@
 ;;           (incf val 08))
 ;;          val))
 
-;; ;; ex2
+;; ;; ;; ex2
 ;; (defun f1 (flag)
 ;;    (let ((n 1))
 ;;      (tagbody 
