@@ -48,7 +48,7 @@ limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt) 
   if (place->cons==NULL)
     throw(make_cons(make_string("Variable not bound"), name));
 
-  if ((place->flags & DI_LOCAL) && opt)
+  if ((place->flags & DI_LOCAL) && opt && !(name->flags & SYM_NO_OPT))
     opt->optimized = make_lcache(place->cons);
 
   return place->cons;

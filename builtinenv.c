@@ -71,6 +71,7 @@ struct { char *name; limo_builtinfun f; }
                         { "CONSP", builtin_consp},
                         { "CAR", builtin_car},
                         { "CDR", builtin_cdr},
+                        { "SYM-NO-OPT", builtin_sym_no_opt },
                         { "READER-STREAM-GETC", builtin_reader_stream_getc },
                         { "READER-STREAM-UNGETC", builtin_reader_stream_ungetc },
                         { "READER-STREAM-EOF", builtin_reader_stream_eof },

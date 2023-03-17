@@ -535,6 +535,14 @@ BUILTIN(builtin_make_sym_uninterned)
   return make_sym_uninterned(str1->d_string);  
 }
 
+BUILTINFUN(builtin_sym_no_opt)
+{
+  REQUIRE_ARGC_FUN("SYM-NO-OPT", 1);
+  REQUIRE_TYPE("SYM-NO-OPT", argv[0], limo_TYPE_SYMBOL);
+  argv[0]->flags |= SYM_NO_OPT;
+  return argv[0];
+}
+
 BUILTIN(builtin_get_annotation)
 {
   if (list_length(arglist) != 2)

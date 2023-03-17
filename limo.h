@@ -68,7 +68,11 @@ typedef struct limo_DATA {
     void *d_special_intern;
     struct limo_DATA *car;
   };
-  struct limo_DATA *cdr;
+  union {
+    struct limo_DATA *cdr;
+    unsigned short flags;  // to store SYM_NO_OPT
+#define SYM_NO_OPT 1       // marks a symbol that it shan't be optimized with LCACHE.
+  };
   union {
     unsigned int hash;  // for symbols
     unsigned int string_length;
@@ -317,6 +321,7 @@ BUILTIN(builtin_usleep);
 BUILTIN(builtin_string_concat);
 BUILTIN(builtin_make_sym);
 BUILTIN(builtin_make_sym_uninterned);
+BUILTINFUN(builtin_sym_no_opt);
 BUILTIN(builtin_get_annotation);
 BUILTIN(builtin_make_dict);
 BUILTIN(builtin_dict_get);
