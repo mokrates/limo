@@ -3,8 +3,8 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
-#define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f))
+#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
+#define INSBUILTINFUN(f, name) setq(env, make_sym(name), make_builtinfun(f, name))
 
 limo_data *sym_file;
 

@@ -13,7 +13,7 @@
 // had to use GC_pthread_create and GC_pthread_join to make this work.
 // segfaulted with the usual functions
 
-#define INS_THREADING_BUILTIN(f, name) setq(threading_env, make_sym(name), make_builtin(f))
+#define INS_THREADING_BUILTIN(f, name) setq(threading_env, make_sym(name), make_builtin(f, name))
 
 static limo_data *sym_thread;
 static limo_data *sym_mutex;

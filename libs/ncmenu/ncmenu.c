@@ -5,7 +5,7 @@ limo_data *sym_ncmenu_menu;
 limo_data *sym_ncmenu_item;
 limo_data *sym_ncmenu_error;
 
-#define INS_NCMENU_BUILTIN(f, name) setq(limo_ncmenu_env, make_sym(name), make_builtin(f))
+#define INS_NCMENU_BUILTIN(f, name) setq(limo_ncmenu_env, make_sym(name), make_builtin(f, name))
 
        /* current_item           menu_current(3MENU) */
 BUILTIN(builtin_ncmenu_current_item)

@@ -2,8 +2,8 @@
 
 limo_data *sym_ncurses_window;
 
-#define INS_NCURSES_BUILTIN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtin(f))
-#define INS_NCURSES_BUILTINFUN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtinfun(f))
+#define INS_NCURSES_BUILTIN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtin(f, name))
+#define INS_NCURSES_BUILTINFUN(f, name) setq(limo_ncurses_env, make_sym(name), make_builtinfun(f, name))
 
 BUILTINFUN(builtin_ncurses_stdscr)
 {

@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define INS_SOCKET_BUILTIN(f, name) setq(limo_socket_env, make_sym(name), make_builtin(f))
+#define INS_SOCKET_BUILTIN(f, name) setq(limo_socket_env, make_sym(name), make_builtin(f, name))
 #define INS_SOCKET_VAR(val, name)   setq(limo_socket_env, make_sym(name), val)
 
 // bind

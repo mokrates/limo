@@ -440,5 +440,5 @@ void number_builtins(limo_data *env)
        i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]);
        ++i)
     setq(env, make_sym(number_builtin_array[i].name),
-	 make_builtinfun(number_builtin_array[i].f));
+	 make_builtinfun(number_builtin_array[i].f, number_builtin_array[i].name));
 }

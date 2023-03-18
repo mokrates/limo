@@ -2,7 +2,7 @@
 #include <readline/readline.h>
 #include <limo.h>
 
-#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
 
 limo_data *sym_rlcompleter;
 limo_data *ld_rlcomplete_rlcompleter;

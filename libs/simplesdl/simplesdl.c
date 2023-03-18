@@ -168,7 +168,7 @@ void ssdl_getkey(int *, int *);
 /////// misc
 void ssdl_toggle_fullscreen(void);
 
-#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
 
 void limo_init_simplesdl(limo_data *env) 
 {

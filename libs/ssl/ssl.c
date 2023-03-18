@@ -1,8 +1,8 @@
 #include <limo.h>
 #include <openssl/ssl.h>
 
-#define INS_SSL_BUILTIN(f, name)    setq(limo_ssl_env, make_sym(name), make_builtin(f))
-#define INS_SSL_BUILTINFUN(f, name) setq(limo_ssl_env, make_sym(name), make_builtinfun(f))
+#define INS_SSL_BUILTIN(f, name)    setq(limo_ssl_env, make_sym(name), make_builtin(f, name))
+#define INS_SSL_BUILTINFUN(f, name) setq(limo_ssl_env, make_sym(name), make_builtinfun(f, name))
 #define INS_SSL_VAR(val, name)      setq(limo_ssl_env, make_sym(name), val)
 
 limo_data *sym_ssl;

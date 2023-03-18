@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
 
 //////////////////////////////////////////////////////////////////////////////
 /// stolen from

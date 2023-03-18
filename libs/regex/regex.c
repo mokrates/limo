@@ -2,7 +2,7 @@
 #include <sys/types.h>
 #include <limo.h>
 
-#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f))
+#define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
 
 static limo_data *regex_error_sym;
 

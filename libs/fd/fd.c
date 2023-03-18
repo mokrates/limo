@@ -8,7 +8,7 @@
 #endif
 #include <limo.h>
 
-#define INS_FD_BUILTIN(f, name) setq(limo_fd_env, make_sym(name), make_builtin(f))
+#define INS_FD_BUILTIN(f, name) setq(limo_fd_env, make_sym(name), make_builtin(f, name))
 #define INS_FD_VAR(val, name)   setq(limo_fd_env, make_sym(name), val)
 
 limo_data *sym_fd;

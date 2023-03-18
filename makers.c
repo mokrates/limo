@@ -108,20 +108,22 @@ limo_data *make_sym_uninterned(char *name)
   return ld;
 }
 
-limo_data *make_builtin(limo_builtin f)
+limo_data *make_builtin(limo_builtin f, char *name)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_BUILTIN;
   ld->d_builtin=f;
+  ld->builtin_name = name;
 
   return ld;
 }
 
-limo_data *make_builtinfun(limo_builtinfun f)
+limo_data *make_builtinfun(limo_builtinfun f, char *name)
 {
   limo_data *ld = make_limo_data();
   ld->type = limo_TYPE_BUILTINFUN;
   ld->d_builtinfun=f;
+  ld->builtin_name = name;  
 
   return ld;
 }

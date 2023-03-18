@@ -69,6 +69,7 @@ typedef struct limo_DATA {
     struct limo_DATA *car;
   };
   union {
+    char *builtin_name;
     struct limo_DATA *cdr;
     unsigned short flags;  // to store SYM_NO_OPT
 #define SYM_NO_OPT 1       // marks a symbol that it shan't be optimized with LCACHE.
@@ -186,8 +187,8 @@ limo_data *make_sym(char *);
 limo_data *make_sym_uninterned(char *);
 typedef limo_data *(*limo_builtin)(limo_data *, limo_data *, limo_data *);
 typedef limo_data *(*limo_builtinfun)(int, limo_data **);
-limo_data *make_builtin(limo_builtin);
-limo_data *make_builtinfun(limo_builtinfun);
+limo_data *make_builtin(limo_builtin, char *);
+limo_data *make_builtinfun(limo_builtinfun, char *);
 limo_data *make_env(limo_data *up);
 limo_data *make_thunk(limo_data *expr, limo_data *env);
 limo_data *make_dcons(limo_data *car, limo_data *dyncdr, limo_data *env);

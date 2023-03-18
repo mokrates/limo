@@ -89,10 +89,10 @@ limo_data *make_globalenv(int argc, char **argv)
   int i;
 
   for (i=0; i<(sizeof builtin_array)/(sizeof builtin_array[0]); ++i)
-    setconstq(env, make_sym(builtin_array[i].name), make_builtin(builtin_array[i].f));
+    setconstq(env, make_sym(builtin_array[i].name), make_builtin(builtin_array[i].f, builtin_array[i].name));
 
   for (i=0; i<(sizeof builtinfun_array)/(sizeof builtinfun_array[0]); ++i)
-    setconstq(env, make_sym(builtinfun_array[i].name), make_builtinfun(builtinfun_array[i].f));
+    setconstq(env, make_sym(builtinfun_array[i].name), make_builtinfun(builtinfun_array[i].f, builtinfun_array[i].name));
 
   for (i=1; i<argc; ++i) {
     (*args) = make_cons(make_string(argv[i]), NULL);

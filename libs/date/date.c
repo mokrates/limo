@@ -1,6 +1,6 @@
 #include <limo.h>
 
-#define INS_DATE_BUILTIN(f, name) setq(limo_date_env, make_sym(name), make_builtin(f))
+#define INS_DATE_BUILTIN(f, name) setq(limo_date_env, make_sym(name), make_builtin(f, name))
 #define INS_DATE_VAR(val, name)   setq(limo_date_env, make_sym(name), val)
 
 limo_data *sym_date;
