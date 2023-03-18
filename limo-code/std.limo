@@ -549,8 +549,7 @@
 	 (setq it (gensym))
 	 (setq recur (gensym))
 	 (break-frame
-	  `(progn
-	    (defun ,recur (,it)
+	  `((defun ,recur (,it)
 	      (when ,it 
 		,(if (consp x)
                      `(unify ,x (car ,it))
