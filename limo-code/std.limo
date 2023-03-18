@@ -693,13 +693,13 @@
 
 (defmacro incf (v . i)
   (if i
-      `(setf ,v (+ ,v ,(car i)))
-      `(setf ,v (+ ,v 1))))
+      `(,setf ,v (+ ,v ,(car i)))
+      `(,setf ,v (+ ,v 1))))
 
 (defmacro decf (v . i)
   (if i
-      `(setf ,v (- ,v ,(car i)))
-      `(setf ,v (- ,v 1))))
+      `(,setf ,v (- ,v ,(car i)))
+      `(,setf ,v (- ,v 1))))
 
 (setq _place-setters (make-dict))
 (freezeq _place-setters)
@@ -787,13 +787,19 @@
   (defun letvars (lblock)
     (when lblock
       (cons `(setq ,(caar lblock) ,(cadar lblock)) (letvars (cdr lblock)))))
-  `(progn ,@(letvars lblock) ,@body))
+  `(,progn ,@(letvars lblock) ,@body))
 (freezeq let*)
 
 (defmacro let (lblock . body)
   `((lambda ,(map1 car lblock) (progn ,@body))
     ,@(map1 cadr lblock)))
 (freezeq let)
+
+(setq block
+      (scope
+       (setq old-block block)  ;; save the builtin block
+       (macro (name . body) `(,old-block ,name (,progn ,@body)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  dynamic variables
