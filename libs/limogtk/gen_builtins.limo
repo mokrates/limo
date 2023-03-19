@@ -43,6 +43,14 @@
 (defun string-startswith (s start)
   (= (string-slice s 0 (string-length start)) start))
 
+(defun strstr (s part)
+  (let ((pl (string-length part)))
+    (for-each x (mdrange (- (string-length s) pl))
+      :breakable
+      (when (= (string-slice s x (+ pl x))
+               part)
+        (break x)))))
+      
 (defun list-to-dict (l)
   (setq d (make-dict))
   (for-each p l
@@ -433,7 +441,8 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 (setq exceptionlist '("g_atomic_pointer_compare_and_exchange" "g_atomic_pointer_add" "g_atomic_pointer_and"
                       "g_atomic_pointer_or" "g_atomic_pointer_xor" "g_once_init_leave" "g_atomic_pointer_set"
                       "g_atomic_pointer_get" "g_once_init_enter" "g_scanner_cur_value" "g_pointer_bit_lock"
-                      "g_pointer_bit_trylock" "g_pointer_bit_unlock" "g_key_file_set_double_list"))
+                      "g_pointer_bit_trylock" "g_pointer_bit_unlock" "g_key_file_set_double_list"
+                      "g_atomic_pointer_exchange" "g_atomic_pointer_compare_and_exchange_full"))
 (for-each e exceptionlist (dict-set exceptions e ()))
 
 (setq missing-types (make-dict))
@@ -462,11 +471,14 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
 
 (defun process-fn-def (f-stuff)
   (block _break
-    (progn
-
-     (when (not (instr "(" (car f-stuff)))
+    (progn     
+     (when (and (not (instr "(" (car f-stuff)))
+                (cdr f-stuff))
        (setf f-stuff (cons (string-concat (car f-stuff) " " (cadr f-stuff)) (cddr f-stuff))))
-     
+
+     (when (setq pos (strstr (car f-stuff) "__attribute__"))
+       (setcar f-stuff (string-strip (string-slice (car f-stuff) 0 pos))))
+
      ;; if first line contains several parameters divided by commas ...:
      (setf f-stuff
            (apply append
@@ -475,6 +487,9 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                                  (string-split y ",")))
                        f-stuff)))
      ;;;; !!several parameters divided by commas
+
+     (when (not f-stuff)
+       (break))
 
      (setq matches (re-match "([^()]+[* ])([A-Za-z0-9_]+) ?\\(([^$,\\)]*)($|,|\\);)" (car f-stuff) 4))
 
@@ -500,7 +515,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                 (cons (append (list (dict-getvalue typedict rettype) fname)
                               plist)
                       processed-fns)))
-         (progbar-print (format "coudn't parse: %r" f-stuff))))))
+         (progbar-print (format "couldn't parse: %r" f-stuff))))))
 
 (setq line ())
 (setq last-line ())
