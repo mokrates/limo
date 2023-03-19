@@ -82,10 +82,11 @@ limo_data *freeze_var(limo_data *env, limo_data *name)
     return nil;
 }
 
+// tried to use LCACHES here, but it didn't do anything to performance.
 void setf(limo_data *env, limo_data *name, limo_data *value)
 {
-  limo_data *place = var_lookup_place(env, name);
-  assert(place);
+  limo_data *place, *opt;
+  place = var_lookup_place_ex(env, name, name);
   CDR(place) = value;
 }
 
