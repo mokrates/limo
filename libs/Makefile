@@ -1,5 +1,5 @@
 LIBS=file string_builtins simplesdl threading regex sdl ncurses ncmenu\
-	fd rlcompleter date vector socket ssl popen # limogtk
+	fd rlcompleter date vector socket ssl popen speedup # limogtk
 
 .PHONY: all clean realclean $(LIBS)
 

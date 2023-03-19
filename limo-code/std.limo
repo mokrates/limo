@@ -12,12 +12,12 @@
 ;; (freezeq list)
 (setq defmacro 
       (macro (name args . body)
-	(list setq name (list 'macro args (cons 'progn body)))))
+	(list setq name (list macro args (cons progn body)))))
 (freezeq defmacro)
 
 (setq defun
       (macro (name args . body)
-	(list 'setq name (list 'lambda args (cons 'progn body)))))
+	(list setq name (list lambda args (cons progn body)))))
 (freezeq defun)
 
 (setq nil ())
@@ -334,25 +334,25 @@
 (freezeq zip2)
 
 (defmacro when (c . b)
-  `(if ,c ,(cons 'progn b) ()))
+  `(if ,c ,(cons progn b) ()))
 (freezeq when)
 
 (defmacro unless (c . b)
-  `(if ,c () ,(cons 'progn b)))
+  `(if ,c () ,(cons progn b)))
 (freezeq unless)
   
 (defmacro or l
   (if l 
-      (list 'if (car l) 
+      (list if (car l) 
 	    (car l) 
-	    (cons 'or (cdr l)))
+	    (cons or (cdr l)))
       ()))
 (freezeq or)
 
 (defmacro and l
   (if l
-      (list 'if (car l) 
-	    (cons 'and (cdr l))
+      (list if (car l) 
+	    (cons and (cdr l))
 	    ())
       :t))
 (freezeq and)
@@ -378,10 +378,10 @@
 (defmacro cond l   ;; used by quasiquote
   (if l
       (if (or (= (caar l) :t) (= (caar l) :else))
-	  (cons 'progn (cdar l))
-	  (list 'if (caar l)
-		(cons 'progn (cdar l))
-		(cons 'cond (cdr l))))
+	  (cons progn (cdar l))
+	  (list if (caar l)
+		(cons progn (cdar l))
+		(cons cond (cdr l))))
       ()))
 
 (freezeq cond)
@@ -457,13 +457,13 @@
 
 (defmacro mrange (first . rest)
   (if rest
-      `(range ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
-      `(range 0 ,first 1)))
+      `(,range ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(,range 0 ,first 1)))
 
 (defmacro mdrange (first . rest)
   (if rest
-      `(drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
-      `(drange 0 ,first 1)))
+      `(,drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(,drange 0 ,first 1)))
 
 (defun lreduce (f l)   ;; fold l with f from left
   (defun recur (akku l)
@@ -526,10 +526,10 @@
       (scope
        (defmacro simple-while (condition . body)
 	 (with-gensym (fun)
-	     `(progn
-	       (defun ,fun ()
-		 (if ,condition      
-		     (progn
+	     `(,progn
+	       (,defun ,fun ()
+		 (,if ,condition      
+		     (,progn
 		      ,@body
 		      (,fun))
 		     ()))
@@ -537,25 +537,25 @@
        (freezeq simple-while)
        
        (defmacro for-each (x l . body)
-	 (setq continue-frame (lambda (x) `(progn ,@x)))
-	 (setq break-frame (lambda (x) `(progn ,@x)))
+	 (setq continue-frame (lambda (x) `(,progn ,@x)))
+	 (setq break-frame (lambda (x) `(,progn ,@x)))
 	 (simple-while (member (car body) '(:break :breakable :continue :continuable))
 		       (cond ((member (car body) '(:break :breakable))
-			      (setf break-frame (lambda (x) `(block _break (progn ,@x)))))
+			      (setf break-frame (lambda (x) `(,block _break (,progn ,@x)))))
 			     ((member (car body) '(:continue :continuable))
-			      (setf continue-frame (lambda (x) `(block _continue (progn ,@x))))))
+			      (setf continue-frame (lambda (x) `(,block _continue (,progn ,@x))))))
 		       (setf body (cdr body)))
 	 
 	 (setq it (gensym))
 	 (setq recur (gensym))
 	 (break-frame
-	  `((defun ,recur (,it)
-	      (when ,it 
+	  `((,defun ,recur (,it)
+	      (,when ,it 
 		,(if (consp x)
-                     `(unify ,x (car ,it))
-                     `(setq ,x (car ,it)))
+                     `(,unify ,x (,car ,it))
+                     `(,setq ,x (,car ,it)))
 		,(continue-frame body)
-		(,recur (cdr ,it))))
+		(,recur (,cdr ,it))))
 	    (,recur ,l))))))
 (freezeq for-each)
 
@@ -571,11 +571,11 @@
 
 (defmacro do (vars test . body)     ;; cl-do  / no breaks/continues yet.
   (with-gensym (f)
-      `(progn
-        (defun ,f ,(map1 car vars)
+      `(,progn
+        (,defun ,f ,(map1 car vars)
           (if ,(car test)
               ,(cadr test)
-              (progn
+              (,progn
                ,@body
                (,f ,@(map1 caddr vars)))))
         (,f ,@(map1 cadr vars)))))
@@ -631,17 +631,17 @@
 ; ex: (unify (a b c) '(1 2 3)) ; (a<-1, b<-2, c<-3)
 (defmacro unify (l v)       ; destructuring assignment.
   (setq index (gensym))
-  `(progn
-    (setq ,index ,v)
+  `(,progn
+    (,setq ,index ,v)
     ,@(loop (l l akku ())
 	    (cond ((consp l)
 		   (recur (cdr l) 
 		          (append akku
-			          `((setq ,(car l) (car ,index))
-				    (setq ,index (cdr ,index))))))
+			          `((,setq ,(car l) (,car ,index))
+				    (,setq ,index (,cdr ,index))))))
                   
                   (l
-                   (append akku `((setq ,l ,index))))
+                   (append akku `((,setq ,l ,index))))
 
                   (:else
                    akku)))
@@ -790,7 +790,7 @@
 (freezeq let*)
 
 (defmacro let (lblock . body)
-  `((lambda ,(map1 car lblock) (progn ,@body))
+  `((,lambda ,(map1 car lblock) (,progn ,@body))
     ,@(map1 cadr lblock)))
 (freezeq let)
 
@@ -812,10 +812,10 @@
     `(_with-dynamic-env (progn ,@body)))
 (defmacro dyn-let (vars . body)
   `(with-dynamic-env
-    ,(cons 'progn
+    ,(cons progn
 	   (map (lambda (x)
-		  `(dyn-setq ,(car x)
-			     ,(cadr x)))
+		  `(,dyn-setq ,(car x)
+			      ,(cadr x)))
 		vars))
     ,@body))
 
@@ -915,6 +915,12 @@
 	  (setq ,t2 (utime))
 	  (- ,t2 ,t1)))
 (freezeq timerun)
+
+(defmacro timerun2 (num code)
+  `(scope (setq empty-run (/ (timerun (for-each x (mdrange ,num) ())) 1000000.))
+          (setq full-run  (/ (timerun (for-each x (mdrange ,num) ,code)) 1000000.))
+          (- full-run empty-run)))
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

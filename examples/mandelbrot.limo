@@ -36,7 +36,7 @@
   (block fun
     (progn
      (setq z (cons x y))
-     (for-each n (drange 0. 16. 1.)
+     (for-each n (drange 0 16 1)
        (if (>= (+ (power (car z) 2.) (power (cdr z) 2.)) 4.)
 	   (return-from fun n)
 	   (setf z (cadd (csqr z) (cons x y)))))
@@ -44,8 +44,8 @@
 (freezeq mandelbrot)
 
 (defun main ()
-  (for-each y (drange 0. 480. 1.)
-    (for-each x (drange 0. 640. 1.)
+  (for-each y (drange 0 480 1)
+    (for-each x (drange 0 640 1)
       ([_sdl . sdl-plot] 
        *surface*
        (cons x y)
