@@ -1,0 +1,19 @@
+(mod-load "speedup")
+
+(setq drange [_speedup . drange])
+
+;; redefining functions b/c of freeze
+
+(defun range (start end step)  ;; recursive! with generator: drange.
+  (undyn (drange start end step)))
+(freezeq range)
+
+(defmacro mrange (first . rest)
+  (if rest
+      `(,range ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(,range 0 ,first 1)))
+
+(defmacro mdrange (first . rest)
+  (if rest
+      `(,drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
+      `(,drange 0 ,first 1)))
