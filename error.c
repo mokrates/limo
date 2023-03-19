@@ -80,7 +80,7 @@ void limo_error(char *msg, ...)
 
   va_start(ap, msg);
   vsnprintf(buf, 256, msg, ap);
-  throw(make_string(buf));
+  throw(make_cons(make_sym("FATAL"), make_cons(make_string(buf), nil)));
 }
 
 void limo_error_errno(limo_data *excp_type)
