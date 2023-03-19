@@ -156,9 +156,16 @@
     
     res))
 
-(defun print-pwgen (len)
-  (for-each y (mdrange 10)
-    (for-each x (mdrange (/ 78 (+ 2 len)))
-      (print (pwgen len ()))
-      (print "  "))
-    (print "\n")))
+(defun print-pwgen (len flags)
+    (let ((flag-syms (map (lambda (x)
+                            (cdr (assoc x '(("a" . :PW-AMBIGUOUS)
+                                            ("U" . :PW-UPPERS)
+                                            ("d" . :PW-DIGITS)
+                                            ("s" . :PW-SYMBOLS)))))
+                          (string-to-list flags))))
+      
+      (for-each y (mdrange 10)
+        (for-each x (mdrange (/ 78 (+ 2 len)))
+          (print (pwgen len flag-syms))
+          (print "  "))
+        (print "\n"))))
