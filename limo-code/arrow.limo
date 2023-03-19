@@ -1,0 +1,8 @@
+(defmacro -> (item . forms)
+  "MACRO ->
+EX:  (-> \"  foo,bar  \" (strip %) (split % \",\")
+ =^= (split (strip  \"  foo,bar  \") \",\")"
+  (cond ((not forms) item)
+        ((consp (car forms))
+         `(-> ,(map (lambda (x) (if (= '% x) item x)) (car forms)) ,@(cdr forms)))
+        (:else (throw (list -> "not correct parameter" (car forms))))))
