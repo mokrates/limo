@@ -780,8 +780,6 @@
   nd)
 (freezeq dict-copy)
 
-(freezeq block)
-
 (defmacro let* (lblock . body)
   (defun letvars (lblock)
     (when lblock
@@ -798,7 +796,7 @@
       (scope
        (setq old-block block)  ;; save the builtin block
        (macro (name . body) `(,old-block ,name (,progn ,@body)))))
-
+(freezeq block)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  dynamic variables
