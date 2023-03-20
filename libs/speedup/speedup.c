@@ -22,6 +22,27 @@ BUILTINFUN(builtin_drange)
   }
 }
 
+BUILTINFUN(builtin_undyn)
+{
+  limo_data *ld, *list=argv[0];
+  limo_data **el = &ld;
+  
+  REQUIRE_ARGC_FUN("UNDYN", 1);
+
+  while (list->type == limo_TYPE_CONS) {
+    (*el) = make_cons(list->car, NULL);
+
+    list = list->cdr;
+    if (list->type == limo_TYPE_THUNK)
+      list = eval(list->cdr, list->car);
+
+    el = &CDR(*el);
+  }
+  (*el) = list;
+
+  return ld;
+}
+
 void limo_init_speedup(limo_data *env)
 {
   limo_data *limo_speedup_env;
@@ -32,6 +53,7 @@ void limo_init_speedup(limo_data *env)
   limo_speedup_env = make_env(nil);
   
   INS_SPEEDUP_BUILTINFUN(builtin_drange, "DRANGE");
+  INS_SPEEDUP_BUILTINFUN(builtin_undyn, "UNDYN");
 
   setq(env, make_sym("_SPEEDUP"), limo_speedup_env);
 }

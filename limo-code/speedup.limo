@@ -1,7 +1,10 @@
 (mod-load "speedup")
 
-(setq drange [_speedup . drange])
+;;;;;;;;;;;;;;;;;;;;
+;; drange
 
+(setq drange [_speedup . drange])
+(freezeq drange)
 ;; redefining functions b/c of freeze
 
 (defun range (start end step)  ;; recursive! with generator: drange.
@@ -17,3 +20,10 @@
   (if rest
       `(,drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
       `(,drange 0 ,first 1)))
+
+
+;;;;;;;;;;;;;;;;;;;;;
+;; undyn
+
+(setq undyn [_speedup . undyn])
+(freezeq undyn)

@@ -146,7 +146,7 @@
       (progn (setq start (cons (car l) ()))
 	     (helper (cdr l) start)
 	     start)))
-(freezeq undyn)
+;;(freezeq undyn)
 
 
 (defun deepeq (x y)
