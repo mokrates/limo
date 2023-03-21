@@ -45,6 +45,7 @@ static void *limo_threading_entry_function(void *thread_thunk)
   void *stacktrace = nil;
   volatile limo_data *dynamic_env;
   limo_data *null_env;
+  void *flmalloc_lists[MAX_FLMALLOC_LISTS];
   
   pk_limo_data_next_set(&make_limo_data_next);
   pk_stacktrace_free_set(&make_stacktrace_free);
@@ -53,7 +54,9 @@ static void *limo_threading_entry_function(void *thread_thunk)
   pk_stacktrace_set(&stacktrace);
   pk_exception_set(nil);
   pk_finallystack_set(nil);
-  
+  memset(flmalloc_lists, 0, MAX_FLMALLOC_LISTS * sizeof (void *));
+  pk_flmalloc_set(flmalloc_lists);
+
   dynamic_env = make_env(CDR((limo_data *)thread_thunk));
   null_env = make_env(nil);
   pk_dynamic_vars_set(dynamic_env);  
