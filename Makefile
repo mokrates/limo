@@ -7,7 +7,7 @@ PROFILING= # -pg -no-pie
 OPTIMIZE=-O3
 OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
-BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o \
+BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o flmalloc.o\
 	helpers.o builtinenv.o builtins.o numbers_gmp.o annotations.o \
 	dict.o special.o block.o limpy.o misc.o inlined_mods.o dynamicvars.o \
 	limo.o

@@ -37,13 +37,14 @@ BUILTIN(builtin_unsetq)
 
 BUILTIN(builtin_lambda)
 {
-  limo_data *lambda = make_nil();
+  limo_data *lambda;
   unsigned int nparams = 0;
   limo_data *paramlist;
 
   REQUIRE_ARGC("LAMBDA", 2);
   lambda = make_cons(env, arglist);
   lambda->type = limo_TYPE_LAMBDA;
+  env->env_flags &=~ENV_RECLAIM;
 
   /* writer(arglist); */
 
@@ -63,9 +64,10 @@ BUILTIN(builtin_lambda)
 
 BUILTIN(builtin_macro)
 {
-  limo_data *macro = make_nil();
+  limo_data *macro;
   REQUIRE_ARGC("MACRO", 2);
   macro = make_cons(env, arglist);
+  env->env_flags &=~ ENV_RECLAIM;
   macro->type = limo_TYPE_MACRO;  
   return macro;
 }
@@ -184,6 +186,7 @@ BUILTINFUN(builtin_cons)
 BUILTIN(builtin_dcons)
 {
   REQUIRE_ARGC("dcons", 2);
+  env->env_flags &=~ENV_RECLAIM;
   return make_dcons(eval(CAR(CDR(arglist)), env), CAR(CDR(CDR(arglist))), env);
 }
 
@@ -667,6 +670,7 @@ BUILTIN(builtin_env_getq)
 
 BUILTIN(builtin_env_current)
 {
+  env->env_flags &=~ENV_RECLAIM;
   return env;
 }
 

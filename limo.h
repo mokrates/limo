@@ -78,7 +78,12 @@ typedef struct limo_DATA {
     unsigned int hash;  // for symbols
     unsigned int string_length;
     struct {
-      unsigned short nparams;
+      union {
+        unsigned short nparams;   // number of params. at lambdas and places
+        unsigned short env_flags; // ENV_RECLAIM - flag
+#define ENV_RECLAIM 1
+      };
+        
       unsigned short ld_marked_const;
     };
   };
@@ -179,6 +184,7 @@ void l_writer(limo_data ***dest, limo_data *);
 
 void load_limo_file(char *fname, limo_data *env);
 
+void free_limo_data(limo_data *);
 limo_data *make_limo_data();
 limo_data *make_nil();
 limo_data *make_cons(limo_data *, limo_data *);
@@ -216,6 +222,7 @@ extern pthread_key_t pk_stacktrace_free_key;
 extern pthread_key_t pk_dict_next_key;
 extern pthread_key_t pk_gmpq_next_key;
 extern pthread_key_t pk_dynamic_vars_key;
+extern pthread_key_t pk_flmalloc_key;     //// TODO: Threading!!
 
 #define pk_ljbuf_set(VAL)      (pthread_setspecific(pk_ljbuf_key, (void *)(VAL)))
 #define pk_ljbuf_get()         ((sigjmp_buf *)pthread_getspecific(pk_ljbuf_key))
@@ -235,6 +242,12 @@ extern pthread_key_t pk_dynamic_vars_key;
 #define pk_gmpq_next_get()       ((void **)pthread_getspecific(pk_gmpq_next_key))
 #define pk_dynamic_vars_set(VAL) (pthread_setspecific(pk_dynamic_vars_key, (void *)(VAL)))
 #define pk_dynamic_vars_get()    ((limo_data *)pthread_getspecific(pk_dynamic_vars_key))
+#define pk_flmalloc_set(VAL) (pthread_setspecific(pk_flmalloc_key, (void *)(VAL)))
+#define pk_flmalloc_get()    ((void **)pthread_getspecific(pk_flmalloc_key))
+
+#define MAX_FLMALLOC_LISTS 32
+void *flmalloc(size_t sz);
+void flfree(void *, size_t size);
 
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)

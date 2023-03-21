@@ -90,16 +90,17 @@ limo_dict *make_dict_size(int minused)
   limo_dict *d;
   void **make_dict_next = pk_dict_next_get();
 
-  if (!*make_dict_next)
-    *make_dict_next = GC_malloc_many(sizeof (limo_dict));
+  /* if (!*make_dict_next) */
+  /*   *make_dict_next = GC_malloc_many(sizeof (limo_dict)); */
 
-  d = (limo_dict *)*make_dict_next;
-  *make_dict_next = GC_NEXT(*make_dict_next);
+  /* d = (limo_dict *)*make_dict_next; */
+  /* *make_dict_next = GC_NEXT(*make_dict_next); */
+  d = flmalloc(sizeof (limo_dict));
 
   while (size < 3*minused)
     size<<=1;
 
-  d->store = (limo_dict_item *)GC_malloc(size * sizeof (limo_dict_item));
+  d->store = (limo_dict_item *)flmalloc(size * sizeof (limo_dict_item));
   memset(d->store, 0, size * sizeof (limo_dict_item));
   d->locals_store = NULL;
   d->size = size;

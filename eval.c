@@ -25,9 +25,11 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   arglist = CDR(call);                    // argumentlist in current call
 
   param_env = make_env(lambda_env);     // environment to store the arguments
+  param_env->env_flags |= ENV_RECLAIM;
   pdict = CDR(param_env);               // dictionary to store locals
+  pdict->nparams = f->nparams;
 
-  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)GC_malloc(f->nparams * sizeof (limo_data));
+  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)flmalloc(f->nparams * sizeof (limo_data));
   if (eval_args) {
     while (params->type == limo_TYPE_CONS) {
       if (arglist->type != limo_TYPE_CONS)
@@ -167,6 +169,7 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   limo_data **stacktrace_free = pk_stacktrace_free_get();
   limo_data *stacktrace_cons;
   limo_data *tmp_stacktrace = *stacktrace;
+  limo_data *orig_env=env, *prev_env=env;
 
   limo_data thunk;
   thunk.type = limo_TYPE_THUNK;
@@ -197,14 +200,34 @@ limo_data *eval(limo_data *form, limo_data *env)   // tail recursion :D
   form=real_eval(form, env, &thunk);
   while (form->type == limo_TYPE_THUNK) {
     limo_data *next_form;
-    //      printf("THUNK:"); writer(form); printf("\n");
-    next_form= CDR(form);
+
+    prev_env = env;
     env      = CAR(form);
+    next_form= CDR(form);
     form     = next_form;
     CAR(stacktrace_cons) = form;
 
     form = real_eval(form, env, &thunk);
+
+    if (prev_env != orig_env &&
+        prev_env != env &&
+        prev_env->env_flags & ENV_RECLAIM) {
+      flfree(prev_env->cdr->d_dict->store, prev_env->cdr->d_dict->size * sizeof (limo_dict_item));
+      flfree(prev_env->cdr->d_dict, sizeof (limo_dict));
+      flfree(prev_env->cdr->d_dict->locals_store, prev_env->cdr->nparams * sizeof (limo_data));
+      free_limo_data(prev_env->cdr); // dict
+      free_limo_data(prev_env);
+    }
   }
+  if (env != orig_env &&
+      env->env_flags & ENV_RECLAIM) {
+    flfree(env->cdr->d_dict->store, env->cdr->d_dict->size * sizeof (limo_dict_item));
+    flfree(env->cdr->d_dict, sizeof (limo_dict));
+    flfree(env->cdr->d_dict->locals_store, env->cdr->nparams * sizeof (limo_data));
+    free_limo_data(env->cdr); // dict
+    free_limo_data(env);
+  }
+
 
   *stacktrace = tmp_stacktrace;
   CAR(stacktrace_cons) = NULL;
