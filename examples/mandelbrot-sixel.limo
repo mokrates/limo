@@ -18,7 +18,7 @@
    (block fun
      (progn
       (setq z (cons x y))
-      (for-each n (drange 0. 16. 1.)
+      (for-each n (drange 0 16 1)
         (if (>= (+ (power (car z) 2.) (power (cdr z) 2.)) 4.)
 	    (return-from fun n)
 	    (setf z (cadd (csqr z) (cons x y)))))
