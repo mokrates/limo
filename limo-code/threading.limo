@@ -75,9 +75,8 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
   (defmethod %init (self)
     (setmember [self . _mutex] (new mutex :recursive))
     (setmember [self . _cond] (new condition-lock))
-    (setmember [self . _queue] (cons () ()))
-    (setmember [self . _getnext] [self . _queue])
-    (setmember [self . _putnext] [self . _queue])
+    (setmember [self . _getnext] (cons () ()))
+    (setmember [self . _putnext] [self . _getnext])
     (setmember [self . _finish] nil))
   
   (defmethod finish (self)
