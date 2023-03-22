@@ -15,7 +15,7 @@
 (setq node list)    ;; (node head left-child right-child)
 
 (defun times (n str)
-  (list-to-string (map (lambda (x) str) (drange 0 (floor n) 1))))
+  (list-to-string (map (lambda (x) str) (drange 0 (int n) 1))))
 
 (defun deepness (tree)
   "calculates the deepness of the tree"
