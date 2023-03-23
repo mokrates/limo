@@ -23,74 +23,83 @@
 	(:else (+ 1 (max (deepness (left tree))
 			 (deepness (right tree)))))))
 
-(defun concat-string-list (l1 l2)
-  (cond ((not l1)
-	 ())
-	((not l2)
-	 (throw (list "concat-string-list: l1 longer than l2" l1)))
-	 ;;())
-	(:else
-	 (cons (string-concat (car l1) (car l2))
-	       (concat-string-list (cdr l1) (cdr l2))))))
+;; (defun concat-string-list (l1 l2)
+;;   (cond ((not l1)
+;; 	 ())
+;; 	((not l2)
+;; 	 (throw (list "concat-string-list: l1 longer than l2" l1)))
+;; 	 ;;())
+;; 	(:else
+;; 	 (cons (string-concat (car l1) (car l2))
+;; 	       (concat-string-list (cdr l1) (cdr l2))))))
+
+;; (defun concat-string-list (l1 l2)
+;;   (map string-concat l1 l2))
+
+(setq concat-string-list (curry map string-concat))
 
 (defun empty-tree (d)
   (map (lambda () (times (- (power 2 (+ 1 d)) 1) " "))
        (drange 0 (+ (* d 2) 1) 1)))
 
 (defun vis-tree (tree)
-  "creates a visualisation of the tree. may not be empty"
-  (if (not tree)
-      ""
-      (let* ((d (deepness tree))
-	     (l (left tree))
-	     (r (right tree))
-	     (lblock (if l
-			 (vis-tree l)
-			 (empty-tree (- d 1))))
-	     (rblock (if r
-			 (vis-tree r)
-			 (empty-tree (- d 1)))))
-
-	;; (debug-write d)
-	;; (debug-write l)
-	;; (debug-write r)
-	;; (debug-write lblock)
-	;; (debug-write rblock)
-			 
-	(append
-	 (list (list-to-string (list (times (- (power 2 d) 2) " ")
-				     "("
-				     (head tree)
-				     ")"
-				     (times (- (power 2 d) 2) " ")))
-	       (string-concat (if l
-				  (list-to-string (list (times (- (power 2 (- d 1)) 1) " ")
-							"╭"
-							(times (- (power 2 (- d 1)) 2) "─")
-							"╯ "))
-				  (times (power 2 d) " "))
-			      (if r
-				  (list-to-string (list "╰"
-							(times (- (power 2 (- d 1)) 2) "─")
-							"╮"
-							(times (- (power 2 (- d 1)) 1) " ")))
-				  (times (- (power 2 d) 1) " "))))
-	 (reduce concat-string-list
-		 (list lblock
-		       (map (lambda () " ") (drange 0 (* d 2) 1))
-		       rblock))))))
+  (defun vis-tree-helper (tree level)
+    "creates a visualisation of the tree. may not be empty"
+    (cond ((= level 0)
+           "")
+          ((not tree)
+           (times (string-to-list (times (power 2 (+ 1 level)) " ")) (* 2 level)))
+          (:else
+           (let* ((l (left tree))
+	          (r (right tree))
+	          (lblock (if l
+			      (vis-tree-helper l (- level 1))
+			      (empty-tree (- level 1))))
+	          (rblock (if r
+			      (vis-tree-helper r (- level 1))
+			      (empty-tree (- level 1)))))
+             
+	     ;; (debug-write d)
+	     ;; (debug-write l)
+	     ;; (debug-write r)
+	     ;; (debug-write lblock)
+	     ;; (debug-write rblock)
+	     
+	     (append
+	      (list (list-to-string (list (times (- (power 2 level) 2) " ")
+				          "("
+				          (head tree)
+				          ")"
+				          (times (- (power 2 level) 2) " ")))
+	            (string-concat (if l
+				       (list-to-string (list (times (- (power 2 (- level 1)) 1) " ")
+							     "╭"
+							     (times (- (power 2 (- level 1)) 2) "─")
+							     "╯ "))
+				       (times (power 2 level) " "))
+			           (if r
+				       (list-to-string (list "╰"
+							     (times (- (power 2 (- level 1)) 2) "─")
+							     "╮"
+							     (times (- (power 2 (- level 1)) 1) " ")))
+				       (times (- (power 2 level) 1) " "))))
+	      (reduce concat-string-list
+		      (list lblock
+		            (map (lambda () " ") (drange 0 (* level 2) 1))
+		            rblock)))))))
+  (vis-tree-helper tree (deepness tree)))
 
 (defun print-vis-tree (t)
   (for-each l (vis-tree t)
     (write l)))
-      
 
 
 
-(PRINT-VIS-TREE '(0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))))
-(PRINT-VIS-TREE '(0 (1 (3 () ()) ()) (2 (5 () ()) (6 () ()))))
-(PRINT-VIS-TREE '(9 (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))) (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ())))))
-(PRINT-VIS-TREE '(9 (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))) (0 () (2 (5 () ()) (6 () ())))))
+
+;; (PRINT-VIS-TREE '(0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))))
+;; (PRINT-VIS-TREE '(0 (1 (3 () ()) ()) (2 (5 () ()) (6 () ()))))
+;; (PRINT-VIS-TREE '(9 (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))) (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ())))))
+;; (PRINT-VIS-TREE '(9 (0 (1 (3 () ()) (4 () ())) (2 (5 () ()) (6 () ()))) (0 () (2 (5 () ()) (6 () ())))))
 
 
 
@@ -103,7 +112,7 @@
 ;;0 (1) (2) (4) (5) (c) (d) (e) (g)      (2^1-2)
 ;;
 ;; basis = 4 * anzahl leaves = 2^deepness * 4 
-  
+
 
 
 "      (0)       "

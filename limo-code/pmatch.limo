@@ -17,15 +17,15 @@
 		(if expr
 		    :no-match
 		    accu))
-	       ((not expr)   ;; (not pattern) already checked
-		:no-match)
 	       ((eq (car pattern) 'comma)     ;; match to (foo . ,x) for 'restlist' == (foo comma x)
 		(append accu (list (list :var (cadr pattern) expr))))
+               ((not expr)   ;; (not pattern) already checked
+		:no-match)        
 	       ((eq (setq match (_pmatch-try (car expr) (car pattern))) :no-match)  ;; the not-case falls through!
 		:no-match)
 	       (:else
 		(_pmatch-try-list (cdr expr) (cdr pattern) (append accu match)))))
-
+       
        (defun _pmatch-try (expr pattern)
 	 (cond ((not pattern)    ;; empty expr matches only to empty pattern
 		(if expr
