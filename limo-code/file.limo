@@ -26,6 +26,15 @@ reads and returns one line out of <file>")
 returns the complete file in a dynamic list of lines
 ")
 
+(defun file-getcs (f)
+  (let ((x (file-getc f)))
+    (when (not (file-eof f))
+      (dcons x (file-getcs f)))))
+
+(defhelp file-getcs
+  "FUNCTION (file-getcs f)
+returns the complete file in a dynamic list of characters")
+
 (defmacro with-file-open (filename mode f . body)
   `(progn
     (setq ,f (file-open ,filename ,mode))
