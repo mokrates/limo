@@ -514,6 +514,8 @@
               (progn (setcdr cursor (apply nconc (cdr lists)))
                      (car lists)))))))
 
+(defmacro dlist x (if (not x) ()  `(dcons ,(car x) (dlist ,@(cdr x)))))
+
 (setq warn-once
       (scope
        (setq already-warned (make-dict))
