@@ -83,8 +83,11 @@ typedef struct limo_DATA {
         unsigned short env_flags; // ENV_RECLAIM - flag
 #define ENV_RECLAIM 1
       };
-        
-      unsigned short ld_marked_const;
+
+      union {
+        unsigned short ld_marked_const;
+        unsigned short ups;       // number of ups in lcache
+      };
     };
   };
   limo_annotation *annotation;
@@ -95,6 +98,7 @@ typedef struct limo_DATA {
 #define DI_LOCAL (1<<1)
 typedef struct limo_DICT_ITEM {
   int flags;
+  int ups;   // if DI_LOCAL in an up-env, counts how many levels of up.
   limo_data *cons;
 } limo_dict_item;
 

@@ -302,10 +302,12 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
   case limo_TYPE_CONST:
     return CAR(ld);
 
-  case limo_TYPE_LCACHE:
-    /* writer(CDR(env)->d_dict->locals_store[ld->nparams]); */
-    /* printf("\nresolving lcache\n"); */
-    return CDR(env)->d_dict->locals_store[ld->nparams].cdr;
+  case limo_TYPE_LCACHE: {
+    limo_data *lc_env = env;
+    int i=ld->ups;
+    while (i--) lc_env=CAR(lc_env);
+    return CDR(lc_env)->d_dict->locals_store[ld->nparams].cdr;
+  }
 
   default:
     return ld;

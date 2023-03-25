@@ -13,6 +13,7 @@ limo_data *make_lcache(limo_data *place)
   limo_data *res=make_limo_data();
   res->type = limo_TYPE_LCACHE;
   res->nparams = place->nparams;
+  res->ups = 0;
 
   /* printf("creating lcache, arg nr %u\n", res->nparams); */
   
@@ -35,13 +36,16 @@ limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt) 
   
   place=dict_get_place(dict, name);
   if (place->cons == NULL && !is_nil(up)) {
-    cons = var_lookup_place(up, name);
+    cons = var_lookup_place_ex(up, name, name);
+
+    if (name->optimized && name->optimized->type == limo_TYPE_LCACHE)
+      ++name->optimized->ups;
 
     place->cons = cons;
     place->flags = DI_CACHE;
     dict->d_dict->used++;
 
-    dict_check_resize(dict);    
+    dict_check_resize(dict);
     return cons;
   }
 
