@@ -305,6 +305,7 @@ limo_data *real_eval(limo_data *ld, limo_data *env, limo_data *thunk_place)
   case limo_TYPE_LCACHE: {
     limo_data *lc_env = env;
     int i=ld->ups;
+
     while (i--) lc_env=CAR(lc_env);
     return CDR(lc_env)->d_dict->locals_store[ld->nparams].cdr;
   }

@@ -693,9 +693,10 @@
 (freezeq setnth)
 
 (defmacro incf (v . i)
+  (sym-no-opt v)
   (if i
-      `(,setf ,v (+ ,v ,(car i)))
-      `(,setf ,v (+ ,v 1))))
+      `(setf ,v (+ ,v ,(car i)))
+      `(setf ,v (+ ,v 1))))
 
 (defmacro decf (v . i)
   (if i
@@ -710,7 +711,7 @@
 (defmacro setplace (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
-	(:else `(,_setf ,k ,v))))
+	(:else `(_setf ,k ,v))))
 (setf setf setplace)
 (unsetq setplace)
 (freezeq setf)
