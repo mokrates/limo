@@ -1,0 +1,42 @@
+(import "threading.limo")
+
+(defmacro generator (args . body)
+  (with-gensym (inqueue outqueue innerfun consfun thr)
+      `(lambda x
+         (progn
+          (setq ,outqueue (new queue-lock))
+          (setq ,inqueue  (new queue-lock))
+          (setq ,thr ())
+          
+          (defun yield (item)
+            [,outqueue put item]
+            (if [,inqueue has-next]
+                [,inqueue get]
+                (throw '(generator "inqueue finished"))))
+          
+          (defun ,innerfun ,args
+            (finally (progn ,@body)
+                     [,outqueue finish]))
+          
+          (defun ,consfun args
+            [,inqueue put args]
+            (if [,outqueue has-next]
+                (dcons [,outqueue get] (,consfun))
+                (progn [,thr join] ())))
+          
+          (setf ,thr (new thread (lambda () (apply ,innerfun x))))
+          [,thr run]
+          (,consfun)))))
+  
+(defmacro defgenerator (name args . body)
+  `(setq ,name (generator ,args ,@body)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; how to use:
+
+;; (defgenerator xrange (from to)
+;;   (setq x from)
+;;   (while (< x to)
+;;     (yield x)
+;;     (incf x)))
