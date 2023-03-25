@@ -22,23 +22,16 @@ limo_data *make_lcache(limo_data *place)
 
 limo_data *var_lookup_place_ex(limo_data *env, limo_data *name, limo_data *opt) // returns the cons from the dict
 {
-  /* if (env->type != limo_TYPE_ENV) */
-  /*   limo_error("var_lookup: given env is no env"); */
-
-  /* printf("looking for\n"); */
-  /* writer(name); printf(" *******\n"); */
-  /* writer(CDR(env)); printf("\n\n"); */
-
   limo_data *up = CAR(env);
   limo_data *dict = CDR(env);
   limo_dict_item *place;
   limo_data *cons;
-  
+
   place=dict_get_place(dict, name);
   if (place->cons == NULL && !is_nil(up)) {
-    cons = var_lookup_place_ex(up, name, name);
+    cons = var_lookup_place_ex(up, name, opt);
 
-    if (name->optimized && name->optimized->type == limo_TYPE_LCACHE)
+    if (opt && opt->optimized && opt->optimized->type == limo_TYPE_LCACHE)
       ++name->optimized->ups;
 
     place->cons = cons;
@@ -90,7 +83,18 @@ limo_data *freeze_var(limo_data *env, limo_data *name)
 void setf(limo_data *env, limo_data *name, limo_data *value)
 {
   limo_data *place;
-  place = var_lookup_place(env, name);
+
+  limo_data *opt = name->optimized;
+  if (opt && opt->type == limo_TYPE_LCACHE) {
+    limo_data *lc_env = env;
+    int i=opt->ups;
+
+    while (i--) lc_env=CAR(lc_env);
+    place = &(CDR(lc_env)->d_dict->locals_store[opt->nparams]);
+  }
+  else
+    place = var_lookup_place_ex(env, name, name);
+
   CDR(place) = value;
 }
 
