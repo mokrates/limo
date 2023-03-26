@@ -148,6 +148,17 @@
 	     start)))
 ;;(freezeq undyn)
 
+(defun macrocopy (x)
+  (defun helper (x)
+    (cond ((not x) ())
+          ((and (consp x) (symbolp (car x)))
+           (dcons (make-sym (symbol-to-string (car x)))
+                  (helper (cdr x))))
+          ((and (consp x) (consp (car x)))
+           (dcons (undyn (helper (car x))) (helper (cdr x))))
+          (:else
+           x)))
+  (undyn (helper x)))
 
 (defun deepeq (x y)
   (cond ((consp x)
