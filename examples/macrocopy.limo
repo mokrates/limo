@@ -1,0 +1,31 @@
+;; example-program to show what the macrocopy-function is for
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; do-while
+;; this simple macro uses the `body`
+;; twice. It would be optimized it first runs,
+;; tracking local variables, but these variables
+;; have a different scope (1 more up) in the
+;; second usage of `body`.
+;; this is the reason, we must make a copy of
+;; body. sym-no-opt is not usable on lists,
+;; and body is a list.
+;; also: sym-no-opt inhibits the optimiziation
+;; this way, the code can still be optimized.
+
+;; rule of thumb:
+;; always use macrocopy if you use a piece of code
+;; twice or more
+
+(defmacro do-while (condition . body)
+  `(progn ,@(macrocopy body)
+          (while ,condition
+            ,@(macrocopy body))))
+
+(defun f (x)
+  (do-while (> x 0)
+            (write x)
+            (decf x)))
+
+(f 5)
