@@ -158,6 +158,19 @@
 
 (freezeq deepeq)
 
+(defun macrocopy (x)
+  (defun helper (x)
+    (cond ((not x) ())
+          ((and (consp x)
+                (symbolp (car x)))
+           (dcons (make-sym (symbol-to-string (car x)))
+                  (helper (cdr x))))
+          ((and (consp x) (consp (car x)))
+           (dcons (undyn (helper (car x))) (cdr x)))
+          (:else
+           x)))
+  (undyn (helper x)))
+
 ;; ########################
 ;; shallow quasiquotes
 ;; ########################
@@ -693,10 +706,9 @@
 (freezeq setnth)
 
 (defmacro incf (v . i)
-  (sym-no-opt v)
   (if i
-      `(setf ,v (+ ,v ,(car i)))
-      `(setf ,v (+ ,v 1))))
+      `(,setf ,v (+ ,v ,(car i)))
+      `(,setf ,v (+ ,v 1))))
 
 (defmacro decf (v . i)
   (if i
