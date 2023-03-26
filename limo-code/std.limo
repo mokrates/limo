@@ -166,7 +166,7 @@
            (dcons (make-sym (symbol-to-string (car x)))
                   (helper (cdr x))))
           ((and (consp x) (consp (car x)))
-           (dcons (undyn (helper (car x))) (cdr x)))
+           (dcons (undyn (helper (car x))) (helper (cdr x))))
           (:else
            x)))
   (undyn (helper x)))
