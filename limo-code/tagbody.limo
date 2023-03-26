@@ -14,7 +14,8 @@
                 name-of-tagfun
                 name-of-trampoline
                 name-of-tag
-                name-of-jumptarget)
+                name-of-jumptarget
+                name-of-jumptarget2)
       (setq dct (make-dict))
     (dict-set dct name-of-whole (fill-dict-from-body body dct))
 
@@ -27,8 +28,8 @@
         (block ,name-of-block
           (eval (cons ,progn (dict-getvalue ,dct ,name-of-jumptarget)))))
 
-      (defun ,name-of-trampoline (,name-of-jumptarget)
-        (setq res (,name-of-tagfun ,name-of-jumptarget))
+      (defun ,name-of-trampoline (,name-of-jumptarget2)
+        (setq res (,name-of-tagfun ,name-of-jumptarget2))
         (if (and (consp res)
                  (= (car res) ',exc-sym))
             (,name-of-trampoline (cadr res))

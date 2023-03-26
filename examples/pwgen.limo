@@ -75,79 +75,79 @@
            (iterations 0))
 
        (block done
-         (progn
-          (while (and (< iterations 1000) (<= (string-length res) len))
-            (incf iterations)
-            (block continue
-              (progn
-               (let* ((elem (nth (random-byte (list-length phonemes)) phonemes))
-                      (flags (cdr elem))
-                      (str (car elem)))
+         (while (and (< iterations 1000) (<= (string-length res) len))
+           ;; (setf iterations (+ 1 iterations))
+           (incf iterations)
+           (block continue
+             (progn
+              (let* ((elem (nth (random-byte (list-length phonemes)) phonemes))
+                     (flags (cdr elem))
+                     (str (car elem)))
 
-                 (when (not (member should-be flags))
-                   (return-from continue))
+                (when (not (member should-be flags))
+                  (return-from continue))
 
-                 (when (and first (member :NOT-FIRST flags))
-                   (return-from continue))
+                (when (and first (member :NOT-FIRST flags))
+                  (return-from continue))
 
-                 (when (and (member :VOWEL prev) (member :VOWEL flags) (member :DIPHTONG flags))
-                   (return-from continue))
+                (when (and (member :VOWEL prev) (member :VOWEL flags) (member :DIPHTONG flags))
+                  (return-from continue))
 
-                 (when (> (+ (string-length res) (string-length str)) len)
-                   (return-from continue))
+                (when (> (+ (string-length res) (string-length str)) len)
+                  (return-from continue))
 
-                 ;; capitals
-                 (when (and (or first (member :CONSONANT flags))
-                            (< (random-byte 10) 2))
-                   (setf str (upcase-initials str))
-                   (setf feature-flags (filter (curry != :PW-UPPERS) feature-flags)))
+                ;; capitals
+                (when (and (or first (member :CONSONANT flags))
+                           (< (random-byte 10) 2))
+                  (setf str (upcase-initials str))
+                  (setf feature-flags (filter (curry != :PW-UPPERS) feature-flags)))
 
-                 (setf res (string-concat res str))   ;; add string to result
+                (setf res (string-concat res str))   ;; add string to result
 
-                 (when (member :PW-AMBIGUOUS pw-flags)
-                   (for-each c ambiguous
-                     (when (member c (string-to-list res))
-                       (go try-again))))
+                (when (member :PW-AMBIGUOUS pw-flags)
+                  (for-each c ambiguous
+                    (when (member c (string-to-list res))
+                      (go try-again))))
 
-                 (when (>= (string-length res) len)
-                   (return-from done res))
+                (when (>= (string-length res) len)
+                  (return-from done res))
 
-                 ;; numbers
-                 (when (and (member :PW-DIGITS pw-flags)
-                            (not first)
-                            (< (random-byte 10) 3))
-                   (let ((d (string-nth (random-byte 10) digits)))
-                     (while (and (member :PW-AMBIGUOUS pw-flags)
-                                 (member d ambiguous))
-                       (setf d (string-nth (random-byte 10) digits)))
-                     (setf res (string-concat res d))
-                     (setf feature-flags (filter (curry != :PW-DIGITS) feature-flags))
-                     (setf first :t)
-                     (setf prev nil)
-                     (setf should-be (if (= 0 (random-byte 2)) :VOWEL :CONSONANT))
-                     (return-from continue)))
+                ;; numbers
+                (when (and (member :PW-DIGITS pw-flags)
+                           (not first)
+                           (< (random-byte 10) 3))
+                  (let ((d (string-nth (random-byte 10) digits)))
+                    (while (and (member :PW-AMBIGUOUS pw-flags)
+                                (member d ambiguous))
+                      (setf d (string-nth (random-byte 10) digits)))
+                    (setf res (string-concat res d))
+                    (setf feature-flags (filter (curry != :PW-DIGITS) feature-flags))
+                    (setf first :t)
+                    (setf prev nil)
+                    (setf should-be (if (= 0 (random-byte 2)) :VOWEL :CONSONANT))
+                    (return-from continue)))
 
-                 ;; symbols
-                 (when (and (member :PW-SYMBOLS pw-flags)
-                            (not first)
-                            (< (random-byte 10) 2))
-                   (let ((s (string-nth (random-byte (string-length symbols)) symbols)))
-                     (while (and (member :PW-AMBIGUOUS pw-flags)
-                                 (member s ambiguous))
-                       (setf s (string-nth (random-byte (string-length symbols)) symbols)))
-                     (setf res (string-concat res s))
-                     (setf feature-flags (filter (curry != :PW-SYMBOLS) feature-flags))))
+                ;; symbols
+                (when (and (member :PW-SYMBOLS pw-flags)
+                           (not first)
+                           (< (random-byte 10) 2))
+                  (let ((s (string-nth (random-byte (string-length symbols)) symbols)))
+                    (while (and (member :PW-AMBIGUOUS pw-flags)
+                                (member s ambiguous))
+                      (setf s (string-nth (random-byte (string-length symbols)) symbols)))
+                    (setf res (string-concat res s))
+                    (setf feature-flags (filter (curry != :PW-SYMBOLS) feature-flags))))
 
-                 (cond ((eq should-be :CONSONANT)
-                        (setf should-be :VOWEL))
-                       ((or (member :VOWEL prev)
-                            (member :DIPHTONG flags)
-                            (> (random-byte 10) 3))
-                        (setf should-be :CONSONANT))
-                       (:else
-                        (setf should-be :VOWEL)))
-                 (setf prev flags)
-                 (setf first nil)))))))
+                (cond ((eq should-be :CONSONANT)
+                       (setf should-be :VOWEL))
+                      ((or (member :VOWEL prev)
+                           (member :DIPHTONG flags)
+                           (> (random-byte 10) 3))
+                       (setf should-be :CONSONANT))
+                      (:else
+                       (setf should-be :VOWEL)))
+                (setf prev flags)
+                (setf first nil))))))
        
        (when (or (filter (curry != :PW-AMBIGUOUS) feature-flags)
                  (< (string-length res) len))

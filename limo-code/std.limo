@@ -169,6 +169,19 @@
 
 (freezeq deepeq)
 
+(defun macrocopy (x)
+  (defun helper (x)
+    (cond ((not x) ())
+          ((and (consp x)
+                (symbolp (car x)))
+           (dcons (make-sym (symbol-to-string (car x)))
+                  (helper (cdr x))))
+          ((and (consp x) (consp (car x)))
+           (dcons (undyn (helper (car x))) (helper (cdr x))))
+          (:else
+           x)))
+  (undyn (helper x)))
+
 ;; ########################
 ;; shallow quasiquotes
 ;; ########################
@@ -721,7 +734,7 @@
 (defmacro setplace (k v)
   (cond ((consp k)
 	 `(,(cdr (dict-get _place-setters (car k))) ,@(append (cdr k) (list v))))
-	(:else `(,_setf ,k ,v))))
+	(:else `(_setf ,k ,v))))
 (setf setf setplace)
 (unsetq setplace)
 (freezeq setf)
