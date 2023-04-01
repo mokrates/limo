@@ -139,6 +139,7 @@ limo_data *make_builtinfun(limo_builtinfun f, char *name)
 
 limo_data *make_thunk(limo_data *expr, limo_data *env)
 {
+  // TODO: This #if may be incompatible with THREAD-CLEANUP-PUSH
 #if LIMO_TAILCALL_OPT
   limo_data *l = make_cons(env, expr);
   l->type=limo_TYPE_THUNK;

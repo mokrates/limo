@@ -14,6 +14,8 @@
 // segfaulted with the usual functions
 
 #define INS_THREADING_BUILTIN(f, name) setq(threading_env, make_sym(name), make_builtin(f, name))
+#define INS_THREADING_BUILTINFUN(f, name) setq(threading_env, make_sym(name), make_builtinfun(f, name))
+#define INS_THREADING_VAR(name, val)   setq(threading_env, make_sym(name), val)
 
 static limo_data *sym_thread;
 static limo_data *sym_mutex;
@@ -22,6 +24,7 @@ static limo_data *sym_cond;
 static limo_data *sym_mutex_attr_fast;
 static limo_data *sym_mutex_attr_rec;
 static limo_data *sym_mutex_attr_errchk;
+
 
 typedef struct LIMO_THREADING_THREAD {
   pthread_t pthread;
@@ -107,6 +110,45 @@ BUILTIN(builtin_thread_join)
   GC_pthread_join(ltt->pthread, NULL);  // TODO rueckgabewert.
 
   return make_nil();
+}
+
+BUILTINFUN(builtin_thread_setcancelstate)
+{
+  int old_state;
+  REQUIRE_ARGC_FUN("THREAD-SETCANCELSTATE", 1);
+  REQUIRE_TYPE("THREAD-SETCANCELSTATE", argv[0], limo_TYPE_GMPQ);
+  if (!pthread_setcancelstate(GETINTFROMMPQ(argv[0]), &old_state))
+    limo_error("THREAD-SETCANCELSTATE: invalid state");
+  else
+    return make_rational_from_long_long(old_state);
+}
+
+BUILTINFUN(builtin_thread_setcanceltype)
+{
+  int old_type;
+  REQUIRE_ARGC_FUN("THREAD-SETCANCELTYPE", 1);
+  REQUIRE_TYPE("THREAD-SETCANCELTYPE", argv[0], limo_TYPE_GMPQ);
+  if (!pthread_setcanceltype(GETINTFROMMPQ(argv[0]), &old_type))
+    limo_error("THREAD-SETCANCELTYPE: invalid type");
+  else
+    return make_rational_from_long_long(old_type);
+}
+
+BUILTINFUN(builtin_thread_cancel)
+{
+  limo_threading_thread *thr;
+  REQUIRE_ARGC_FUN("THREAD-CANCEL", 1);
+  thr = get_special(argv[0], sym_thread);
+  if (!pthread_cancel(thr->pthread))
+    limo_error("THREAD-CANCEL: no such thread");
+  else
+    return nil;
+}
+
+BUILTINFUN(builtin_thread_testcancel)
+{
+  pthread_testcancel();
+  return nil;
 }
 
 BUILTIN(builtin_mutex_create)
@@ -248,6 +290,16 @@ void limo_init_threading(limo_data *env)
   threading_env = make_env(nil);
   INS_THREADING_BUILTIN(builtin_thread_create, "THREAD-CREATE");
   INS_THREADING_BUILTIN(builtin_thread_join, "THREAD-JOIN");
+
+  INS_THREADING_VAR("CANCEL_ENABLE", make_rational_from_long_long(PTHREAD_CANCEL_ENABLE));
+  INS_THREADING_VAR("CANCEL_DISABLE", make_rational_from_long_long(PTHREAD_CANCEL_DISABLE));
+  INS_THREADING_VAR("CANCEL_DEFERRED", make_rational_from_long_long(PTHREAD_CANCEL_DEFERRED));
+  INS_THREADING_VAR("CANCEL_ANSYNCHRONOUS", make_rational_from_long_long(PTHREAD_CANCEL_ASYNCHRONOUS));
+
+  INS_THREADING_BUILTINFUN(builtin_thread_setcanceltype, "THREAD-SETCANCELTYPE");
+  INS_THREADING_BUILTINFUN(builtin_thread_setcancelstate, "THREAD-SETCANCELSTATE");
+  INS_THREADING_BUILTINFUN(builtin_thread_cancel, "THREAD-CANCEL");
+  INS_THREADING_BUILTINFUN(builtin_thread_testcancel, "THREAD-TESTCANCEL");
 
   INS_THREADING_BUILTIN(builtin_mutex_create, "MUTEX-CREATE");
   INS_THREADING_BUILTIN(builtin_mutex_lock, "MUTEX-LOCK");
