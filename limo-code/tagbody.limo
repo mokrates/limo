@@ -17,9 +17,21 @@
                 name-of-jumptarget
                 name-of-jumptarget2)
       (setq dct (make-dict))
+
+    (cond ((and (consp body) (= (car body) :upper-tagbody))
+           (setq upper-tagbody-name (cadr body))
+           (setq upper-tagbody-exc (caddr body))
+           (setf body (cdddr body)))
+          (:else
+           (setq upper-tagbody-name ())
+           (setq upper-tagbody-exc ())))
+    
     (dict-set dct name-of-whole (fill-dict-from-body body dct))
 
     `(scope
+      (defmacro tagbody body
+        (append (list ,tagbody :upper-tagbody ',name-of-block ',exc-sym) body))
+      
       (defmacro go (tag)
         ;; -> (throw '(#:G20 foo))
         (list 'return-from ',name-of-block (list 'quote (list ',exc-sym tag))))    ;;; ich glaub, das geht jetzt so
@@ -32,7 +44,12 @@
         (setq res (,name-of-tagfun ,name-of-jumptarget2))
         (if (and (consp res)
                  (= (car res) ',exc-sym))
-            (,name-of-trampoline (cadr res))
+            (cond ((,dict-has-key ,dct (,cadr res))
+                   (,name-of-trampoline (,cadr res)))
+                  (,upper-tagbody-name  ;; there is an upper tagbody
+                   (,return-from ,upper-tagbody-name (list ',upper-tagbody-exc (,cadr res))))
+                  (:else
+                   (throw (list 'tagbody-error "tag not found"))))
             nil))
       
       (,name-of-trampoline ',name-of-whole))))
