@@ -46,10 +46,9 @@
                  (= (car res) ',exc-sym))
             (cond ((,dict-has-key ,dct (,cadr res))
                    (,name-of-trampoline (,cadr res)))
-                  (,upper-tagbody-name  ;; there is an upper tagbody
-                   (,return-from ,upper-tagbody-name (list ',upper-tagbody-exc (,cadr res))))
-                  (:else
-                   (throw (list 'tagbody-error "tag not found"))))
+                  ,(if upper-tagbody-name   ;; there is an upper tagbody
+                       `(:else (,return-from ,upper-tagbody-name (list ',upper-tagbody-exc (,cadr res))))
+                       `(:else (throw (list 'tagbody-error "tag not found" (,cadr res))))))
             nil))
       
       (,name-of-trampoline ',name-of-whole))))
