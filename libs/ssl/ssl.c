@@ -14,6 +14,12 @@ BUILTIN(builtin_ssl_tls_method)
 {  return make_special(sym_sslmethod, TLS_method()); }
 BUILTIN(builtin_ssl_tls_client_method)
 {  return make_special(sym_sslmethod, TLS_client_method()); }
+
+/////// this describes, how a ssl-server should be configured
+/// TODO
+/// https://wiki.openssl.org/index.php/Simple_TLS_Server
+
+//// TODO ssl.limo-wrapper.
 BUILTIN(builtin_ssl_tls_server_method)
 {  return make_special(sym_sslmethod, TLS_server_method()); }
 
