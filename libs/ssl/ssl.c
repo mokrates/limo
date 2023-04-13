@@ -20,6 +20,26 @@ BUILTIN(builtin_ssl_tls_client_method)
 /// https://wiki.openssl.org/index.php/Simple_TLS_Server
 
 //// TODO ssl.limo-wrapper.
+
+static ssl_error_to_string(const SSL *ssl, int ret)
+{
+  switch (SSL_get_error(ssl, ret)) {
+  case SSL_ERROR_NONE: return make_string("SSL_ERROR_NONE");
+  case SSL_ERROR_ZERO_RETURN: return make_string("SSL_ERROR_ZERO_RETURN");
+  case SSL_ERROR_WANT_READ: return make_string("SSL_ERROR_WANT_READ");
+  case SSL_ERROR_WANT_WRITE: return make_string("SSL_ERROR_WANT_WRITE");
+  case SSL_ERROR_WANT_CONNECT: return make_string("SSL_ERROR_WANT_CONNECT");
+  case SSL_ERROR_WANT_ACCEPT: return make_string("SSL_ERROR_WANT_ACCEPT");
+  case SSL_ERROR_WANT_X509_LOOKUP: return make_string("SSL_ERROR_WANT_X509_LOOKUP");
+  case SSL_ERROR_WANT_ASYNC: return make_string("SSL_ERROR_WANT_ASYNC");
+  case SSL_ERROR_WANT_ASYNC_JOB: return make_string("SSL_ERROR_WANT_ASYNC_JOB");
+  case SSL_ERROR_WANT_CLIENT_HELLO_CB: return make_string("SSL_ERROR_WANT_CLIENT_HELLO_CB");
+  case SSL_ERROR_SYSCALL: return make_string("SSL_ERROR_SYSCALL");
+  case SSL_ERROR_SSL: return make_string("SSL_ERROR_SSL");
+  }
+}
+
+
 BUILTIN(builtin_ssl_tls_server_method)
 {  return make_special(sym_sslmethod, TLS_server_method()); }
 
@@ -218,11 +238,12 @@ BUILTIN(builtin_ssl_connect)
 {
   limo_data *ld_sslconn;
   SSL *sslconn;
+  int ret;
   REQUIRE_ARGC("SSL-CONNECT", 1);
   ld_sslconn = eval(FIRST_ARG, env);
   sslconn = get_special(ld_sslconn, sym_sslconn);
   if (1 != SSL_connect(sslconn))
-    throw(make_cons(sym_ssl, make_string("couldn't connect")));
+    throw(make_cons(sym_ssl, ssl_error_to_string(sslconn, ret)));
   return nil;
 }
 
@@ -230,11 +251,12 @@ BUILTIN(builtin_ssl_accept)
 {
   limo_data *ld_sslconn;
   SSL *sslconn;
+  int ret;
   REQUIRE_ARGC("SSL-ACCEPT", 1);
   ld_sslconn = eval(FIRST_ARG, env);
   sslconn = get_special(ld_sslconn, sym_sslconn);
-  if (1 != SSL_accept(sslconn))
-    throw(make_cons(sym_ssl, make_string("couldn't accept")));
+  if (1 != (ret = SSL_accept(sslconn)))
+    throw(make_cons(sym_ssl, ssl_error_to_string(sslconn, ret)));
   return nil;
 }
 
@@ -256,7 +278,7 @@ BUILTIN(builtin_ssl_ctx_use_certificate_file)
   return nil;
 }
 
-BUILTIN(builtin_ssl_use_privatekey_file)
+BUILTIN(builtin_ssl_ctx_use_privatekey_file)
 {
   limo_data *ld_ctx, *ld_filename, *ld_type;
   SSL_CTX *ctx;
@@ -353,7 +375,7 @@ void limo_init_ssl(limo_data *env)
   INS_SSL_BUILTIN(builtin_ssl_read, "SSL-READ");
   INS_SSL_BUILTIN(builtin_ssl_write, "SSL-WRITE");
   INS_SSL_BUILTIN(builtin_ssl_ctx_use_certificate_file, "SSL-CTX-USE-CERTIFICATE-FILE");
-  INS_SSL_BUILTIN(builtin_ssl_use_privatekey_file, "SSL-USE-PRIVATEKEY-FILE");
+  INS_SSL_BUILTIN(builtin_ssl_ctx_use_privatekey_file, "SSL-CTX-USE-PRIVATEKEY-FILE");
 
   INS_SSL_VAR(make_rational_from_long_long(SSL_FILETYPE_PEM), "SSL_FILETYPE_PEM");
   

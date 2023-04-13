@@ -1,0 +1,87 @@
+(import "socket.limo")
+(import "file.limo")
+
+(mod-load "fd")
+(mod-load "ssl")
+
+;;;;;;;;;;; helper
+(defun ssl-readline (f)
+  (defun ssl-readline-list (f)
+    (setq c ([_ssl . ssl-read] f 1))
+    (cond ((eq c "\n") '("\n"))
+	  ((eq c "") '(""))
+	  (:else (dcons c (ssl-readline-list f)))))
+
+  (reduce string-concat (ssl-readline-list f)))
+;;;;;;;;;;; !helper
+
+;;;; global variables
+(setq port 9999)
+(setq not-found-page '(:not-found-page . "<html><head><title>404 not found</title></head><body>404 not found</body></html>"))
+(setq pages
+      '(("/" . "<html>
+<head><title>limo simplest-webserver</title></head>
+<body>
+<h2>limo simplest-webserver!</h2>
+Find the example program in the examples directory<br />
+<ul>
+<li><a href='/subpage1'>a subpage</a> - this is a subpage</li>
+<li><a href='/subpage2'>another subpage</a> - this is another subpage</li>
+</ul>
+</body></html>
+")
+         ("/subpage1" . "<html>
+<head><title>limo simplest-webserver</title></head>
+<body>
+<h2>limo simplest-webserver!</h2>
+<h3>a subpage</h3>
+Limo is lispy fun stuff
+</body></html>
+")
+         ("/subpage2" . "<head><title>limo simplest-webserver</title></head>
+<body>
+<h2>limo simplest-webserver!</h2>
+<h3>another subpage</h3>
+parentheses! parentheses everywhere!
+</body></html>
+")))
+
+(setq s ([_socket . make-socket] [_socket . af_inet] [_socket . sock_stream] 0))
+([_socket . bind] s ([_socket . make-sockaddr] ([_socket . inet-addr] "0.0.0.0") port))
+([_socket . listen] s 2)
+
+;;;;;; SSL
+(setq ctx ([_ssl . ssl-ctx-new] ([_ssl . ssl-tls-server-method])))  ;; to initialize a client ssl-context.
+([_ssl . ssl-ctx-use-certificate-file] ctx "example.pem" [_ssl . ssl_filetype_pem])
+([_ssl . ssl-ctx-use-privatekey-file] ctx "key.pem" [_ssl . ssl_filetype_pem])
+;;;;;; !SSL
+
+(print (format "simplest webserver listening on 0.0.0.0:%n\n" port))
+
+(while :forever
+  (setq sc ([_socket . accept] s))
+
+  ;;;;; SSL
+  (setq sslconn ([_ssl . ssl-new] ctx))
+  ([_ssl . ssl-set-fd] sslconn sc)
+  ([_ssl . ssl-accept] sslconn)
+  ;;;;; !SSL
+  
+  (print "connection accepted\n")
+  
+  ;; (setq sf (file-fdopen sc "a+"))
+  (unify (method address protocol) (string-split (ssl-readline sslconn) " "))
+  (print (format  "%r\n" (list method address protocol)))
+  
+  (while (!= "\r\n" (ssl-readline sslconn))
+    :do-nothing)
+  ([_ssl . ssl-write] sslconn "HTTP/1.0 200 OK\r
+Server: simplest-webserver limo/0.0\r
+Content-type: text/html; charset=utf-8\r
+")
+  (let ((page (assoc address pages)))
+    (unless page (setf page not-found-page))
+    (progn
+     ([_ssl . ssl-write] sslconn (format "Content-length: %n\r\n\r\n" (string-length (cdr page))))
+     ([_ssl . ssl-write] sslconn (cdr page))
+     ([_fd . fd-close] sc))))
