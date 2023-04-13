@@ -226,8 +226,6 @@ extern pthread_key_t pk_ljbuf_key;
 extern pthread_key_t pk_finallystack_key;
 extern pthread_key_t pk_limo_data_next_key;
 extern pthread_key_t pk_stacktrace_free_key;
-extern pthread_key_t pk_dict_next_key;
-extern pthread_key_t pk_gmpq_next_key;
 extern pthread_key_t pk_dynamic_vars_key;
 extern pthread_key_t pk_flmalloc_key;     //// TODO: Threading!!
 
@@ -243,16 +241,12 @@ extern pthread_key_t pk_flmalloc_key;     //// TODO: Threading!!
 #define pk_limo_data_next_get()     ((void **)pthread_getspecific(pk_limo_data_next_key))
 #define pk_stacktrace_free_set(VAL)  (pthread_setspecific(pk_stacktrace_free_key, (void *)(VAL)))
 #define pk_stacktrace_free_get()       ((limo_data **)pthread_getspecific(pk_stacktrace_free_key))
-#define pk_dict_next_set(VAL)  (pthread_setspecific(pk_dict_next_key, (void *)(VAL)))
-#define pk_dict_next_get()       ((void **)pthread_getspecific(pk_dict_next_key))
-#define pk_gmpq_next_set(VAL)  (pthread_setspecific(pk_gmpq_next_key, (void *)(VAL)))
-#define pk_gmpq_next_get()       ((void **)pthread_getspecific(pk_gmpq_next_key))
 #define pk_dynamic_vars_set(VAL) (pthread_setspecific(pk_dynamic_vars_key, (void *)(VAL)))
 #define pk_dynamic_vars_get()    ((limo_data *)pthread_getspecific(pk_dynamic_vars_key))
 #define pk_flmalloc_set(VAL) (pthread_setspecific(pk_flmalloc_key, (void *)(VAL)))
 #define pk_flmalloc_get()    ((void **)pthread_getspecific(pk_flmalloc_key))
 
-#define MAX_FLMALLOC_LISTS 32
+#define MAX_FLMALLOC_LISTS 256
 void *flmalloc(size_t sz);
 void flfree(void *, size_t size);
 
@@ -272,7 +266,7 @@ limo_data *make_dict(void);
 limo_dict *make_dict_size(int minused);
 void dict_check_resize(limo_data *dict);
 void dict_resize(limo_data *dict);
-void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags);
+int dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags);
 #define dict_put_cons(a, b) dict_put_cons_ex((a), (b), 0)
 void dict_put(limo_data *dict, limo_data *key, limo_data *value);
 limo_dict_item *dict_get_place(limo_data *dict, limo_data *key);

@@ -159,7 +159,7 @@ limo_data *list_eval(limo_data *list, limo_data *env)
 
     list=CDR(list);
   }
-  (*el) = make_nil();
+  (*el) = nil;
   return ld;
 }
 

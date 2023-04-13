@@ -9,13 +9,13 @@
 BUILTIN(builtin_ssdl_startgraphics)
 {
   SetMode(GRAPHIK);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_ssdl_starttext)
 {
   SetMode(TEXT);
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_ssdl_getmode)
@@ -23,20 +23,20 @@ BUILTIN(builtin_ssdl_getmode)
   switch (GetMode()) {
   case GRAPHIK: return make_sym(":graphik");
   case TEXT:    return make_sym(":text");
-  default: return make_nil();
+  default: return nil;
   }
 }
 
 BUILTIN(builtin_ssdl_enablerefresh) 
 {
   EnableRefresh();
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_ssdl_disablerefresh)
 {
   DisableRefresh();  // this returns int. don't know why. i didn't tell me.
-  return make_nil();
+  return nil;
 }
 
 
@@ -72,7 +72,7 @@ BUILTIN(builtin_ssdl_disablerefresh)
   
 /*   Point(mpq_get_d(*x->d_mpq), mpq_get_d(*y->d_mpq)); */
 
-/*   return make_nil(); */
+/*   return nil; */
 /* } */
 
 BUILTIN(builtin_ssdl_plot)
@@ -89,7 +89,7 @@ BUILTIN(builtin_ssdl_plot)
        mpq_get_d(*y->d_mpq),
        mpq_get_d(*c->d_mpq));
 
-  return make_nil();
+  return nil;
 }
 
 #define SHIFT_ARGS() (arglist = CDR(arglist))
@@ -112,7 +112,7 @@ BUILTIN(builtin_ssdl_line)
        mpq_get_d(*y2->d_mpq),
        mpq_get_d(*c->d_mpq));
 
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_ssdl_hline)
@@ -131,7 +131,7 @@ BUILTIN(builtin_ssdl_hline)
 	mpq_get_d(*y->d_mpq),
 	mpq_get_d(*c->d_mpq));
 
-  return make_nil();
+  return nil;
 }
 
 BUILTIN(builtin_ssdl_vline)
@@ -150,7 +150,7 @@ BUILTIN(builtin_ssdl_vline)
 	mpq_get_d(*y2->d_mpq),
 	mpq_get_d(*c->d_mpq));
 
-  return make_nil();
+  return nil;
 }
 
 void    Box(int x1, int y1, int x2, int y2, int c);     /**/

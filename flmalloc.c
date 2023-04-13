@@ -22,9 +22,8 @@ void *flmalloc(size_t sz)
 
   int idx = (sz-1) >> WORD_SHIFT;   // 1 WORD on idx=0
 
-  if (idx >= MAX_FLMALLOC_LISTS) {
+  if (idx >= MAX_FLMALLOC_LISTS)
     return GC_malloc(sz);    // we don't do objects that large
-  }
   
   if (!fl[idx])
     fl[idx] = GC_malloc_many((idx+1)<<WORD_SHIFT);

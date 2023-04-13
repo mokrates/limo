@@ -88,13 +88,7 @@ limo_dict *make_dict_size(int minused)
 {
   int size = DICT_INIT_SIZE;
   limo_dict *d;
-  void **make_dict_next = pk_dict_next_get();
 
-  /* if (!*make_dict_next) */
-  /*   *make_dict_next = GC_malloc_many(sizeof (limo_dict)); */
-
-  /* d = (limo_dict *)*make_dict_next; */
-  /* *make_dict_next = GC_NEXT(*make_dict_next); */
   d = flmalloc(sizeof (limo_dict));
 
   while (size < 3*minused)
@@ -130,7 +124,7 @@ inline void dict_check_resize(limo_data *dict)
     dict_resize(dict);
 }
 
-void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags)
+int dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags)
 {
   limo_dict_item *ld_place;
 
@@ -144,17 +138,22 @@ void dict_put_cons_ex(limo_data *dict, limo_data *cons, int flags)
     ld_place->cons = cons;
 
     dict_check_resize(dict);
+    return 0;
   }
   else if (ld_place->flags & DI_CACHE) {
       throw(make_cons(make_string("local variable referenced before assignment"), CAR(cons)));
   }
-  else   // reuse existing cons
+  else {  // reuse existing cons
     CDR(ld_place->cons) = CDR(cons);
+    return 1;
+  }
 }
 
 void dict_put(limo_data *dict, limo_data *key, limo_data *value)
 {
-  dict_put_cons(dict, make_cons(key, value));
+  limo_data *c = make_cons(key, value);
+  if (dict_put_cons(dict, make_cons(key, value)))
+    free_limo_data(c);
 }
 
 limo_dict_item *dict_get_place(limo_data *dict, limo_data *key)

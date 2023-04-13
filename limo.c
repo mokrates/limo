@@ -29,16 +29,12 @@ pthread_key_t pk_ljbuf_key;
 pthread_key_t pk_finallystack_key;
 pthread_key_t pk_limo_data_next_key;
 pthread_key_t pk_stacktrace_free_key;
-pthread_key_t pk_dict_next_key;
-pthread_key_t pk_gmpq_next_key;
 pthread_key_t pk_flmalloc_key;
 
 void *flmalloc_lists[MAX_FLMALLOC_LISTS];
 
 void *make_limo_data_next = NULL;
 void *make_stacktrace_free = NULL;
-void *make_dict_next = NULL;
-void *make_gmpq_next = NULL;
 limo_data *stacktrace;
 
 static void init_pthread_keys(void)
@@ -49,8 +45,6 @@ static void init_pthread_keys(void)
   pthread_key_create(&pk_finallystack_key, NULL);
   pthread_key_create(&pk_limo_data_next_key, NULL);
   pthread_key_create(&pk_stacktrace_free_key, NULL);
-  pthread_key_create(&pk_dict_next_key, NULL);
-  pthread_key_create(&pk_gmpq_next_key, NULL);
   pthread_key_create(&pk_dynamic_vars_key, NULL);
   pthread_key_create(&pk_flmalloc_key, NULL);
 }
@@ -119,9 +113,7 @@ limo_data *limo_init(int argc, char **argv)
   init_pthread_keys();
   pk_limo_data_next_set(&make_limo_data_next);
   pk_stacktrace_free_set(&make_stacktrace_free);
-  pk_dict_next_set(&make_dict_next);
-  pk_gmpq_next_set(&make_gmpq_next);
-
+  
   memset(flmalloc_lists, 0, MAX_FLMALLOC_LISTS * sizeof (void *));
   pk_flmalloc_set(flmalloc_lists);
 

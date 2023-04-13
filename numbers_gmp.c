@@ -307,14 +307,9 @@ BUILTINFUN(builtin_test_intadd)
 limo_data *make_rational(void)
 {
   limo_data *res = make_limo_data();
-  void **make_gmpq_next = pk_gmpq_next_get();
-
-  if (!*make_gmpq_next)
-    *make_gmpq_next = GC_malloc_many(sizeof (mpq_t));
 
   res->type=limo_TYPE_GMPQ;
-  res->d_mpq = (mpq_t *)*make_gmpq_next;
-  *make_gmpq_next = GC_NEXT(*make_gmpq_next);
+  res->d_mpq = (mpq_t *)flmalloc(sizeof (mpq_t));
 
   mpq_init(LIMO_MPQ(res)); // initializes to 0/1
   return res;
@@ -425,14 +420,14 @@ void *limo_gmp_gc_realloc(void *oldptr, size_t oldsize, size_t newsize)
 }
 void limo_gmp_gc_free(void *ptr, size_t size)
 {
-  GC_free(ptr);
+  flfree(ptr, size);
 }
 
 void number_builtins(limo_data *env)
 {
   int i;
 
-  mp_set_memory_functions (GC_malloc,
+  mp_set_memory_functions (flmalloc,
 			   limo_gmp_gc_realloc,
 			   limo_gmp_gc_free);
 

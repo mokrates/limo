@@ -3,7 +3,7 @@ INSTALL_PREFIX=/usr/local
 LIMO_PREFIX=$(INSTALL_PREFIX)/lib/limo/
 
 DEBUG=-g -Wall #-DNDEBUG
-PROFILING= #-pg # -no-pie
+PROFILING= # -pg # -no-pie
 OPTIMIZE=-Ofast
 OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
