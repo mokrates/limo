@@ -55,7 +55,10 @@ typedef struct limo_ANNOTATION {
 } limo_annotation;
 
 typedef struct limo_DATA {
-  int type;
+  union {
+    int type;
+    void *padding;
+  };
   union {
     char *d_string;  // symbol, string
     mpq_t *d_mpq; // int
@@ -63,9 +66,8 @@ typedef struct limo_DATA {
     double d_double;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env, struct limo_DATA *thunk_place);
     struct limo_DATA *(*d_builtinfun)(int argc, struct limo_DATA **argv);
-    struct limo_DATA *d_special;
+    //struct limo_DATA *d_special;
     struct limo_DICT *d_dict;
-    void *d_special_intern;
     struct limo_DATA *car;
   };
   union {
@@ -73,6 +75,7 @@ typedef struct limo_DATA {
     struct limo_DATA *cdr;
     unsigned short flags;  // to store SYM_NO_OPT
 #define SYM_NO_OPT 1       // marks a symbol that it shan't be optimized with LCACHE.
+    void *d_special_intern;
   };
   union {
     unsigned int hash;  // for symbols
@@ -346,7 +349,7 @@ BUILTIN(builtin_dict_get);
 BUILTIN(builtin_dict_set);
 BUILTIN(builtin_dict_unset);
 BUILTIN(builtin_dict_to_list);
-BUILTIN(builtin_dict_has_key);
+BUILTINFUN(builtin_dict_has_key);
 BUILTIN(builtin_dictp);
 
 BUILTIN(builtin_block);

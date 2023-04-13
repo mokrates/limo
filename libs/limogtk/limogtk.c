@@ -50,7 +50,7 @@ BUILTIN(builtin_g_signal_connect_simple)
   REQUIRE_TYPE("G-SIGNAL-CONNECT-SIMPLE", ld_signal, limo_TYPE_STRING);
   REQUIRE_TYPE("G-SIGNAL-CONNECT-SIMPLE", ld_handler, limo_TYPE_LAMBDA);
   REQUIRE_TYPE("G-SIGNAL-CONNECT-SIMPLE", ld_instance, limo_TYPE_SPECIAL);
-  return make_rational_from_long_long(g_signal_connect(G_OBJECT(CDR(ld_instance->d_special) -> d_special_intern),
+  return make_rational_from_long_long(g_signal_connect(G_OBJECT(ld_instance->d_special_intern),
                                                      ld_signal->d_string,
                                                      G_CALLBACK(limogtk_signal_handler),
                                                      (gpointer)make_cons(ld_handler, env)));

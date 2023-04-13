@@ -82,7 +82,7 @@ BUILTINFUN(builtin_vectorp)
   if (argv[0]->type != limo_TYPE_SPECIAL)
     return nil;
   else
-    if (limo_equals(CAR(argv[0]->d_special), sym_vector))
+    if (limo_equals(CAR(argv[0]), sym_vector))
       return sym_true;
     else
       return nil;

@@ -268,21 +268,15 @@ BUILTIN(builtin_dict_unset)
   return nil;
 }
 
-BUILTIN(builtin_dict_has_key)
+BUILTINFUN(builtin_dict_has_key)
 {
   limo_data *dict;
   limo_data *key;
   limo_dict_item *res;
 
-  if (list_length(arglist) != 3)
-    limo_error("(dict-has-key DICT KEY)");
-
-  dict = eval(FIRST_ARG, env);
-  if (dict->type != limo_TYPE_DICT)
-    limo_error("(dict-has-key DICT KEY)");
-
-  key = eval(SECOND_ARG, env);
-  res = dict_get_place(dict, key);
+  REQUIRE_ARGC_FUN("DICT-HAS-KEY", 2);
+  REQUIRE_TYPE("DICT-HAS-KEY", argv[0], limo_TYPE_DICT);
+  res = dict_get_place(argv[0], argv[1]);
   if (res->cons == NULL)
     return nil;
   else

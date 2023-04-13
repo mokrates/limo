@@ -90,7 +90,7 @@ ReSuLt = nil;" sfuncall)))
 (defclass gtknewtype gtktype
   (defmethod c2l-to-result (self sfuncall)
     (format "ReSuLt = make_special(sym_limogtk_gpointer, %s);\n
-GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_unref, CDR(ReSuLt->d_special) -> d_special_intern, NULL, NULL);" sfuncall)))
+GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_unref, ReSuLt->d_special_intern, NULL, NULL);" sfuncall)))
 
 (defclass gtkenumtype gtktype
   (defmethod l2c-assign (self vname limofname)

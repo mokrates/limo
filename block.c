@@ -19,25 +19,34 @@ BUILTIN(builtin_block)
 
   exception_buf_safe = pk_ljbuf_get();
 
-  bd = (struct block_data *)GC_malloc(sizeof (struct block_data));
+  bd = (struct block_data *)flmalloc(sizeof (struct block_data));
   bd->finallystack_position = pk_finallystack_get();
   special_block = make_special(sym_block, bd);
   
   block_env = make_env(env);
+  block_env->env_flags |= ENV_RECLAIM;  
 
   setq(env, FIRST_ARG, special_block);
-  if (sigsetjmp(bd->jmpbuf, 1)) {       // if true, longjmp happened.
+  if (sigsetjmp(bd->jmpbuf, 1))       // if true, longjmp happened.
     res = var_lookup(env, FIRST_ARG);
-    pk_ljbuf_set(exception_buf_safe);
-  }
   else
     res = eval(SECOND_ARG, block_env);
+
+  pk_ljbuf_set(exception_buf_safe);   // reset longjump-buffer
+  flfree(bd, sizeof (struct block_data));
 
   // this invalidates the jmpbuf. it could be taken out
   // of the BLOCK form, and return-fromed to, and that gives 
   //a segfault. hence: invalidating
   // (setq x (block foo foo)) (return-from x) ; BOOM!
-  CAR(special_block->d_special) = nil; 
+  special_block->d_special_intern = NULL;
+
+  if (block_env->env_flags & ENV_RECLAIM) {
+    flfree(block_env->cdr->d_dict->store, block_env->cdr->d_dict->size * sizeof (limo_dict_item));
+    flfree(block_env->cdr->d_dict, sizeof (limo_dict));
+    free_limo_data(block_env->cdr); // dict
+    free_limo_data(block_env);
+  }
 
   return res;
 }
@@ -59,6 +68,8 @@ BUILTIN(builtin_return_from)
     res = nil;
   
   bd = (struct block_data *)get_special(var_lookup(env, FIRST_ARG), sym_block);
+  if (!bd)
+    throw(make_list(0, sym_block, make_string("block was already left"), NULL));
 
   // execute finallies
   while ((fs_cur = pk_finallystack_get()) != bd->finallystack_position) {

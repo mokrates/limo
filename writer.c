@@ -157,7 +157,7 @@ void writer(limo_data *ld) // not threadsafe!
     break;
 
   case limo_TYPE_SPECIAL: writer_special(ld); break;
-  case limo_TYPE_SPECIAL_INTERN: writer_special_intern(ld); break;
+    //case limo_TYPE_SPECIAL_INTERN: writer_special_intern(ld); break;
   case limo_TYPE_VCACHE: printf("<"); writer(CDR(ld)); printf(">"); break;
 
   default:
@@ -238,7 +238,7 @@ void l_writer(limo_data ***dest, limo_data *ld) // not threadsafe!
     break;
 
   case limo_TYPE_SPECIAL: l_writer_special(dest, ld); break;
-  case limo_TYPE_SPECIAL_INTERN: l_writer_special_intern(dest, ld); break;
+    //case limo_TYPE_SPECIAL_INTERN: l_writer_special_intern(dest, ld); break;
   case limo_TYPE_VCACHE: list_put_str(dest, "<"); l_writer(dest, CDR(ld)); list_put_str(dest, ">"); break;
 
   default:

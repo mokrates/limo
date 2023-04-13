@@ -44,7 +44,6 @@ struct { char *name; limo_builtin f; }
                      { "DICT-SET", builtin_dict_set },
                      { "DICT-UNSET", builtin_dict_unset },
                      { "DICT-TO-LIST", builtin_dict_to_list },
-                     { "DICT-HAS-KEY", builtin_dict_has_key },
                      { "DICTP", builtin_dictp },
                      { "BLOCK", builtin_block},
                      { "RETURN-FROM", builtin_return_from},
@@ -75,6 +74,7 @@ struct { char *name; limo_builtinfun f; }
                         { "READER-STREAM-GETC", builtin_reader_stream_getc },
                         { "READER-STREAM-UNGETC", builtin_reader_stream_ungetc },
                         { "READER-STREAM-EOF", builtin_reader_stream_eof },
+                        { "DICT-HAS-KEY", builtin_dict_has_key },                        
                         { "READ", builtin_read },
                         { "EXIT", builtin_exit },
   };

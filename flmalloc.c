@@ -26,12 +26,12 @@ void *flmalloc(size_t sz)
     return GC_malloc(sz);    // we don't do objects that large
   }
   
-  /* if (!fl[idx]) */
-  /*   fl[idx] = GC_malloc_many((idx+1)<<WORD_SHIFT); */
+  if (!fl[idx])
+    fl[idx] = GC_malloc_many((idx+1)<<WORD_SHIFT);
 
   // let's try without GC_malloc_many
-  if (!fl[idx])
-    return GC_malloc((idx+1)<<WORD_SHIFT);
+  /* if (!fl[idx]) */
+  /*   return GC_malloc((idx+1)<<WORD_SHIFT); */
 
   result = fl[idx];
   fl[idx] = *(void **)fl[idx];

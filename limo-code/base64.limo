@@ -28,7 +28,8 @@
           res)
 
         (defun from-base64 (s)
-          (setf s (filter (lambda (x) (member x (cons "=" b64code))) (string-to-list s)))
+          ;; (setf s (filter (lambda (x) (member x (cons "=" b64code))) (string-to-list s)))
+          (setf s (filter (curry dict-has-key b64rev) (string-to-list s)))
           (when (!= (mod (list-length s) 4) 0)
             (throw '(base64 "wrong padding")))
           (setq res "")

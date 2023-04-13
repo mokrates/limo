@@ -3,8 +3,8 @@ INSTALL_PREFIX=/usr/local
 LIMO_PREFIX=$(INSTALL_PREFIX)/lib/limo/
 
 DEBUG=-g -Wall #-DNDEBUG
-PROFILING= # -pg -no-pie
-OPTIMIZE=-O3
+PROFILING= #-pg # -no-pie
+OPTIMIZE=-Ofast
 OPTIONS=-DLIMO_PREFIX=\"$(LIMO_PREFIX)\"
 
 BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o flmalloc.o\

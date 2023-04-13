@@ -114,7 +114,7 @@ BUILTIN(builtin_g_signal_connect)
   ld_closure = make_cons(ld_handler, env);  
   closure = limogtk_closure_new(ld_closure);
     
-  if (make_rational_from_long_long(g_signal_connect_closure(G_OBJECT(CDR(ld_instance->d_special) -> d_special_intern),
+  if (make_rational_from_long_long(g_signal_connect_closure(G_OBJECT(ld_instance->d_special_intern),
                                                           ld_signal->d_string,
                                                           closure,
                                                           !is_nil(ld_after))))
