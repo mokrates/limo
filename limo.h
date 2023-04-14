@@ -249,6 +249,7 @@ extern pthread_key_t pk_flmalloc_key;     //// TODO: Threading!!
 #define MAX_FLMALLOC_LISTS 256
 void *flmalloc(size_t sz);
 void flfree(void *, size_t size);
+void *flrealloc(void *, size_t, size_t);
 
 int is_nil(limo_data *);
 // don't call is_nil with side-effects (i.e. eval() !)

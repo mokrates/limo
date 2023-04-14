@@ -414,13 +414,14 @@ struct { char *name; limo_builtinfun f; } number_builtin_array[] = {
 
 // needed for gmp, because it uses a
 // nonstandard realloc-signature and free-signature (wtf?)
+
 void *limo_gmp_gc_realloc(void *oldptr, size_t oldsize, size_t newsize)
 {
   return GC_realloc(oldptr, newsize);
 }
 void limo_gmp_gc_free(void *ptr, size_t size)
 {
-  flfree(ptr, size);
+  GC_free(ptr);
 }
 
 void number_builtins(limo_data *env)
@@ -429,7 +430,7 @@ void number_builtins(limo_data *env)
 
   mp_set_memory_functions (flmalloc,
 			   limo_gmp_gc_realloc,
-			   limo_gmp_gc_free);
+			   limo_gmp_gc_free);  /// for the love of god. flfree doesn't work with pmandelbrot.
 
   for (i=0;
        i<(sizeof number_builtin_array)/(sizeof number_builtin_array[0]);
