@@ -110,8 +110,12 @@ BUILTIN(builtin_apply)
   else
     al=nil;
 
-  if (f->type == limo_TYPE_LAMBDA)
-    return eval_function_call(f, make_cons(f,al), env, 0, thunk_place);
+  if (f->type == limo_TYPE_LAMBDA) {
+    limo_data *res, *c = make_cons(f, al);
+    res = eval_function_call(f, c, env, 0, thunk_place);
+    free_limo_data(c);
+    return res;
+  }
   else if (f->type == limo_TYPE_BUILTINFUN) {
     int nargs=0, i;
     limo_data *cur_ld;
