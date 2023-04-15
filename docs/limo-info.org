@@ -103,4 +103,107 @@ You need the following files in your directory:
 - ldflags : a script which outputs the linking options for *statically* linking your
   lib to limo.  If you have to use `pkg-config` or somesuch, include
   it here.
-  ex: `echo 
+  Example for `simplesdl`
+  #+BEGIN_SRC shell
+  #!/bin/bash
+  echo "-Llibs/simplesdl -l:simplesdl.a `sdl-config --libs`"
+#+END_SRC
+- Makefile : The Makefile for building your lib.  It has to be able to
+  build a shared library, a static library, and it has to be
+  compatible with cygwin (build a .dll), etc.  Look at the examples.
+** structure of yourlib.c
+- =#include "limo.h"=
+- Define macros to insert your BUILTINs BUILTINFUNs and VARiables into
+  an environment
+- Perhaps define static variables to hold symbols for =make_special= and =get_special=
+- Define your BUILTINs and BUILTINFUNs
+- Define the function =limo_init_yourlib(limo_data *env)=
+  this will be called when your library is loaded via =MOD-LOAD=
+** BUILTIN
+*** What is BUILTIN for?
+building a BUILTIN which doesn't work as a function (setq, setf,
+lambda, etc)
+For example: If you have to have access to the environment of the caller.
+*** What is available in your BUILTIN?
+- =arglist= : the called form.  the first element is =ZEROTH_ARG=
+
+- =env= : the environment of the caller
+
+- =FIRST_ARG=, =SECOND_ARG=, ...  : the arguments to your BUILTIN.  Not
+  evaluated.  (=ZEROTH_ARG= is the symbol under which your BUILTIN was
+  called).
+
+- =REQUIRE_ARGC("NAME-OF-YOUR-BUILTIN",  <number-of-arguments-expected>)= : 
+  throws an error, if builtin is called with wrong number of arguments
+
+- =RETURN_THUNK(expr, env)= : return a thunk with =expr= to be evaluated
+  in =env=
+
+- =thunk_place= : If not NULL a place to be filled if you want to return
+  a thunk.  You should probably use =RETURN_THUNK= instead of using this
+  variable directly.
+
+- See [[API]] for more
+** BUILTINFUN
+*** What is BUILTINFUN for?
+To create a builtin function.
+*** What is available in your BUILTINFUN?
+- =argc= : number of arguments with which function was called
+
+- =argv= : array of evaluated arguments
+
+- =REQUIRE_ARGC_FUN("NAME-OF-YOUR-BUILTIN",  <number-of-arguments-expected>)= :
+  throws an error, if builtinfun is called with wrong number of
+  arguments
+- See [[API]] for more
+** API
+*** CAR, CDR
+=CAR(x)= , =CDR(x)= : car and cdr on limo objects.  Can be used as lvalue (can be
+assigned to).  Usually used for [[=limo_TYPE_CONS=]], but some other object types
+[[=limo_TYPE_THUNK=]], for example, use this, too.
+
+*** =GETINTFROMMPQ=
+=GETINTFROMMPQ(x)= : Get an =int= (really a =long long=) from an
+[[=limo_TYPE_GMPQ=]] limo object.
+
+*** =GETINTFROMNUMBER= 
+=GETINTFROMNUMBER(x)= : get an =long long= from a number type limo object.
+
+*** =GETDOUBLEFROMMPQ=
+=GETDOUBLEFROMMPQ(x)= : Get a =double= from an [[=limo_TYPE_GMPQ=]] limo
+object.
+
+*** =COERCETODOUBLE=
+=COERCETODOUBLE(number)= : get a value of c-type =double=, no matter
+if =number= is of type =limo_TYPE_GMPQ= or =limo_TYPE_DOUBLE=
+
+*** =LIMO_MPQ=  
+=LIMO_MPQ(x)= : access the =mpq=-inside of limo object =x=.  Use
+this with the libgmp library functions.
+
+*** =REQUIRE_TYPE=
+=REQUIRE_TYPE("NAME-OF-BUILTIN", x, limo_TYPE_XXX)= :
+throws an error in the name of =NAME-OF-BUILTIN= if x is not of type
+=limo_TYPE_XXX=.
+
+*** =REQUIRE_NUMBER=
+=REQUIRE_NUMBER("NAME-OF-BUILTIN", x)= :
+throws an error in the name of =NAME-OF-BUILTIN= if x is not a
+number type.  (number types are [[=limo_TYPE_GMPQ=]] and [[=limo_TYPE_DOUBLE=]])
+
+** Types
+*** =limo_TYPE_CONS=
+contains a cons.
+
+*** =limo_TYPE_GMPQ= 
+Rational provided by libgmp.  Contains a
+numerator and a denumerator which can be arbitrarily large.
+On the limo-side, this is called =RATIONAL=, and the =RATIONALP=
+predicate function tests for this type.
+
+*** =limo_TYPE_DOUBLE= 
+contains a double.
+
+*** =limo_TYPE_THUNK=
+contains a thunk.  same a [[=limo_TYPE_CONS=]].  car is the environment
+under which the expression under cdr is to be evaluated.
