@@ -10,10 +10,13 @@ limo_data *sym_sslctx;
 limo_data *sym_sslconn;
 limo_data *sym_sslmethod;
 
-BUILTIN(builtin_ssl_tls_method)
+BUILTINFUN(builtin_ssl_tls_method)
 {  return make_special(sym_sslmethod, TLS_method()); }
-BUILTIN(builtin_ssl_tls_client_method)
+BUILTINFUN(builtin_ssl_tls_client_method)
 {  return make_special(sym_sslmethod, TLS_client_method()); }
+BUILTINFUN(builtin_ssl_tls_server_method)
+{  return make_special(sym_sslmethod, TLS_server_method()); }
+
 
 /////// this describes, how a ssl-server should be configured
 /// TODO
@@ -21,7 +24,7 @@ BUILTIN(builtin_ssl_tls_client_method)
 
 //// TODO ssl.limo-wrapper.
 
-static ssl_error_to_string(const SSL *ssl, int ret)
+static limo_data *ssl_error_to_string(const SSL *ssl, int ret)
 {
   switch (SSL_get_error(ssl, ret)) {
   case SSL_ERROR_NONE: return make_string("SSL_ERROR_NONE");
@@ -39,16 +42,12 @@ static ssl_error_to_string(const SSL *ssl, int ret)
   }
 }
 
-
-BUILTIN(builtin_ssl_tls_server_method)
-{  return make_special(sym_sslmethod, TLS_server_method()); }
-
-BUILTIN(builtin_ssl_new)
+BUILTINFUN(builtin_ssl_new)
 {
   limo_data *ld_ctx, *ld_res;
   SSL_CTX *ctx;
-  REQUIRE_ARGC("SSL-NEW", 1);
-  ld_ctx = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-NEW", 1);
+  ld_ctx = argv[0];
   ctx = get_special(ld_ctx, sym_sslctx);
   ld_res = make_special(sym_sslconn, SSL_new(ctx));
   // TODO: prevent contexts and other data structures from being collected if used
@@ -56,14 +55,32 @@ BUILTIN(builtin_ssl_new)
   return ld_res;
 }
 
-BUILTIN(builtin_ssl_ctx_new)
+BUILTINFUN(builtin_ssl_shutdown)
+{
+  SSL *ssl;
+  REQUIRE_ARGC_FUN("SSL-SHUTDOWN", 1);
+  ssl = get_special(argv[0], sym_sslconn);
+  SSL_shutdown(ssl);
+  return nil;
+}
+
+BUILTINFUN(builtin_ssl_free)
+{
+  SSL *ssl;
+  REQUIRE_ARGC_FUN("SSL-FREE", 1);
+  ssl = get_special(argv[0], sym_sslconn);
+  SSL_free(ssl);
+  return nil;
+}
+
+BUILTINFUN(builtin_ssl_ctx_new)
 {
   limo_data *ld_ssl_method, *ld_res;
   SSL_METHOD *ssl_method;
   SSL_CTX *ctx;
 
-  REQUIRE_ARGC("SSL-CTX-NEW", 1);
-  ld_ssl_method = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-CTX-NEW", 1);
+  ld_ssl_method = argv[0];
   ssl_method = get_special(ld_ssl_method, sym_sslmethod);
   ctx = SSL_CTX_new(ssl_method);
   if (!ctx) throw(make_cons(sym_ssl, make_string("couldn't create ssl-ctx")));
@@ -71,6 +88,16 @@ BUILTIN(builtin_ssl_ctx_new)
   // TODO: prevent contexts and other data structures from being collected if used
   // GC_register_finalizer()
   return ld_res;   // user has to retain a reference.
+}
+
+BUILTINFUN(builtin_ssl_ctx_free)
+{
+  SSL_CTX *ctx;
+  REQUIRE_ARGC_FUN("SSL-CTX-FREE", 1);
+  ctx = get_special(argv[0], sym_sslctx);
+  SSL_CTX_free(ctx);
+
+  return nil;
 }
 
 BUILTINFUN(builtin_SSL_CTX_set_default_verify_paths)
@@ -217,15 +244,15 @@ BUILTINFUN(builtin_SSL_get_verify_result)
   }
 }
 
-BUILTIN(builtin_ssl_set_fd)
+BUILTINFUN(builtin_ssl_set_fd)
 {
   limo_data *ld_sslconn, *ld_fd;
   SSL *sslconn;
   int fd;
   
-  REQUIRE_ARGC("SSL-SET-FD", 2);
-  ld_sslconn = eval(FIRST_ARG, env);
-  ld_fd  = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-SET-FD", 2);
+  ld_sslconn = argv[0];
+  ld_fd  = argv[1];
   REQUIRE_TYPE("SSL-SET-FD", ld_fd, limo_TYPE_GMPQ);
   sslconn = get_special(ld_sslconn, sym_sslconn);
   fd = GETINTFROMMPQ(ld_fd);
@@ -234,41 +261,41 @@ BUILTIN(builtin_ssl_set_fd)
   return nil;
 }
 
-BUILTIN(builtin_ssl_connect)
+BUILTINFUN(builtin_ssl_connect)
 {
   limo_data *ld_sslconn;
   SSL *sslconn;
   int ret;
-  REQUIRE_ARGC("SSL-CONNECT", 1);
-  ld_sslconn = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-CONNECT", 1);
+  ld_sslconn = argv[0];
   sslconn = get_special(ld_sslconn, sym_sslconn);
   if (1 != SSL_connect(sslconn))
     throw(make_cons(sym_ssl, ssl_error_to_string(sslconn, ret)));
   return nil;
 }
 
-BUILTIN(builtin_ssl_accept)
+BUILTINFUN(builtin_ssl_accept)
 {
   limo_data *ld_sslconn;
   SSL *sslconn;
   int ret;
-  REQUIRE_ARGC("SSL-ACCEPT", 1);
-  ld_sslconn = eval(FIRST_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-ACCEPT", 1);
+  ld_sslconn = argv[0];
   sslconn = get_special(ld_sslconn, sym_sslconn);
   if (1 != (ret = SSL_accept(sslconn)))
     throw(make_cons(sym_ssl, ssl_error_to_string(sslconn, ret)));
   return nil;
 }
 
-BUILTIN(builtin_ssl_ctx_use_certificate_file)
+BUILTINFUN(builtin_ssl_ctx_use_certificate_file)
 {
   limo_data *ld_ctx, *ld_filename, *ld_type;
   SSL_CTX *ctx;
   
-  REQUIRE_ARGC("SSL-CTX-USE-CERTIFICATE-FILE", 3);
-  ld_ctx = eval(FIRST_ARG, env);
-  ld_filename = eval(SECOND_ARG, env);
-  ld_type = eval(THIRD_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-CTX-USE-CERTIFICATE-FILE", 3);
+  ld_ctx = argv[0];
+  ld_filename = argv[1];
+  ld_type = argv[2];
 
   ctx = get_special(ld_ctx, sym_sslctx);
   REQUIRE_TYPE("SSL-CTX-USE-CERTIFICATE-FILE", ld_filename, limo_TYPE_STRING);
@@ -278,15 +305,15 @@ BUILTIN(builtin_ssl_ctx_use_certificate_file)
   return nil;
 }
 
-BUILTIN(builtin_ssl_ctx_use_privatekey_file)
+BUILTINFUN(builtin_ssl_ctx_use_privatekey_file)
 {
   limo_data *ld_ctx, *ld_filename, *ld_type;
   SSL_CTX *ctx;
   
-  REQUIRE_ARGC("SSL-CTX-USE-PRIVATEKEY-FILE", 3);
-  ld_ctx = eval(FIRST_ARG, env);
-  ld_filename = eval(SECOND_ARG, env);
-  ld_type = eval(THIRD_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-CTX-USE-PRIVATEKEY-FILE", 3);
+  ld_ctx = argv[0];
+  ld_filename = argv[1];
+  ld_type = argv[2];
 
   ctx = get_special(ld_ctx, sym_sslctx);
   REQUIRE_TYPE("SSL-CTX-USE-PRIVATEKEY-FILE", ld_filename, limo_TYPE_STRING);
@@ -296,7 +323,7 @@ BUILTIN(builtin_ssl_ctx_use_privatekey_file)
   return nil;
 }
 
-BUILTIN(builtin_ssl_read)
+BUILTINFUN(builtin_ssl_read)
 {
   limo_data *ld_sslconn, *ld_count, *ld_res;
   SSL *ssl;
@@ -304,9 +331,9 @@ BUILTIN(builtin_ssl_read)
   ssize_t res;
   char *buf;
 
-  REQUIRE_ARGC("SSL-READ", 2);
-  ld_sslconn = eval(FIRST_ARG, env);
-  ld_count = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-READ", 2);
+  ld_sslconn = argv[0];
+  ld_count = argv[1];
   REQUIRE_TYPE("SSL-READ", ld_count, limo_TYPE_GMPQ);
   ssl = get_special(ld_sslconn, sym_sslconn);
   count = GETINTFROMMPQ(ld_count);
@@ -324,15 +351,15 @@ BUILTIN(builtin_ssl_read)
   return ld_res;
 }
 
-BUILTIN(builtin_ssl_write)
+BUILTINFUN(builtin_ssl_write)
 {
   limo_data *ld_sslconn, *ld_buf;
   SSL *ssl;
   ssize_t res;
 
-  REQUIRE_ARGC("SSL-WRITE", 2);
-  ld_sslconn = eval(FIRST_ARG, env);
-  ld_buf = eval(SECOND_ARG, env);
+  REQUIRE_ARGC_FUN("SSL-WRITE", 2);
+  ld_sslconn = argv[0];
+  ld_buf = argv[1];
   ssl = get_special(ld_sslconn, sym_sslconn);
   REQUIRE_TYPE("SSL-WRITE", ld_buf, limo_TYPE_STRING);
 
@@ -359,28 +386,29 @@ void limo_init_ssl(limo_data *env)
 
   limo_ssl_env = make_env(nil);
 
-  INS_SSL_BUILTIN(builtin_ssl_tls_method, "SSL-TLS-METHOD");
-  INS_SSL_BUILTIN(builtin_ssl_tls_client_method, "SSL-TLS-CLIENT-METHOD");
-  INS_SSL_BUILTIN(builtin_ssl_tls_server_method, "SSL-TLS-SERVER-METHOD");
-  INS_SSL_BUILTIN(builtin_ssl_new, "SSL-NEW");
-  INS_SSL_BUILTIN(builtin_ssl_ctx_new, "SSL-CTX-NEW");
+  INS_SSL_BUILTINFUN(builtin_ssl_tls_method, "SSL-TLS-METHOD");
+  INS_SSL_BUILTINFUN(builtin_ssl_tls_client_method, "SSL-TLS-CLIENT-METHOD");
+  INS_SSL_BUILTINFUN(builtin_ssl_tls_server_method, "SSL-TLS-SERVER-METHOD");
+  INS_SSL_BUILTINFUN(builtin_ssl_new, "SSL-NEW");
+  INS_SSL_BUILTINFUN(builtin_ssl_shutdown, "SSL-SHUTDOWN");
+  INS_SSL_BUILTINFUN(builtin_ssl_free, "SSL-FREE");
+  INS_SSL_BUILTINFUN(builtin_ssl_ctx_new, "SSL-CTX-NEW");
+  INS_SSL_BUILTINFUN(builtin_ssl_ctx_free, "SSL-CTX-FREE");
   INS_SSL_BUILTINFUN(builtin_SSL_CTX_set_default_verify_paths, "SSL-CTX-SET-DEFAULT-VERIFY-PATHS");
   INS_SSL_BUILTINFUN(builtin_SSL_CTX_set_verify_simple, "SSL-CTX-SET-VERIFY-SIMPLE");
   INS_SSL_BUILTINFUN(builtin_SSL_set1_host, "SSL-SET1-HOST");
   INS_SSL_BUILTINFUN(builtin_SSL_set_tlsext_host_name, "SSL-SET-TLSEXT-HOST-NAME");
   INS_SSL_BUILTINFUN(builtin_SSL_get_verify_result, "SSL-GET-VERIFY-RESULT");
-  INS_SSL_BUILTIN(builtin_ssl_set_fd, "SSL-SET-FD");
-  INS_SSL_BUILTIN(builtin_ssl_connect, "SSL-CONNECT");
-  INS_SSL_BUILTIN(builtin_ssl_accept, "SSL-ACCEPT");
-  INS_SSL_BUILTIN(builtin_ssl_read, "SSL-READ");
-  INS_SSL_BUILTIN(builtin_ssl_write, "SSL-WRITE");
-  INS_SSL_BUILTIN(builtin_ssl_ctx_use_certificate_file, "SSL-CTX-USE-CERTIFICATE-FILE");
-  INS_SSL_BUILTIN(builtin_ssl_ctx_use_privatekey_file, "SSL-CTX-USE-PRIVATEKEY-FILE");
+  INS_SSL_BUILTINFUN(builtin_ssl_set_fd, "SSL-SET-FD");
+  INS_SSL_BUILTINFUN(builtin_ssl_connect, "SSL-CONNECT");
+  INS_SSL_BUILTINFUN(builtin_ssl_accept, "SSL-ACCEPT");
+  INS_SSL_BUILTINFUN(builtin_ssl_read, "SSL-READ");
+  INS_SSL_BUILTINFUN(builtin_ssl_write, "SSL-WRITE");
+  INS_SSL_BUILTINFUN(builtin_ssl_ctx_use_certificate_file, "SSL-CTX-USE-CERTIFICATE-FILE");
+  INS_SSL_BUILTINFUN(builtin_ssl_ctx_use_privatekey_file, "SSL-CTX-USE-PRIVATEKEY-FILE");
 
   INS_SSL_VAR(make_rational_from_long_long(SSL_FILETYPE_PEM), "SSL_FILETYPE_PEM");
   
   setq(env, make_sym("_SSL"), limo_ssl_env);
-
-  printf("TODO: rewrite ssl, this cannot check certificates yet!\n");
 }
 

@@ -18,8 +18,12 @@
 
 (print "connected\n")
 
-([_fd . fd-write] s "GET http://wttr.in/ HTTP/1.0\r
-User-Agent: Wget/1.20.3 (linux-gnu)\r\n\r\n")
+([_fd . fd-write] s "GET / HTTP/1.1\r
+Host: wttr.in
+User-Agent: Wget/1.21.3\r
+Accept: */*\r
+Accept-Encoding: identity\r
+Connection: Close\r\n\r\n")
 
 (setq c ([_fd . fd-read] s 1))
 (while (not (eq c ""))
