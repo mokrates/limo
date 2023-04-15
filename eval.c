@@ -29,7 +29,7 @@ limo_data *eval_function_call(limo_data *f, limo_data *call, limo_data *env, int
   pdict = CDR(param_env);               // dictionary to store locals
   pdict->nparams = f->nparams;
 
-  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data **)flmalloc(f->nparams * sizeof (limo_data));
+  CDR(param_env)->d_dict->locals_store = locals_store = (limo_data *)flmalloc(f->nparams * sizeof (limo_data));
   if (eval_args) {
     while (params->type == limo_TYPE_CONS) {
       if (arglist->type != limo_TYPE_CONS)

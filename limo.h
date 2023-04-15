@@ -188,7 +188,7 @@ limo_data *annotate(limo_data *ld, limo_annotation *la); // annotates ld with la
 limo_data *reader(reader_stream *);
 void writer(limo_data *);
 void l_writer(limo_data ***dest, limo_data *);
-
+void list_put_str(limo_data ***, char *); // writer function
 void load_limo_file(char *fname, limo_data *env);
 
 void free_limo_data(limo_data *);

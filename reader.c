@@ -97,7 +97,6 @@ int limo_getc(reader_stream *rs)
   int c;
 
   if (!is_nil(rs->ungetc_buf)) {
-    char *c;
     c=CAR(rs->ungetc_buf)->d_string[0];
     rs->ungetc_buf = CDR(rs->ungetc_buf);
     return c;
@@ -246,6 +245,10 @@ limo_annotation *limo_rs_annotation(reader_stream *rs)
 
   case RS_READLINE:
     return make_annotation("*READLINE*", 0, rs->pos);
+
+  default:
+    limo_error("limo_rs_annotation: unknown reader stream type");
+    return NULL;  // never reached.
   }
 }
 
@@ -402,7 +405,7 @@ limo_data *read_sym_num(reader_stream *f)
   if (isdigit(buf[0]) ||
       (buf[0] == '-' && isdigit(buf[1])))
     if (strchr(buf, '.') || strchr(buf, 'e') || strchr(buf, 'E'))
-      make_float_from_str(buf);
+      return make_float_from_str(buf);
     else
       return make_rational_from_str(buf);
   else 
@@ -499,6 +502,8 @@ limo_data *reader(reader_stream *f)
     res = read_dispatch_macro(f);
     if (!res)  // empty result, possibly #| comment |#
       return reader(f);
+    else
+      return annotate(res, la);
   }
   else {
     limo_ungetc(c, f);

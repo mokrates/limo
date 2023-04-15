@@ -210,10 +210,7 @@ limo_data *limpy_generator_reader(reader_stream *rs)
   limo_data *list;
   limo_data *cond;
   
-  limo_data *res;
-
   int gen_or_it;
-  int lval_is_limpy_list = 0;
   int has_cond = 0;
 
   gen_or_it=limpy_gettoken(rs, &token_ld);
@@ -230,7 +227,6 @@ limo_data *limpy_generator_reader(reader_stream *rs)
   t = limpy_gettoken(rs, &token_ld);
   if (t == '[') {
     lval = limpy_list_reader(rs, ']'); // [ emacs
-    lval_is_limpy_list = 1;
     lval = CDR(lval); // removing "LIST" token
   }
   else {
@@ -345,6 +341,7 @@ limo_data *limpy_atom_reader(reader_stream *rs)
 
   default:
     limpy_parser_error("unimplemented", rs);
+    return nil; //never reached
   }
 }
 

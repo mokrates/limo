@@ -160,7 +160,6 @@ limo_dict_item *dict_get_place(limo_data *dict, limo_data *key)
 {
   int i=0;
   unsigned int h = hash(key);
-  unsigned int perturb = h;
   limo_dict *d = dict->d_dict;
 
   i=h & (d->size -1);
@@ -269,8 +268,6 @@ BUILTIN(builtin_dict_unset)
 
 BUILTINFUN(builtin_dict_has_key)
 {
-  limo_data *dict;
-  limo_data *key;
   limo_dict_item *res;
 
   REQUIRE_ARGC_FUN("DICT-HAS-KEY", 2);

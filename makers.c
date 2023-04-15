@@ -12,7 +12,6 @@
 
 void free_limo_data(limo_data *ld)
 {
-  limo_data *result;
   void **make_limo_data_next = pk_limo_data_next_get();
   
   *((void **)ld) = *make_limo_data_next;
