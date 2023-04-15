@@ -1,1 +1,2 @@
-libs/date/date.a
+#!/bin/bash
+echo "libs/date/date.a"

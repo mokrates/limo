@@ -1,1 +1,1 @@
-libs/ssl/ssl.a
+echo "libs/ssl/ssl.a -lssl"

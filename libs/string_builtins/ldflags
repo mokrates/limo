@@ -1,2 +1,2 @@
--Llibs/string_builtins
--l:string_builtins.a
+#!/bin/bash
+echo "-Llibs/string_builtins -l:string_builtins.a"

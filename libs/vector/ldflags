@@ -1,2 +1,2 @@
--Llibs/vector
--l:vector.a
+#!/bin/bash
+echo "libs/vector/vector.a"

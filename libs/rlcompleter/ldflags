@@ -1,1 +1,1 @@
-libs/rlcompleter/rlcompleter.a
+bash "libs/rlcompleter/rlcompleter.a"

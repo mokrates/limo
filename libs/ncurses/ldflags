@@ -1,1 +1,3 @@
-libs/ncurses/ncurses.a -lcurses
+#!/bin/bash
+echo "libs/ncurses/ncurses.a -lcurses"
+

@@ -1,1 +1,2 @@
-libs/ncmenu/ncmenu.a -lmenu -lcurses
+#!/bin/bash
+echo "libs/ncmenu/ncmenu.a -lmenu -lcurses"

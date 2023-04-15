@@ -1,1 +1,2 @@
-libs/fd/fd.a
+#!/bin/bash
+echo "libs/fd/fd.a"

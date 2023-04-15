@@ -1,1 +1,3 @@
-libs/regex/regex.a -lregex
+#!/bin/bash
+echo "libs/regex/regex.a -lregex"
+

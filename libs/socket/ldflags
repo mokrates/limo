@@ -1,1 +1,3 @@
-libs/socket/socket.a
+#!/bin/bash
+echo "libs/socket/socket.a"
+

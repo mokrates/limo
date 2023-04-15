@@ -1,3 +1,2 @@
--Llibs/simplesdl -l:simplesdl.a
-# the next can be substituted with the output of sdl-config --libs
--lSDL
+#!/bin/bash
+echo "-Llibs/simplesdl -l:simplesdl.a `sdl-config --libs`"

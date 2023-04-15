@@ -1,1 +1,2 @@
--Llibs/file -l:file.a
+#!/bin/bash
+echo "-Llibs/file -l:file.a"

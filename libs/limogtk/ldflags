@@ -1,1 +1,3 @@
-libs/limogtk/limogtk.a -lgtk-3 -lgdk-3 -lpango-1.0 -lglib-2.0 -lintl -lgobject-2.0 -lpangocairo-1.0 -lcairo -lgdk_pixbuf-2.0 -lcairo-gobject -latk-1.0 -lgio-2.0 -Wl,--export-all-symbols -lgmodule-2.0 -lglib-2.0 -lintl -lgthread-2.0 -lglib-2.0 -lintl 
+#!/bin/bash
+echo "libs/limogtk/limogtk.a `pkg-config gtk+-3.0 --libs` `pkg-config gmodule-2.0 --libs` `pkg-config gthread-2.0 --libs`"
+

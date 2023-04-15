@@ -1,1 +1,2 @@
-libs/threading/threading.a
+#!/bin/bash
+echo "libs/threading/threading.a -lpthread"

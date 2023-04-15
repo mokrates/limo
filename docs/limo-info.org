@@ -93,3 +93,14 @@ TBD
 * Limo-Mode
 There is a ~emacs/limo.el~ which contains a simple Limo-Mode for
 emacs. I use it to write my own limo programs.
+
+* TODO Extending
+** How to build a extension library
+Make a copy of one of the existing libraries.  Choose a small one like
+`libs/fd` or somesuch.
+You need the following files in your directory:
+- yourlib.c : contains your code
+- ldflags : a script which outputs the linking options for *statically* linking your
+  lib to limo.  If you have to use `pkg-config` or somesuch, include
+  it here.
+  ex: `echo 
