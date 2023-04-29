@@ -1,0 +1,45 @@
+(import "ucontext.limo")
+(import "pmatch.limo")
+
+(gcdisable)
+
+(define (f return)
+  (write return)
+  (return 2)
+  3)
+
+(write (f (lambda (x) x)))
+(write (call/cc f))
+
+(define (g foo)
+  (write "inside foo"))
+
+(define (h bar)
+  (write "inside bar"))
+
+(write (call/cc g))
+(write (call/cc h))
+
+;;;;; yin yang
+
+;; (setq yin ((lambda (cc) (progn (write "@") cc)) (call/cc (lambda (c) c))))
+;; (setq yang ((lambda (cc) (progn (write "*") cc)) (call/cc (lambda (c) c))))
+;; (yin yang)
+
+;;;;;;;;;;;;;;
+;; iterator
+
+(defun enumerate (a b fun)
+  (for-each x (drange a (+ b 1) 1)
+    (fun x)))
+      
+(define in-range (lambda (a b) (call/cc (lambda (cont) (enumerate a b cont)))))
+
+;;;;;;;;;;;;;;
+
+;;; do something complicated
+(write
+ (pmatch '(foo "it works" bar)
+	((no) "not this")
+	((still no) "also not this")
+	((foo ,msg bar) msg)))

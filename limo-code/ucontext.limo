@@ -1,0 +1,15 @@
+(warn-once "ucontext: this is very unstable and perhaps may never work correctly")
+(mod-load "ucontext")
+
+(setmember [_ucontext . stack-size] (* 16 65536))   ;;; we seem to need LOTs of stack!!
+
+(defun call/cc (fun . args)
+  (defun act-fun (cont) ;; to convert ucontext to lambda
+    (fun (lambda args
+	   (if args
+	       ([_ucontext . swap-context] cont (car args))
+	       ([_ucontext . swap-context] cont nil)))))
+  (setq ctx ([_ucontext . make-context] act-fun [_ucontext . stack-size]))
+  (if args
+      ([_ucontext . call/cc] ctx (car args))
+      ([_ucontext . call/cc] ctx nil)))

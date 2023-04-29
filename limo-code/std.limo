@@ -489,6 +489,9 @@
       `(,drange ,first ,(car rest) ,(if (cdr rest) (cadr rest) 1))
       `(,drange 0 ,first 1)))
 
+(defun times (n o) (map1 (lambda (x) o) (mrange n)))
+(defun dtimes (n o) (dmap1 (lambda (x) o) (mrange n)))
+
 (defun lreduce (f l)   ;; fold l with f from left
   (defun recur (akku l)
     (if l

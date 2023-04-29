@@ -182,26 +182,25 @@ Because of this, <fun> has to be threadsafe
 
 (defmacro generator (args . body)
   (with-gensym (outqueue innerfun consfun thr)
-      `(scope
-        (setq ,outqueue (new queue-lock 1))
-        (setq ,thr ())
-        
-        (defun yield (item)
-          [,outqueue put item])
-        
-        (defun ,innerfun ,args
-          (finally (progn ,@body)
-                   [,outqueue finish]))
-        
-        (defun ,consfun ()
-          (if [,outqueue has-next]
-              (dcons [,outqueue get] (,consfun))
-              (progn [,thr join] ())))
-        
-        (lambda x (progn 
-              (setf ,thr (new thread (lambda () (apply ,innerfun x))))
-              [,thr run]
-              (,consfun))))))
+      `(lambda x (progn
+             (setq ,outqueue (new queue-lock 1))
+             (setq ,thr ())
+             
+             (defun yield (item)
+               [,outqueue put item])
+             
+             (defun ,innerfun ,args
+               (finally (progn ,@body)
+                        [,outqueue finish]))
+             
+             (defun ,consfun ()
+               (if [,outqueue has-next]
+                   (dcons [,outqueue get] (,consfun))
+                   (progn [,thr join] ())))
+             
+             (setf ,thr (new thread (lambda () (apply ,innerfun x))))
+             [,thr run]
+             (,consfun)))))
   
 (defmacro defgenerator (name args . body)
   `(setq ,name (generator ,args ,@body)))
