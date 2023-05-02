@@ -181,7 +181,7 @@ Because of this, <fun> has to be threadsafe
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro generator (args . body)
-  (with-gensym (outqueue innerfun consfun thr)
+  (with-gensym (outqueue innerfun consfun thr end-marker)
       `(lambda x (progn
              (setq ,outqueue (new queue-lock 1))
              (setq ,thr ())
@@ -194,8 +194,8 @@ Because of this, <fun> has to be threadsafe
                         [,outqueue finish]))
              
              (defun ,consfun ()
-               (if [,outqueue has-next]
-                   (dcons [,outqueue get] (,consfun))
+               (if (!= (setq nxt [,outqueue get-or-end ',end-marker]) ',end-marker)
+                   (dcons nxt (,consfun))
                    (progn [,thr join] ())))
              
              (setf ,thr (new thread (lambda () (apply ,innerfun x))))
