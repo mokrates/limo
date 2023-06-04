@@ -33,7 +33,7 @@ limo: $(OBJ) libs info
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
 
 limo-almost-static: $(OBJ) libs info
-	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -l:libtermcap.a -rdynamic -o limo
+	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -rdynamic -o limo
 
 limo-wsl: limo-almost-static info
 
