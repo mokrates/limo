@@ -15,27 +15,6 @@
 		  (:rest :key "rest")))                   ;; this is everything that can't be parsed or after --
 
 
-(defhelp argparse "
-FUNCTION argparse
-EX:
- (argparse argv `((:help
-		   :summary \"this is the summary\"              ;; optional
-		   :description \"this is the very long form\"   ;; optional
-		   :epilog \"this is what comes below\")         ;; optional
-		  (:switch :short \"-f\" :long \"--force\"    :key \"force\" :store :t :default () :help \"force action\")
-		  (:switch             :long \"--no-force\" :key \"force\" :store ())
-		  (:multiswitch :short \"-v\" :long \"--verbose\" :key \"verbose\") ;; counts the number of uses of switch
-		  (:choice :positional :key mode :choices (\"foo\" \"bar\" \"baz\") :required)
-		  (:value :short \"-V\" :long \"--value\" :key :value :metavar \"VAL\" :help \"enter VALs\")
-		  (:multival1 :short \"-M\" :long \"--multi1\" :key \"multi1\") ;; this is for -M foo -M bar -M baz
-		  (:multival :short \"-m\" :long \"--multi\" :key \"multi\")    ;; this is for -M foo bar baz
-		  (:sub :short \"-S\" :long \"--sub\" :command \"sub\" :key \"sub\"
-			:defs ((:help \"this is the summary of the sub\")))
-		  (:rest :key \"rest\")))                   ;; this is everything that can't be parsed or after --
-
-
-")
-
 (defexception arguments-exception ())
 
 
@@ -271,3 +250,27 @@ EX:
       (args-error "not all required arguments given")))
 
   res)
+
+
+
+(defhelp argparse "
+FUNCTION argparse
+EX:
+ (argparse argv `((:help
+		   :summary \"this is the summary\"              ;; optional
+		   :description \"this is the very long form\"   ;; optional
+		   :epilog \"this is what comes below\")         ;; optional
+		  (:switch :short \"-f\" :long \"--force\"    :key \"force\" :store :t :default () :help \"force action\")
+		  (:switch             :long \"--no-force\" :key \"force\" :store ())
+		  (:multiswitch :short \"-v\" :long \"--verbose\" :key \"verbose\") ;; counts the number of uses of switch
+		  (:choice :positional :key mode :choices (\"foo\" \"bar\" \"baz\") :required)
+		  (:value :short \"-V\" :long \"--value\" :key :value :metavar \"VAL\" :help \"enter VALs\")
+		  (:multival1 :short \"-M\" :long \"--multi1\" :key \"multi1\") ;; this is for -M foo -M bar -M baz
+		  (:multival :short \"-m\" :long \"--multi\" :key \"multi\")    ;; this is for -M foo bar baz
+		  (:sub :short \"-S\" :long \"--sub\" :command \"sub\" :key \"sub\"
+			:defs ((:help \"this is the summary of the sub\")))
+		  (:rest :key \"rest\")))                   ;; this is everything that can't be parsed or after --
+
+
+")
+
