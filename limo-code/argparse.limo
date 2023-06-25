@@ -1,0 +1,273 @@
+;; example
+'(argparse argv `((:help
+		   :summary "this is the summary"              ;; optional
+		   :description "this is the very long form"   ;; optional
+		   :epilog "this is what comes below")         ;; optional
+		  (:switch :short "-f" :long "--force"    :key "force" :store :t :default () :help "force action")
+		  (:switch             :long "--no-force" :key "force" :store ())
+		  (:multiswitch :short "-v" :long "--verbose" :key "verbose") ;; counts the number of uses of switch
+		  (:choice :positional :key mode :choices ("foo" "bar" "baz") :required)
+		  (:value :short "-V" :long "--value" :key :value :metavar "VAL" :help "enter VALs")
+		  (:multival1 :short "-M" :long "--multi1" :key "multi1") ;; this is for -M foo -M bar -M baz
+		  (:multival :short "-m" :long "--multi" :key "multi")    ;; this is for -M foo bar baz
+		  (:sub :short "-S" :long "--sub" :command "sub" :key "sub"
+			:defs ((:help "this is the summary of the sub")))
+		  (:rest :key "rest")))                   ;; this is everything that can't be parsed or after --
+
+
+(defhelp argparse "
+FUNCTION argparse
+EX:
+ (argparse argv `((:help
+		   :summary \"this is the summary\"              ;; optional
+		   :description \"this is the very long form\"   ;; optional
+		   :epilog \"this is what comes below\")         ;; optional
+		  (:switch :short \"-f\" :long \"--force\"    :key \"force\" :store :t :default () :help \"force action\")
+		  (:switch             :long \"--no-force\" :key \"force\" :store ())
+		  (:multiswitch :short \"-v\" :long \"--verbose\" :key \"verbose\") ;; counts the number of uses of switch
+		  (:choice :positional :key mode :choices (\"foo\" \"bar\" \"baz\") :required)
+		  (:value :short \"-V\" :long \"--value\" :key :value :metavar \"VAL\" :help \"enter VALs\")
+		  (:multival1 :short \"-M\" :long \"--multi1\" :key \"multi1\") ;; this is for -M foo -M bar -M baz
+		  (:multival :short \"-m\" :long \"--multi\" :key \"multi\")    ;; this is for -M foo bar baz
+		  (:sub :short \"-S\" :long \"--sub\" :command \"sub\" :key \"sub\"
+			:defs ((:help \"this is the summary of the sub\")))
+		  (:rest :key \"rest\")))                   ;; this is everything that can't be parsed or after --
+
+
+")
+
+(defexception arguments-exception ())
+
+
+(defun argparse (args defs)
+  (setq cfg (make-dict))
+  (setq res (make-dict))
+
+  (dict-set cfg :positional ())
+  (setq positional-index 0)
+
+  (setq restcfg ())
+
+  (setf defs (cons '(:helpswitch :short "-h" :long "--help" :help "show help")
+		   defs))
+
+  (defun args-error (msg)
+    (print msg)
+    (print "\nto get help use '--help'\n")
+    (exit 1))
+  
+  (defun switchfun (d args)
+    (dict-set res (cadr (member :key d)) (cadr (member :store d)))
+    args)
+
+  (defun multiswitchfun (d args)
+    (let ((key (cadr (member :key d))))
+      (if (not (dict-has-key res key))
+	  (dict-set res key 1)
+	  (dict-set res key (+ 1 (dict-getvalue res key)))))
+    args)
+  
+  (defun valuefun (d args)
+    (if (< (list-length args) 2)
+	(args-error "argument expected")
+	(dict-set res (cadr (member :key d)) (cadr args)))
+    (cdr args))
+
+  (defun choicefun (d args)
+    (when (< (list-length args) 2)
+      (args-error "argument expected"))
+    
+    (when (not (member (cadr args) (cadr (member :choices d))))
+      (args-error (format "expected one of %s" (string-join ", " (cadr (member :choices d))))))
+      
+    (dict-set res (cadr (member :key d)) (cadr args))
+    (cdr args))
+  
+  (defun multival1fun (d args)
+    (let ((key (cadr (member :key d))))
+      (if (< (list-length args) 2)
+	  (args-error "argument expected")
+	  (if (not (dict-has-key res key))
+	      (dict-set res key (list (cadr args)))
+	      (dict-set res key (nconc (dict-getvalue res key) (list (cadr args)))))))
+    (cdr args))
+
+  (defun multivalfun (d args)
+    (setq result ())
+    (while (and (cdr args)
+		(!= "-" (string-nth 0 (cadr args))))
+      (setf result (cons (cadr args) result))
+      (setf args (cdr args)))
+    (dict-set res (cadr (member :key d)) (reverse result))
+    args)
+
+  (defun subfun (d args)
+    (dict-set res (cadr (member :key d)) (argparse (cdr args)
+						   (cadr (member :defs d))))
+    ())
+
+  (defun helpfun (d args)
+    (defun cls (d)
+      (string-join ", " (map (lambda (x) (cadr (member x d)))
+			     (filter (lambda (x) (member x d))
+				     '(:short :long :command)))))
+    
+    (defun getm (d k . default)
+      (if (member k d)
+	  (format "%s" (cadr (member k d)))
+	  (if default (car default) "")))
+    
+    (defun usage (d)
+      (switch (car d)
+	(:helpswitch (format "%s: show this help\n"
+			     (cls d)))
+
+	(:switch (format "%s: %s\n"
+			 (cls d) (getm d :help "No help provided")))
+
+	(:multiswitch (format "%s: %s\n  May be used multiple times\n"
+			      (cls d) (getm d :help "No help provided")))
+	
+	(:value (format "%s %s: %s\n"
+			(cls d)
+			(getm d :meta-var "VAL") (getm d :help "No help provided")))
+	(:multival (format "%s %s [%s ...]: %s\n"
+			     (cls d) (getm d :meta-var "VAL")
+			     (getm d :meta-var "VAL")
+			     (getm d :help "No help provided")))
+	(:multival1 (format "%s %s: %s\n  May be used multiple times\n"
+			    (cls d)
+			    (getm d :meta-var "VAL") (getm d :help "No help provided")))
+
+	(:choice (format "%s %s: %s\n  %s may be one of %s\n"
+			 (cls d)
+			 (getm d :meta-var "VAL") (getm d :help "No help provided")
+			 (getm d :meta-var "VAL") (string-join ", " (cadr (member :choices d)))))
+
+	(:rest (format "...: %s\n" (getm d :help "No help provided")))
+
+	(:sub (format "%s: SUBCOMMAND - %s\n"
+		      (cls d)
+		      (getm d :help "No help provided")))))
+
+    ;; find help
+    (setq hlp (filter (lambda (x) (= (car x) :help)) defs))
+    (when hlp
+      (setf hlp (car hlp)))
+    (when (member :summary hlp)
+	(print (cadr (member :summary hlp))))
+
+    (when (member :description hlp)
+      (print "\n")
+      (print (cadr (member :description hlp))))
+
+    (print "\nusage:\n")
+    (for-each d (filter (lambda (x) (not (member (car x) '(:help)))) defs)
+      (print (usage d))
+      (when (getm d :required ())
+	(print "  REQUIRED\n")))
+
+    (when (member :epilog hlp)
+      (print "\n")
+      (print (cadr (member :epilog hlp))))
+
+    (exit 0))
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; build configuration
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (for-each d defs
+    (cond ((= (car d) :help) (dict-set cfg :help (cdr d)))
+	  ((= (car d) :rest) (setf restcfg d))  ;; nop
+	  (:else
+	   ;; set defaults
+	   (when (setq def (member :default d))
+	     (dict-set res (cadr (member :key d)) (cadr (member :default d))))
+	   
+	   ;; set functions
+	   (let ((fun (switch (car d)
+			(:switch
+			 (when (member :positional d)
+			   (throw '(arguments-exception "switches with :positional are illegal")))
+			 switchfun)
+			(:multiswitch
+			 (when (member :positional d)
+			   (throw '(arguments-exception "switches with :positional are illegal")))
+			 multiswitchfun)
+			(:helpswitch helpfun)
+			(:value valuefun)
+			(:choice choicefun)			
+			(:multival1 multival1fun)
+			(:multival multivalfun)
+			(:sub subfun))))
+	     
+	     
+	     (when (setq short (member :short d))
+	       (dict-set cfg (cadr short) (lambda (args) (fun d args))))
+	     (when (setq long (member :long d))
+	       (dict-set cfg (cadr long) (lambda (args) (fun d args))))
+	     (when (setq long (member :command d))
+	       (dict-set cfg (cadr long) (lambda (args) (fun d args))))
+	     (when (member :positional d)
+	       (dict-set cfg :positional (nconc (dict-getvalue cfg :positional) (list (lambda (args) (fun d args))))))))))
+  ;; TODO the rest of the keywords
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; parsing the arguments
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+  (setq rest ())
+  
+  (while args
+    (setq arg (car args))
+    
+    (if (and (> (string-length arg) 1)
+	     (= (string-nth 0 arg) "-"))
+
+	(if (and (> (string-length arg) 2)   ;; this is "--something", "--" is down below
+		 (= (string-nth 1 arg) "-"))
+
+	    ;; long option
+	    (if (dict-has-key cfg arg)
+		(setf args ((dict-getvalue cfg arg) args))
+		(args-error (format "long option %s not recognized %r" arg)))
+
+	    ;; short option(s)
+
+	    (if (= arg "--")    ;; --?
+		(setf rest (nconc rest (cdr args)))
+
+		(for-each i (mdrange 1 (string-length arg))
+		  (if (dict-has-key cfg (setq sw (string-concat "-" (string-nth i arg))))
+		      (setf args ((dict-getvalue cfg sw) args))
+		      (args-error (format "short option %s not recognized" sw))))))
+
+	;; not long, not short
+
+	(if (dict-has-key cfg arg)   ;; command?
+	    (setf args ((dict-getvalue cfg arg) args))
+	    (if (< positional-index (list-length (dict-getvalue cfg :positional)))
+		(progn
+		 (setf args ((nth positional-index (dict-getvalue cfg :positional))
+			     (cons () args)))
+		 (incf positional-index))
+		(setf rest (nconc rest (list arg))))))
+    
+    (when args
+      (write args)
+      (setf args (cdr args))))
+
+  ;; give back :rest
+  (when restcfg
+    (let ((restkey (cadr (member :key restcfg))))
+      (dict-set res restkey rest)))
+  
+  ;; check if every :required key is set
+  (for-each d defs
+    (when (and (member :required d)
+	       (not (dict-has-key res (cadr (member :key d)))))
+      (args-error "not all required arguments given")))
+
+  res)
