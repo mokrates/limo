@@ -1,6 +1,7 @@
 (mod-load "sdl")
 (mod-load "vector")
 (import "threading.limo")
+(import "enumerate.limo")
 
 (defun vector-from-list (l)
   (let ((v (make-vector (list-length l))))
@@ -68,13 +69,20 @@
 (freezeq mandelbrot)
 
 (defun main ()
-  (for-each y (drange 0 480 1)
-    (for-each px (pmap 2 (lambda (x) (cons x (mandelbrot (/ (- x 320) 128) (/ (- y 240) 128)))) (drange 0 640 1))
+  
+  (for-each (y . line)
+      (enumerate
+       (pmap 8 (lambda (y)
+		 (map (lambda (x) (mandelbrot (/ (- x 320) 128) (/ (- y 240) 128)))
+		      (drange 0 640 1)))
+	     (drange 0 480 1)))
+      
+    (for-each (x . v) (enumerate line)
       ([_sdl . sdl-plot] 
        *surface*
-       (cons (car px) y)
-       (vector-ref *colors* (cdr px))))
-      ([_sdl . sdl-flip] *surface*)))
+       (cons x y)
+       (vector-ref *colors* v)))
+    ([_sdl . sdl-flip] *surface*)))
 
 (main)
 (print "press RET to quit\n")

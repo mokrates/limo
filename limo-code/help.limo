@@ -78,6 +78,10 @@ The name has to be given without the .so-file-extension
 Example: (mod-load \"file\")
 ")
 
+(defhelp gcsetmax
+  "BUILTIN (gcsetmax kbytes)
+Limo will die if it tries to allocate more than KBYTES memory")
+
 (defhelp format
   "FUNCTION (format formatstring . args)
 format formats similar to sprintf in C. It returns a string in which
