@@ -217,7 +217,7 @@
 
 	    (if (= arg "--")    ;; --?
 		(setf rest (nconc rest (cdr args)))
-
+		
 		(for-each i (mdrange 1 (string-length arg))
 		  (if (dict-has-key cfg (setq sw (string-concat "-" (string-nth i arg))))
 		      (setf args ((dict-getvalue cfg sw) args))
@@ -262,15 +262,26 @@ EX:
 		   :epilog \"this is what comes below\")         ;; optional
 		  (:switch :short \"-f\" :long \"--force\"    :key \"force\" :store :t :default () :help \"force action\")
 		  (:switch             :long \"--no-force\" :key \"force\" :store ())
-		  (:multiswitch :short \"-v\" :long \"--verbose\" :key \"verbose\") ;; counts the number of uses of switch
-		  (:choice :positional :key mode :choices (\"foo\" \"bar\" \"baz\") :required)
-		  (:value :short \"-V\" :long \"--value\" :key :value :metavar \"VAL\" :help \"enter VALs\")
-		  (:multival1 :short \"-M\" :long \"--multi1\" :key \"multi1\") ;; this is for -M foo -M bar -M baz
-		  (:multival :short \"-m\" :long \"--multi\" :key \"multi\")    ;; this is for -M foo bar baz
+		  (:multiswitch :short \"-v\" :long \"--verbose\" :key \"verbose\")    ;; counts the number of uses of switch
+		  (:choice :positional :key \"mode\" :choices (\"foo\" \"bar\" \"baz\") :required)
+		  (:value :short \"-V\" :long \"--value\" :key :value :meta-var \"VAL\" :help \"enter VALs\")
+		  (:multival1 :short \"-M\" :long \"--multi1\" :key \"multi1\")        ;; this is for -M foo -M bar -M baz
+		  (:multival :short \"-m\" :long \"--multi\" :key \"multi\")           ;; this is for -M foo bar baz
 		  (:sub :short \"-S\" :long \"--sub\" :command \"sub\" :key \"sub\"
 			:defs ((:help \"this is the summary of the sub\")))
 		  (:rest :key \"rest\")))                   ;; this is everything that can't be parsed or after --
 
+There are following kinds of options: :switch :multiswitch :choice :multival1 :multival :sub :rest
+Every entry has to have a :key under which the options are saved.
+:switches use :store to specify what to store in case the switch is specified. This should also use a :default for when it is not.
+:required and :default don't go together. (mutually exclusive).
+There are :long (--foo), :short (-f), :commands (foo) and :positional (just values) options.
+:positional options have to take a value (:choices :values)
 
+:sub defines a whole sub-config. it cannot be exited once entered on the command line.
+  keyword :defs marks the subconfig.
+:rest takes everything which can't be parsed otherwise and everything after --
+
+:help defines a helpstring. There's an automatic syntax-help generated which contains the :meta-var if a value is required.
 ")
 
