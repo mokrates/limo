@@ -993,6 +993,13 @@
                 (setf name (string-concat name c)))
               ((dict-getvalue *readtable* name) rs))))
 
+(dict-set *readtable* "["
+	  (lambda (rs)
+	    (progn
+	     (reader-stream-ungetc rs "[")
+	     (let ((expr (read rs)))
+	       (list (list 'dict-getvalue (cadr expr) (caddr expr)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; not so cool stuff
