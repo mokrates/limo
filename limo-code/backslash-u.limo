@@ -1,7 +1,7 @@
 (import "hex.limo")
 
 (defun from-backslash-u (str)
-  "decode \uXXXX unicode-notation"
+  "decode \\uXXXX unicode-notation"
   (let ((result "")
         (i 0)
         (strlen (string-length str))
