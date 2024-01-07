@@ -1,0 +1,12 @@
+(mod-load "mhash")
+
+(import "hex.limo")
+(defun hex-digest (digest)
+  (list-to-string
+   (map (comp to-hex ord)
+	(string-to-list digest))))
+
+(defun hash-str (str hashtype)
+  (setq hc (mhash-init hashtype))
+  (mhash hc str)
+  (mhash-end hc))

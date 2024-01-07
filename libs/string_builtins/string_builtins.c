@@ -55,14 +55,12 @@ BUILTIN(builtin_stringp)
     return make_nil();
 }
 
-BUILTIN(builtin_ord)
+BUILTINFUN(builtin_ord)
 {
   limo_data *ld;
-  REQUIRE_ARGC("ORD", 1);
-  ld = eval(FIRST_ARG, env);
-  if (ld->type != limo_TYPE_STRING)
-    limo_error("(ORD string)");
-  return make_rational_from_long_long((unsigned char)ld->d_string[0]);
+  REQUIRE_ARGC_FUN("ORD", 1);
+  REQUIRE_TYPE("ORD", argv[0], limo_TYPE_STRING);
+  return make_rational_from_long_long((unsigned char)argv[0]->d_string[0]);
 }
 
 BUILTIN(builtin_chr)
@@ -136,7 +134,7 @@ void limo_init_string_builtins(limo_data *env)
   INSBUILTIN(builtin_string_nth, "STRING-NTH");
   INSBUILTIN(builtin_string_length, "STRING-LENGTH");
   INSBUILTIN(builtin_stringp, "STRINGP");
-  INSBUILTIN(builtin_ord, "ORD");
+  INSBUILTINFUN(builtin_ord, "ORD");
   INSBUILTIN(builtin_chr, "CHR");
   INSBUILTIN(builtin_string_utf8_length, "STRING-UTF8-LENGTH");
   INSBUILTINFUN(builtin_list_to_string, "LIST-TO-STRING");

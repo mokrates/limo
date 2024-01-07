@@ -1,0 +1,2 @@
+#!/bin/bash
+echo "-Llibs/mhash -l:mhash.a -lmhash"
