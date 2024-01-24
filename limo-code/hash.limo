@@ -3,7 +3,11 @@
 (import "hex.limo")
 (defun hex-digest (digest)
   (list-to-string
-   (map (comp to-hex ord)
+   (map (lambda (x)
+	  (let ((s (to-hex (ord x))))
+	    (if (= 2 (string-length s))
+		s
+		(string-concat "0" s))))
 	(string-to-list digest))))
 
 (defun hash-str (str hashtype)
