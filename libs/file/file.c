@@ -1,6 +1,7 @@
 #include <limo.h>
 #include <errno.h>
 #include <dirent.h>
+#include <unistd.h>
 #include <sys/types.h>
 
 #define INSBUILTIN(f, name) setq(env, make_sym(name), make_builtin(f, name))
@@ -165,6 +166,18 @@ BUILTIN(builtin_file_tell)
   return make_rational_from_long_long(ftell((FILE *)get_special(eval(FIRST_ARG, env), sym_file)));
 }
 
+BUILTINFUN(builtin_file_access)
+{
+  REQUIRE_ARGC_FUN("FILE-ACCESS", 2);
+  REQUIRE_TYPE("FILE-ACCESS", argv[0], limo_TYPE_STRING);
+  REQUIRE_NUMBER("FILE-ACCESS", argv[1]);
+
+  if (!access(argv[0]->d_string, GETINTFROMNUMBER(argv[1])))
+    return sym_true;
+  else
+    return nil;
+}
+
 BUILTINFUN(builtin_file_readdir)
 {
   DIR *d;
@@ -221,9 +234,17 @@ void limo_init_file(limo_data *env)
   INSBUILTIN(builtin_file_tell, "FILE-TELL");
   INSBUILTIN(builtin_file_write, "FILE-WRITE");
 
+  INSBUILTINFUN(builtin_file_access, "FILE-ACCESS");
   INSBUILTINFUN(builtin_file_readdir, "FILE-READDIR");
+
   setq(env, make_sym("FILE-SEEK-SET"), make_rational_from_long_long(SEEK_SET));
   setq(env, make_sym("FILE-SEEK-CUR"), make_rational_from_long_long(SEEK_CUR));
   setq(env, make_sym("FILE-SEEK-END"), make_rational_from_long_long(SEEK_END));
-}
 
+  // I don't know if I want muddy my top environment with this
+  // I have to come up with something for this
+  /* setq(env, make_sym("FILE-ACCESS-FOK"), make_rational_from_long_long(F_OK)); */
+  /* setq(env, make_sym("FILE-ACCESS-ROK"), make_rational_from_long_long(R_OK)); */
+  /* setq(env, make_sym("FILE-ACCESS-WOK"), make_rational_from_long_long(W_OK)); */
+  /* setq(env, make_sym("FILE-ACCESS-XOK"), make_rational_from_long_long(X_OK)); */
+}
