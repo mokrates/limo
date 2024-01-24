@@ -235,7 +235,7 @@
 		(setf rest (nconc rest (list arg))))))
     
     (when args
-      (write args)
+      ;;(write args)
       (setf args (cdr args))))
 
   ;; give back :rest
