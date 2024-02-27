@@ -827,6 +827,13 @@
        (macro (name . body) `(,old-block ,name (,progn ,@body)))))
 (freezeq block)
 
+(defmacro prog1 (first . rest)
+  (with-gensym (res)
+      `(progn
+	(setq ,res ,first)
+	,@rest
+	,res)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  dynamic variables
 (defmacro dyn-getq (var)

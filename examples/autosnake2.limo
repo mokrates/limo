@@ -369,9 +369,9 @@
          (when (not newapple)
            [*scr* nodelay ()]
            [*scr* move (* 2 *y*) 0]
-           [*scr* print-with-attr "thats it!" 0]
-           [*scr* refresh]
-           [*scr* getch]
+           ;; [*scr* print-with-attr "thats it!" 0]
+           ;; [*scr* refresh]
+           ;; [*scr* getch]
            (break))
          (setf apple newapple))
        (paint-apple apple))

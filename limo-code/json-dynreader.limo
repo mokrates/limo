@@ -1,0 +1,140 @@
+;; json-dynreader library
+
+;; only reads json, this is a modification of simplejson.limo
+
+;; definition
+
+;; json		==> limo
+;; ==================================
+;; null		==> :null
+;; true		==> :t
+;; false	==> :f
+;; "string"	==> "string"
+;; [array]	==> (limo list)
+;; {object}	==> ((assoc . list) ...)
+
+(import "backslash-u.limo")
+
+(defun jsonstream-load-charlist (s)  ;;
+  (defun skip-whitespace ()
+    (while (member (car s) (string-to-list " \t\n"))
+      (setf s (cdr s))))
+
+  (defun load-string ()
+    (setq res '("\""))
+    (setf s (cdr s))    ;; skipping "\""
+    (while (not (eq (car s) "\""))
+      (cond ((eq (car s) "\\")
+             (setf s (cdr s))
+	     (setf res (cons (car s)
+                             (cons "\\"
+                                   res)))
+             (setf s (cdr s)))
+	    (:else 
+	     (setf res (cons (car s) res))
+	     (setf s (cdr s)))))
+    (setf res (cons "\"" res))
+    (setf s (cdr s))   ;; skip trailing "\""
+    (read-string (list-to-string (reverse res))))
+
+  (defun load-number ()     ;; perhaps unsafe?
+    (setq res ())
+    (while (member (car s) (string-to-list "0123456789.Ee+-"))
+      (setf res (cons (car s) res))
+      (setf s (cdr s)))
+    (read-string (list-to-string (reverse res))))
+  
+  (defun load-list ()
+    (cond ((eq (car s) "]")
+	   (setf s (cdr s)) ;; skip closing bracket
+	   ())  ;; end of list
+	  
+	  ((member (car s) (string-to-list "[,"))
+	   (setf s (cdr s)) ;; skip opening bracket or comma
+	   (skip-whitespace)
+	 
+	   (cond ((eq (car s) "]")
+		(setf s (cdr s))  ;; skip closing bracket
+		())
+	       (:else
+		(dcons (load-object)
+		       (progn (skip-whitespace) (load-list))))))
+	  
+	  (:else
+	   (throw (list 'json-error "broken list syntax")))))
+
+  (defun load-dict ()
+    (cond ((eq (car s) "}")
+	   (setf s (cdr s))
+	   ())
+	  ((member (car s) (string-to-list "{,"))
+	   (setf s (cdr s)) ;; skip opening curly bracket or comma
+	   (skip-whitespace)
+    
+	   (cond ((eq (car s) "}")
+		  (setf s (cdr s))  ;; skip closing curly bracket
+		  ())
+		 (:else  ;; comma or opening bracket
+		  (setq key (load-object))
+		  (skip-whitespace)
+		  (unless (eq (car s) ":")
+		    (throw (list 'json-error "broken object syntax")))
+		  (setf s (cdr s))   ;; skip :
+		  (skip-whitespace)
+		  (dcons
+		   (cons key (progn (skip-whitespace) (load-object)))
+		   (progn (skip-whitespace) (load-dict))))))
+	  (:else
+	   (throw (list 'json-error "broken object syntax")))))	   
+  
+  (defun load-keyword (kw val)
+    (for-each c (string-to-list kw)
+      (if (eq (car s) c)
+          (setf s (cdr s))
+          (throw (list 'json-error "unknown keyword encountered"))))
+    val)
+	    
+  (defun load-object ()
+    (cond ((eq (car s) "\"")
+	   (load-string))
+	  ((eq (car s) "[")
+	   (load-list))
+	  ((eq (car s) "{")
+	   (load-dict))
+	  ((eq (car s) "n")
+	   (load-keyword "null" :null))
+	  ((eq (car s) "t")
+	   (load-keyword "true" :t))
+	  ((eq (car s) "f")
+	   (load-keyword "false" :f))
+	  (:else (load-number))))
+  (skip-whitespace)
+  (load-object))
+
+(defun jsonstream-loads (s)
+  (jsonstream-load-charlist (string-to-list s)))
+
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; help
+
+(defhelp jsonstream-load-charlist "JSON-LOAD-CHARLIST function:
+\(json-load-charlist s\)
+s: list of characters
+reads a json-object from the list of characters provided.
+for translation see \(help json-loads\)")
+
+(defhelp jsonstream-loads "JSON-LOADS function:
+\(json-loads s\)
+s: string containing json
+reads a json-object from s as follows
+
+ json		==> limo
+ ===================================
+ null		==> :null
+ true		==> :t
+ false	==> :f
+ \"string\"	==> \"string\"
+ [array]	==> \(limo list\)
+ {object}	==> \(\(assoc . list\) ...\)
+")
