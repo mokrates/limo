@@ -1,6 +1,9 @@
 ;; json-dynreader library
 
-;; only reads json, this is a modification of simplejson.limo
+;; only reads json, this is a modification of simplejson.limo using
+;; this, every dynamic list has to be iterated over in the order
+;; they're returned. Not doing this will result in a misparse as the
+;; thunks can't associate the source to the structure
 
 ;; definition
 
@@ -122,11 +125,11 @@
 \(json-load-charlist s\)
 s: list of characters
 reads a json-object from the list of characters provided.
-for translation see \(help json-loads\)")
 
-(defhelp jsonstream-loads "JSON-LOADS function:
-\(json-loads s\)
-s: string containing json
+IMPORTANT: while loading the data, the program has to iterate over
+every dynamic list and assoc list returned. Else the reader gets
+confused, because the thunks get called in the wrong order.
+
 reads a json-object from s as follows
 
  json		==> limo
@@ -137,4 +140,11 @@ reads a json-object from s as follows
  \"string\"	==> \"string\"
  [array]	==> \(limo list\)
  {object}	==> \(\(assoc . list\) ...\)
+")
+
+(defhelp jsonstream-loads "JSONSTREAM-LOADS function:
+\(jsonstram-loads s\)
+s: string containing json
+
+see \(help jsonstream-load-charlist\)
 ")
