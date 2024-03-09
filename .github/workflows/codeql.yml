@@ -76,7 +76,10 @@ jobs:
 
     - run: |
         echo "Run, Build Application using script"
-        ./github.com/autobuild.sh
+        make INSTALL_PREFIX=~/.local/ realclean
+        make INSTALL_PREFIX=~/.local/ TAGS
+        make INSTALL_PREFIX=~/.local/ limo-wsl
+        make INSTALL_PREFIX=~/.local/ install
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
