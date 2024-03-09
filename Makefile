@@ -29,13 +29,13 @@ exelimo.o: $(HEADERS) limo.c
 inlined_mods.c: inlined.mods
 	./make-inlined_mods-c.sh
 
-limo: $(OBJ) libs info
+limo: $(OBJ) libs
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -rdynamic -lpthread -lgc -lgmp -ldl -lreadline -lm -o limo
 
-limo-almost-static: $(OBJ) libs info
+limo-almost-static: $(OBJ) libs
 	$(CC) $(OBJ) $(PROFILING) `./inline-cfg.sh` -lm -l:libgc.a -lpthread -l:libgmp.a -ldl -l:libreadline.a -rdynamic -o limo
 
-limo-wsl: limo-almost-static info
+limo-wsl: limo-almost-static
 
 libs:
 	make -C libs
@@ -48,7 +48,7 @@ limo-cygwin-exe: $(OBJ)
 	$(CC) $(BASEOBJ) $(PROFILING) -shared `./inline-cfg.sh` -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limodll.dll
 	$(CC) main.o $(PROFILING) limodll.dll -lm -lgc -lpthread -lgmp -ldl -lreadline -rdynamic -o limo.exe
 
-limo-cygwin: libs-cygwin-a limo-cygwin-exe libs-cygwin-dll info
+limo-cygwin: libs-cygwin-a limo-cygwin-exe libs-cygwin-dll
 
 libs-cygwin-a:
 	make -C libs libs-cygwin-a
@@ -86,7 +86,7 @@ install:
 	cp -f libs/*/*.dll $(LIMO_PREFIX) || true
 	cp -f libs/*/*.ttf $(LIMO_PREFIX)
 	cp -rf limo-code/* $(LIMO_PREFIX)
-	cp -f docs/limo-info.info $(LIMO_PREFIX)
+	cp -f docs/limo-info.info $(LIMO_PREFIX) || true
 	mkdir -p $(INSTALL_PREFIX)/bin
 	[ ! -e limo ] || cp -f limo $(INSTALL_PREFIX)/bin
 	[ ! -e limodll.dll ] || cp -f limodll.dll $(INSTALL_PREFIX)/bin
