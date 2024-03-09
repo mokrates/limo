@@ -4,6 +4,8 @@
 
 # cd ..
 
+echo "### MOS AUTOBUILDER ###"
+
 make INSTALL_PREFIX=~/.local/ realclean
 make INSTALL_PREFIX=~/.local/ TAGS
 make INSTALL_PREFIX=~/.local/ limo-wsl
