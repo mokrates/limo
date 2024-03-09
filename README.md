@@ -160,4 +160,4 @@ more
 ----
 just see the examples/-directory.
 
-[CodeQL](https://github.com/mokrates/limo/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)
+![CodeQL](https://github.com/mokrates/limo/actions/workflows/codeql.yml/badge.svg?branch=master&event=push "CodeQL status")
