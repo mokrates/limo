@@ -33,3 +33,16 @@
     ([_ncurses . noecho])
     ([_ncurses . keypad] scr :t)
     scr))
+
+(defun ncurses-init-default-color-pairs ()
+  "initialize 256 color pairs with the standard CGA colors"
+  ([_ncurses . start-color])
+  (for-each bg (mdrange 16)
+    (for-each fg (mdrange 16)
+      ([_ncurses . init-pair] (+ (* 16 bg) fg) fg bg))))
+
+(defun ncurses-default-color-pair (fg bg)
+  "return the pair number associated with the fg and bg
+combination. assumes ncurses-init-default-color-pairs was called
+before"
+  (+ (* 16 bg) fg))

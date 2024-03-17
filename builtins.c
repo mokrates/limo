@@ -668,6 +668,7 @@ BUILTIN(builtin_env_getq)
   REQUIRE_ARGC("env-getq", 2);
   name = SECOND_ARG;
   the_env = eval(FIRST_ARG, env);
+  REQUIRE_TYPE("env-getq", the_env, limo_TYPE_ENV);  
   result = var_lookup(the_env, name);
   return result;
 }
