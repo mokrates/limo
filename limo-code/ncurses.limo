@@ -35,14 +35,38 @@
     scr))
 
 (defun ncurses-init-default-color-pairs ()
-  "initialize 256 color pairs with the standard CGA colors"
+  "initialize 256 color pairs with the standard ncurses colors"
   ([_ncurses . start-color])
   (for-each bg (mdrange 16)
     (for-each fg (mdrange 16)
       ([_ncurses . init-pair] (+ (* 16 bg) fg) fg bg))))
 
-(defun ncurses-default-color-pair (fg bg)
+(defun ncurses-init-cga-color-pairs ()
+  "initialize 256 color pairs with the standard CGA colors"
+  
+  (defun position (item lst)
+    (cond ((= (car lst) item) 0)
+	  (:else (+ 1 (position item (cdr lst))))))
+  
+  (setq cga-colors (list [_ncurses . color_black]
+			 [_ncurses . color_blue]
+			 [_ncurses . color_green]
+			 [_ncurses . color_cyan]
+			 [_ncurses . color_red]
+			 [_ncurses . color_magenta]
+			 [_ncurses . color_yellow]
+			 [_ncurses . color_white]))
+  
+  ([_ncurses . start-color])
+  (for-each bg (mdrange 16)
+    (for-each fg (mdrange 16)
+      (let ((effbg (+ (position (mod bg 8) cga-colors) (* (idiv bg 8) 8)))
+	    (efffg (+ (position (mod fg 8) cga-colors) (* (idiv fg 8) 8))))
+	([_ncurses . init-pair] (+ (* 16 bg) fg) efffg effbg)))))
+
+
+(defun ncurses-get-color-pair (fg bg)
   "return the pair number associated with the fg and bg
 combination. assumes ncurses-init-default-color-pairs was called
 before"
-  (+ (* 16 bg) fg))
+  ([_ncurses . color-pair] (+ (* 16 bg) fg)))
