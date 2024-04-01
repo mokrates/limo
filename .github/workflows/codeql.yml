@@ -76,6 +76,7 @@ jobs:
 
     - run: |
         echo "Run, Build Application using script"
+        sudo apt update
         bash deps/ubuntu.sh
         sudo apt install emacs-nox texinfo
         make INSTALL_PREFIX=~/.local/ realclean
