@@ -12,6 +12,8 @@ written by Moritz Molle
 Licensed under GPL (v3) (applies to all files in this tarball)
 http://www.gnu.org/licenses/gpl.html
 
+![CodeQL](https://github.com/mokrates/limo/actions/workflows/codeql.yml/badge.svg?branch=master "CodeQL status")
+
 ____
 
 # for the impatient:
@@ -159,5 +161,3 @@ The usual mandelbrot fractal rendered with sdl
 more
 ----
 just see the examples/-directory.
-
-![CodeQL](https://github.com/mokrates/limo/actions/workflows/codeql.yml/badge.svg?branch=master&event=push "CodeQL status")
