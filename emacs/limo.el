@@ -28,4 +28,6 @@
   (define-key limo-mode-map (kbd "C-c p") 'paredit-mode)
   (show-paren-mode))
 
+(font-lock-add-keywords 'limo-mode '(("(\\(defun\\|defmacro\\|lambda\\|macro\\|setq\\|setf\\|list\\|if\\|when\\|unless\\|cond\\|for-each\\|map\\|cons\\|dcons\\|car\\|cdr\\|cadr\\|caddr\\|caddr\\|cadar\\|freezeq\\)" 1 'font-lock-keyword-face)))
+
 (add-to-list 'auto-mode-alist '("\\.limo\\'" . limo-mode))

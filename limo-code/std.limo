@@ -334,8 +334,20 @@
                                   x))))))
 (freezeq comp)
 
+(defun all (x)
+  (cond ((not x) :t)
+	((not (car x)) ())
+	(:else (all (cdr x)))))
+(freezeq all)
+
+(defun any (x)
+  (cons ((not x) ())
+	((car x) (car x))
+	(:else (any (cdr x)))))
+(freezeq any)
+
 (defun dzip x
-  (when (apply andf (map1 consp x))
+  (when (all (map1 consp x))
     (dcons (map1 car x)
            (apply dzip (map1 cdr x)))))
 (freezeq dzip)
@@ -382,6 +394,7 @@
 (freezeq and)
 
 (defun andf l  ;; and as a function. not shorting
+  (warn-once "deprecated: ANDF - use ALL")
   (cond ((not l) :t)
 	((not (consp l))
 	 (error "ERROR: (andf foo bar)"))
