@@ -72,11 +72,11 @@
 
   (defmethod put (self item)
     (setq wl [[self . _writelock] get-or-end :end])
-    [[queuelock . put] self item]
+    [[queuelock . put] self item]     ;; TODO: ????? [[self . _queue] put item] ??
     (when (!= wl :end)
       (throw "not finished synchronously")))
 
-  (defmethod get (self)
+  (defmethod get (self)               ;; TODO: why not get-or-end?
     [[self . _writelock] put ()]  ;; there is a reader waiting
     [[self . _queue] get]))
   
