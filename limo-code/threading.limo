@@ -166,7 +166,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 	       (lambda (clause)
 		 `(if (and (not ,done)
 			   (or (eq (setq ,(caar clause)
-					 [,(cadar clause) get-or-set-or-end ,end ,nothing])
+					 [,(cadar clause) get-or-end-or-nothing ,end ,nothing])
 				   ,nothing)
 			       (eq ,(caar clause) ,end)))
 		      (finally (progn ,@(cdr clause))
