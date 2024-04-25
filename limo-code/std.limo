@@ -151,7 +151,8 @@
 (defun macrocopy (x)
   (defun helper (x)
     (cond ((not x) ())
-          ((and (consp x) (symbolp (car x)))
+          ((and (consp x)
+		(symbolp (car x)))
            (dcons (make-sym (symbol-to-string (car x)))
                   (helper (cdr x))))
           ((and (consp x) (consp (car x)))
@@ -168,19 +169,6 @@
 	(:t (eq x y))))
 
 (freezeq deepeq)
-
-(defun macrocopy (x)
-  (defun helper (x)
-    (cond ((not x) ())
-          ((and (consp x)
-                (symbolp (car x)))
-           (dcons (make-sym (symbol-to-string (car x)))
-                  (helper (cdr x))))
-          ((and (consp x) (consp (car x)))
-           (dcons (undyn (helper (car x))) (helper (cdr x))))
-          (:else
-           x)))
-  (undyn (helper x)))
 
 ;; ########################
 ;; shallow quasiquotes
@@ -333,6 +321,14 @@
                                          (cdr fs))
                                   x))))))
 (freezeq comp)
+
+;; y-combinator
+;; (ycomb (lambda (selfn args...)
+;;             body with args..., recurring on selfn))
+;; -> the lambda function itself, with selfn as itself for recurring
+(define (ycomb f)
+  ((lambda (x) (lambda v (apply f (cons (x x) v))))
+   (lambda (x) (lambda v (apply f (cons (x x) v))))))
 
 (defun all (x)
   (cond ((not x) :t)

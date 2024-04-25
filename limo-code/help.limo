@@ -191,6 +191,14 @@ If :breakable is used, the for-each loop may be (break)ed.
 Executes the first clause where condition is true
 ")
 
+(defhelp ycomb
+  "FUNCTION ycomb
+y-combinator
+(ycomb (lambda (selfn args...)
+            body with args..., recurring on selfn))
+-> the lambda function itself, with selfn as itself for recurring
+")
+
 (defhelp block
   "BUILTIN block
 (block label
