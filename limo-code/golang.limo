@@ -19,22 +19,22 @@
              (progn ,@body)
              (for-each fun (dyn-getq deferred-functions)
                (fun)))))
- 
+
 (defun defer (f . args)
   (dyn-setf deferred-functions (cons (λ () (apply f args))
                                      (dyn-getq deferred-functions))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; goroutine reaper thread
- 
+
 ;;; globals
 (setq _go-reaper-thread ())
 (setq _go-wait-queue ())
- 
+
 (defun _go-reaper-thread-fun ()
   (while (!= :end (setq thr [_go-wait-queue get-or-end :end]))
     [thr join]))
- 
+
 (defun go-start-reaper-thread ()
   (setf _go-wait-queue (new queue-lock))
   [(setf _go-reaper-thread (new thread _go-reaper-thread-fun)) run])
@@ -59,7 +59,7 @@
  
 (defun go (fun . args)
   (let ((thr (new thread ())))    ;; initialize without function
-    (setmember [thr . _fun] (λ () (_go-thread-fun thr fun args)))    ;; put function in later.
+    (setmember [thr . _fun] (lambda () (_go-thread-fun thr fun args)))    ;; put function in later.
     [thr run]))
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,7 +68,7 @@
 (defclass _go-unbuf-queue-lock ()
   (defmethod %init (self)
     (setmember [self . _writelock] (new queue-lock))
-    (setmember [self . _queue] (new queue-lock))
+    (setmember [self . _queue] (new queue-lock)))
 
   (defmethod put (self item)
     (setq wl [[self . _writelock] get-or-end :end])

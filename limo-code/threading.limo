@@ -1,6 +1,7 @@
 ;;;;;;;;; threading ;;;;;;;;;
 ;; classes interface ;;;;
 
+(import "enumerate.limo")
 (mod-load "threading")
 
 (defclass thread ()
@@ -75,9 +76,9 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 
 (defclass queue-lock ()
   (defmethod %init (self . lfamily)
-    (cond (family
+    (cond (lfamily
 	   (setmember [self . _family] (car lfamily))
-	   (setmember [self . _mutex] (car lfamily))
+	   (setmember [self . _mutex] (caar lfamily))
 	   (setmember [self . _cond] (cdar lfamily)))
 	  (:else
 	   (setmember [self . _mutex] (new mutex :recursive))
@@ -94,7 +95,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
   (defmethod has-next (self)
     (synchronized [self . _mutex]
       (while
-       (and (eq [self . _putnext] [self . _getnext])
+	  (and (eq [self . _putnext] [self . _getnext])
 	    (not [self . _finish]))
        [[self . _cond] wait [self . _mutex]])
       (if (eq [self . _putnext] [self . _getnext])
@@ -111,7 +112,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
   (defmethod get-or-end (self end-marker)
     (synchronized [self . _mutex]
       (while
-       (and (eq [self . _putnext] [self . _getnext])
+	  (and (eq [self . _putnext] [self . _getnext])
 	    (not [self . _finish]))
        [[self . _cond] wait [self . _mutex]])
       (if (and (eq [self . _putnext] [self . _getnext])
@@ -121,10 +122,9 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 	   (setq ret (car [self . _getnext]))
 	   (setmember [self . _getnext] (cdr [self . _getnext]))
 	   ret))))
-
+  
   ;; nonblocking
   (defmethod get-or-end-or-nothing (self end-marker nothing-marker)
-    (warn-once "get-or-end-or-nothing: untested, this is pre-alpha")
     (synchronized [self . _mutex]
       (cond ((eq [self . _putnext] [self . _getnext])
 	     nothing-marker)
@@ -139,7 +139,7 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
   (defmethod get (self)
     (synchronized [self . _mutex]
       (while (eq [self . _putnext] [self . _getnext])
-	     [[self . _cond] wait [self . _mutex]])
+	[[self . _cond] wait [self . _mutex]])
       (setq ret (car [self . _getnext]))
       (setmember [self . _getnext] (cdr [self . _getnext]))
       ret)))
@@ -154,41 +154,53 @@ where type may be :FAST or :RECURSIVE or :ERRORCHECK
 ;;;     body...))
 
 (defmacro qlfselect (family . clauses)
-  (warn-once "qlfselect: untested, this is pre-alpha")
-  (with-gensym (end nothing done mtx cnd)
+  (with-gensym (end nothing retfun result mtx cnd qls)
       `(progn
 	(setq ,mtx (car ,family))
 	(setq ,cnd (cdr ,family))
-	(setq ,done ())
+	(setq ,retfun ())
+	(setq ,qls (make-dict))
+	,@(map (lambda (enclause)
+		 `(setf #[,qls ,(reprn (car enclause))]
+			,(cadar (cdr enclause))))
+	       (enumerate clauses))
 	(synchronized ,mtx
-	  (while (not ,done)
-	    ,@(map
-	       (lambda (clause)
-		 `(if (and (not ,done)
-			   (or (eq (setq ,(caar clause)
-					 [,(cadar clause) get-or-end-or-nothing ,end ,nothing])
-				   ,nothing)
-			       (eq ,(caar clause) ,end)))
-		      (finally (progn ,@(cdr clause))
-			       (setq ,done :t)))))
-	    (when (not ,done)
-	      ([_threading . cond-wait] ,cnd ,mtx)))))))
+	  (while (not ,retfun)
+	    (setf ,retfun
+		  (cond
+		   ,@(map
+		      (lambda (enclause)
+			(let ((clause (cdr enclause)))
+			  `((not (eq (setq ,result
+					   [#[,qls ,(reprn (car enclause))] get-or-end-or-nothing ',end ',nothing])
+				     ',nothing))
+			    (if (eq ,result ',end)
+				(throw (list qlfselect-finished-queue "qlfselected on finished queue"))
+				(lambda ()
+				  ((lambda (,(caar clause))
+				     (progn ,@(cdr clause)))
+				   ,result))))))
+		      (enumerate clauses))))
+	    
+	    (when (not ,retfun)
+	      [,cnd wait ,mtx])))
+	(,retfun))))
 
 (defhelp qlfselect "
 MACRO qlfselect
 EX:
 (qlfselect family
-   ((var-a ql-a)     ;; (setq var-a [ql-a get])   ;; really get-or-end-or-nothing
+   ((var-a ql-a)     ;; like (setq var-a [ql-a get])
     body...)
-   ((var-b ql-b)     ;; (setq var-b [ql-b get])   ;;  ''
+   ((var-b ql-b)     ;; like (setq var-b [ql-b get])
     body...))
 
-qlfselect stand for queue-lock-family-select.  It only works for
+qlfselect stands for queue-lock-family-select.  It only works for
 families of queue-locks, which are defined by creating a
 queue-lock-family with (setq fmly (make-queue-lock-family)) and
 instantiating all queue-locks to be used here with this family:
 (new queue-lock fmly)
-"
+")
 
 (defun parallel-iterator (fun)
   (setq end-marker (gensym))

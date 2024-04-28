@@ -1,0 +1,23 @@
+(import "threading.limo")
+(import "random.limo")
+(import "golang.limo")
+
+(setq family (make-queue-lock-family))
+(write family)
+
+(defun timer (n)
+  (print (format "Timer started with %r seconds\n" n))
+  (defun timerfun (ql)
+    (sleep n)
+    (go<- ql n))
+  
+  (setq ql (new queue-lock family))
+  (go timerfun ql)
+  ql)
+
+(with-go-reaper-thread
+ (qlfselect family
+	    ((v (timer (random-byte 5)))
+	     (print (format "first timer ticked, got %r\n" v)))
+	    ((v (timer (random-byte 5)))
+	     (print (format "second timer ticked, got %r\n" v)))))
