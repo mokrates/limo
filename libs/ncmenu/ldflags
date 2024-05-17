@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "libs/ncmenu/ncmenu.a -lmenu -lcurses"
+echo "libs/ncmenu/ncmenu.a `pkg-config --libs menu` `pkg-config --libs ncurses`"
