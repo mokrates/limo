@@ -5,6 +5,7 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include <gc.h>   // boehm GC
 
@@ -61,13 +62,13 @@ typedef struct limo_DATA {
   };
   union {
     char *d_string;  // symbol, string
-    mpq_t *d_mpq; // int
+    mpq_t *d_mpq;    // int
     int    d_int;
     double d_double;
     struct limo_DATA *(*d_builtin)(struct limo_DATA *arglist, struct limo_DATA *env, struct limo_DATA *thunk_place);
     struct limo_DATA *(*d_builtinfun)(int argc, struct limo_DATA **argv);
     //struct limo_DATA *d_special;
-    struct limo_DICT *d_dict;
+    struct limo_DICT * _Atomic d_dict;
     struct limo_DATA *car;
   };
   union {
@@ -94,7 +95,7 @@ typedef struct limo_DATA {
     };
   };
   limo_annotation *annotation;
-  struct limo_DATA *optimized;
+  struct limo_DATA * _Atomic optimized;
 } limo_data;
 
 #define DI_CACHE (1<<0)
