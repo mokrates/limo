@@ -51,6 +51,7 @@
      (go-stop-reaper-thread))))
  
 (defun _go-thread-fun (thr f args)
+  [[thr . _sync_thr] get]  ;; wait for thread to be started properly ([thr . _thread] being set.)
   (apply f args)
   [_go-wait-queue put thr])
  
@@ -60,7 +61,10 @@
 (defun go (fun . args)
   (let ((thr (new thread ())))    ;; initialize without function
     (setmember [thr . _fun] (lambda () (_go-thread-fun thr fun args)))    ;; put function in later.
-    [thr run]))
+    (setmember [thr . _sync_thr] (new queue-lock))
+    (prog1
+     [thr run]
+     [[thr . _sync_thr] put ()])))
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; channels
