@@ -1,0 +1,44 @@
+;; strings stolen from https://ss64.com/nt/syntax-ansi.html
+
+(defclass terminal-color ()       ;; only namespace - don't use self in methods!
+  (defmethod _tcstr (self n)
+    (format "%s[%nm" (chr 27) n))
+  
+  (defmethod default      (self) [self _tcstr 0])
+  (defmethod bold         (self) [self _tcstr 1])
+  (defmethod underline    (self) [self _tcstr 4])
+  (defmethod no-underline (self) [self _tcstr 24])
+  (defmethod reverse      (self) [self _tcstr 7])
+  (defmethod positive     (self) [self _tcstr 27])
+
+  (defmethod foreground (self n)
+    (if (> n 7)
+	[self _tcstr (+ 82 n)]
+	[self _tcstr (+ 30 n)]))
+  (defmethod background (self n)
+    (if (> n 7)
+	[self _tcstr (+ 92 n)]
+	[self _tcstr (+ 40 n)]))
+  (defmethod color (self f b)
+    (string-concat
+     [self foreground f]
+     [self foreground b]))
+
+  (defmethod cga-color (self n)
+    (assoc n '((0 . 0)
+	       (4 . 1)
+	       (2 . 2)
+	       (6 . 3)
+	       (1 . 4)
+	       (5 . 5)
+	       (3 . 6)
+	       (7 . 7)
+	       (8 . 8)
+	       (12 . 9)
+	       (10 . 10)
+	       (14 . 11)
+	       (9 . 12)
+	       (13 . 13)
+	       (11 . 14)
+	       (15 . 15)))))
+	       

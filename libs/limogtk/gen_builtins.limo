@@ -4,8 +4,9 @@
 (setq ignore-functions '("g_io_module_unload"
 			 "g_io_module_load"
 			 "g_dbus_method_invocation_return_value_with_unix_fd_list"
-			 "g_dbus_message_set_unix_fd_list"
-			 "g_dbus_message_get_unix_fd_list"))
+			 "g_dbus_message_set_unix_fd_list" "g_dbus_message_get_unix_fd_list"
+			 "g_once_init_leave_pointer" "g_once_init_enter_pointer"
+			 "g_atomic_pointer_get" ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; shouldn't this be standard?
@@ -427,7 +428,7 @@ GC_register_finalizer(ReSuLt, (GC_finalization_proc)limogtk_finalizer_g_object_u
                  "const cairo_glyph_t *" "const cairo_matrix_t *" "cairo_font_extents_t *"
                  "cairo_text_cluster_t *" "cairo_matrix_t *" "const cairo_path_t *" "cairo_text_extents_t *"
                  "cairo_pattern_t *" "cairo_device_t *" "const cairo_text_cluster_t *" "const cairo_rectangle_t *"
-                 "const cairo_text_cluster_t *" "cairo_path_t *" "cairo_font_options_t *" ))
+                 "const cairo_text_cluster_t *" "cairo_path_t *" "cairo_font_options_t *"))
 
 (setq stringtypes '("const gchar *" "const guchar *" "gchar*" "const char *" "const gchar*" "const char*" "gchar *" "char *" "guchar *" "unsigned char *"))
 
