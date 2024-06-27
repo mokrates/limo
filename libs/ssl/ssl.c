@@ -1,5 +1,6 @@
 #include <limo.h>
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #define INS_SSL_BUILTIN(f, name)    setq(limo_ssl_env, make_sym(name), make_builtin(f, name))
 #define INS_SSL_BUILTINFUN(f, name) setq(limo_ssl_env, make_sym(name), make_builtinfun(f, name))
@@ -282,8 +283,10 @@ BUILTINFUN(builtin_ssl_accept)
   REQUIRE_ARGC_FUN("SSL-ACCEPT", 1);
   ld_sslconn = argv[0];
   sslconn = get_special(ld_sslconn, sym_sslconn);
-  if (1 != (ret = SSL_accept(sslconn)))
-    throw(make_cons(sym_ssl, ssl_error_to_string(sslconn, ret)));
+  if (1 != (ret = SSL_accept(sslconn))) {
+    limo_data *ssl_err = ssl_error_to_string(sslconn, ret);
+    throw(make_list(0, sym_ssl, ssl_err, make_string(ERR_error_string(ERR_get_error(), NULL)), NULL));
+  }
   return nil;
 }
 

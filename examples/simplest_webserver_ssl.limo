@@ -1,3 +1,9 @@
+;; how to generate a simple self signed certificate which can be used with this
+
+;; generate the key:
+;; openssl genpkey -out key.pem -outform pem -algorithm RSA
+;; openssl x509 -new -subj "/CN=example.limo/" -key key.pem -outform pem -out example.pem
+
 (import "socket.limo")
 (import "file.limo")
 
@@ -59,29 +65,35 @@ parentheses! parentheses everywhere!
 (print (format "simplest webserver listening on 0.0.0.0:%n\n" port))
 
 (while :forever
-  (setq sc ([_socket . accept] s))
-
+  :continuable
+  (try
+   (progn
+    (setq sc ([_socket . accept] s))
+    
   ;;;;; SSL
-  (setq sslconn ([_ssl . ssl-new] ctx))
-  ([_ssl . ssl-set-fd] sslconn sc)
-  ([_ssl . ssl-accept] sslconn)
+    (setq sslconn ([_ssl . ssl-new] ctx))
+    ([_ssl . ssl-set-fd] sslconn sc)
+    ([_ssl . ssl-accept] sslconn)
   ;;;;; !SSL
-  
-  (print "connection accepted\n")
-  
-  ;; (setq sf (file-fdopen sc "a+"))
-  (unify (method address protocol) (string-split (ssl-readline sslconn) " "))
-  (print (format  "%r\n" (list method address protocol)))
-  
-  (while (!= "\r\n" (ssl-readline sslconn))
-    :do-nothing)
-  ([_ssl . ssl-write] sslconn "HTTP/1.0 200 OK\r
+    
+    (print "connection accepted\n")
+    
+    ;; (setq sf (file-fdopen sc "a+"))
+    (unify (method address protocol) (string-split (ssl-readline sslconn) " "))
+    (print (format  "%r\n" (list method address protocol)))
+    
+    (while (!= "\r\n" (ssl-readline sslconn))
+      :do-nothing)
+    ([_ssl . ssl-write] sslconn "HTTP/1.0 200 OK\r
 Server: simplest-webserver limo/0.0\r
 Content-type: text/html; charset=utf-8\r
 ")
-  (let ((page (assoc address pages)))
-    (unless page (setf page not-found-page))
-    (progn
-     ([_ssl . ssl-write] sslconn (format "Content-length: %n\r\n\r\n" (string-length (cdr page))))
-     ([_ssl . ssl-write] sslconn (cdr page))
-     ([_fd . fd-close] sc))))
+    (let ((page (assoc address pages)))
+      (unless page (setf page not-found-page))
+      (progn
+       ([_ssl . ssl-write] sslconn (format "Content-length: %n\r\n\r\n" (string-length (cdr page))))
+       ([_ssl . ssl-write] sslconn (cdr page))
+       ([_fd . fd-close] sc))))
+   (catch ((SSL e)
+	   (write e)
+	   (continue)))))
