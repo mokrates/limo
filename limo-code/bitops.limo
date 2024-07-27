@@ -1,0 +1,42 @@
+(mod-load "bitops")
+
+(setq bit-and-8 (curry [_bitops . bitops-and 255]))
+(setq bit-and-16 (curry [_bitops . bitops-and 65536]))
+(setq bit-and-32 (curry [_bitops . bitops-and 4294967295]))
+(setq bit-and-64 (curry [_bitops . bitops-and 18446744073709551615]))
+
+(setq bit-or-8 (curry [_bitops . bitops-or 255]))
+(setq bit-or-16 (curry [_bitops . bitops-or 65536]))
+(setq bit-or-32 (curry [_bitops . bitops-or 4294967295]))
+(setq bit-or-64 (curry [_bitops . bitops-or 18446744073709551615]))
+
+(setq bit-xor-8 (curry [_bitops . bitops-xor 255]))
+(setq bit-xor-16 (curry [_bitops . bitops-xor 65536]))
+(setq bit-xor-32 (curry [_bitops . bitops-xor 4294967295]))
+(setq bit-xor-64 (curry [_bitops . bitops-xor 18446744073709551615]))
+
+(setq bit-not-8 (curry [_bitops . bitops-not 255]))
+(setq bit-not-16 (curry [_bitops . bitops-not 65536]))
+(setq bit-not-32 (curry [_bitops . bitops-not 4294967295]))
+(setq bit-not-64 (curry [_bitops . bitops-not 18446744073709551615]))
+
+(freezeq bit-and-8)
+(freezeq bit-and-16)
+(freezeq bit-and-32)
+(freezeq bit-and-64)
+
+(freezeq bit-or-8)
+(freezeq bit-or-16)
+(freezeq bit-or-32)
+(freezeq bit-or-64)
+
+(freezeq bit-xor-8)
+(freezeq bit-xor-16)
+(freezeq bit-xor-32)
+(freezeq bit-xor-64)
+
+(freezeq bit-not-8)
+(freezeq bit-not-16)
+(freezeq bit-not-32)
+(freezeq bit-not-64)
+
