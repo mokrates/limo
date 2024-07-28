@@ -1,0 +1,139 @@
+
+;; Documentation stolen from
+;; https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
+
+;; Frame format:
+
+;;       0                   1                   2                   3
+;;       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+;;      +-+-+-+-+-------+-+-------------+-------------------------------+
+;;      |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+;;      |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+;;      |N|V|V|V|       |S|             |   (if payload len==126/127)   |
+;;      | |1|2|3|       |K|             |                               |
+;;      +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+;;      |     Extended payload length continued, if payload len == 127  |
+;;      + - - - - - - - - - - - - - - - +-------------------------------+
+;;      |                               |Masking-key, if MASK set to 1  |
+;;      +-------------------------------+-------------------------------+
+;;      | Masking-key (continued)       |          Payload Data         |
+;;      +-------------------------------- - - - - - - - - - - - - - - - +
+;;      :                     Payload Data continued ...                :
+;;      + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+;;      |                     Payload Data continued ...                |
+;;      +---------------------------------------------------------------+
+
+(import "bitops.limo")
+(import "enumerate.limo")
+
+(setq websocket-opcode-cont 0)
+(setq websocket-opcode-text 1)
+(setq websocket-opcode-binary 2)
+(setq websocket-opcode-ping 9)
+(setq websocket-opcode-pong 10)
+
+(unify (make-websocket-frame read-websocket-frame)
+
+       (scope
+
+	(defun number-to-string (num-bytes number)
+	  (do ((remaining-bytes num-bytes (- remaining-bytes 1))
+	       (the-number      number    (idiv the-number 256))
+	       (num-list        ()        (cons (chr (mod the-number 256)) num-list)))
+	      
+	      ((= remaining-bytes 0)
+	       (list-to-string num-list))))
+	
+	(defun make-websocket-frame (message fin opcode mask? mask32)
+	  "FUNCTION make-websocket-frame message fin opcode mask? mask32
+message: the payload string
+fin: nil or some truth value
+opcode: websocket-opcode-* (-cont, -text, -binary, -ping, -pong)
+mask?: nil or some truth value
+mask32: if mask? use a 32 bit number as mask value.
+"
+	  (setq nibble1 (if fin 8 0)) ;; fin = 1, all rsvs = 0
+	  (setq byte1 (chr (+ (* 16 nibble1) opcode)))
+	  (setq len (string-length message))
+	  (setq mask-bit (if mask? 128 0))
+	  (setq mask-and-length
+		(cond ((> len 65536)
+		       (format "%s%s" (chr (+ mask-bit 127)) (number-to-string 8 len)))
+		      ((> len 125)
+		       (format "%s%s" (chr (+ mask-bit 126)) (number-to-string 2 len)))
+		      (:else
+		       (format "%s" (chr (+ mask-bit len))))))
+	  (setq masked-payload
+		(if mask?
+		    (let ((mask-list
+			   (map1 ord (string-to-list (number-to-string 4 mask32)))))
+		      (list-to-string (map (lambda (x) (chr (bit-xor-8 (ord (cdr x))
+								  (nth (mod (car x) 4)
+								       mask-list))))
+					   (enumerate (string-to-list message)))))
+		    message))
+
+	  (format "%s%s%s%s"
+		  byte1
+		  mask-and-length
+		  (if mask? (number-to-string 4 mask32) "")
+		  masked-payload))
+	
+	(defun read-websocket-frame (f)
+	  "FUNCTION read-websocket-frame f
+f: file to read a frame from
+returns an assoc list: with keys: :message :fin :opcode :mask? :mask32
+"
+	  (setq byte1 (ord (file-getc f)))
+	  (setq fin (!= 0 (bit-and-8 byte1 128)))  ;; first bit
+	  (setq opcode (mod byte1 16))
+
+	  (setq byte2 (ord (file-getc f)))
+	  (setq mask? (!= 0 (bit-and-8 byte2 128)))  ;; first bit
+	  (setq len1 (mod byte2 128))
+
+	  (setq len ())
+	  (cond ((= 126 len1)
+		 (setf len
+		       (reduce (lambda (x y) (+ (* 256 x) y))
+			       (dmap1 (lambda (x) (ord (file-getc f)))
+				      (mdrange 2)))))
+		((= 127 len1)
+		 (setf len
+		       (reduce (lambda (x y) (+ (* 256 x) y))
+				(dmap1 (lambda (x) (ord (file-getc f)))
+				       (mdrange 8)))))
+		(:else
+		 (setf len len1)))
+
+	  (setq mask32 0)
+	  (when mask?
+	    (setf mask32
+		  (reduce (lambda (x y) (+ (* 256 x) y))
+			  (dmap1 (lambda (x) (ord (file-getc f)))
+				 (mdrange 4)))))
+
+	  ;; potentially masked
+	  (setq masked-message (list-to-string (map (lambda (x) (file-getc f))
+						    (mdrange len))))
+	  
+	  (setq unmasked-message
+		(if mask?
+		    (let ((mask-list
+			   (map1 ord (string-to-list (number-to-string 4 mask32)))))
+		      (list-to-string (map (lambda (x) (chr (bit-xor-8 (ord (cdr x))
+								  (nth (mod (car x) 4)
+								       mask-list))))
+					   (enumerate (string-to-list masked-message)))))
+		    masked-message))
+
+	  ;; TODO: put message first for faster lookups. it's last for easier debugging
+	  
+	  `((:message ,unmasked-message)
+	    (:fin ,fin)
+	    (:opcode ,opcode)
+	    (:mask? ,mask?)
+	    (:mask32 ,mask32)))
+	
+	;; export functions
+	(list make-websocket-frame read-websocket-frame)))
