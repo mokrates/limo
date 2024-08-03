@@ -90,6 +90,19 @@ TBD
 * TODO Threading
 TBD
 
+* Optimization
+** let vs. setq
+How you should set variables to a values:
+
+Tests seem to show that setting values via setq is potentially
+slow. Mostly if there are many variables which lead to a growing of
+the environment. So if you have very few variables (like 3 or less),
+you may set them with setq, but if you have more, you should use
+let. Even with 3 variables it's mostly faster.
+
+let* translates to setq.
+
+
 * Limo-Mode
 There is a ~emacs/limo.el~ which contains a simple Limo-Mode for
 emacs. I use it to write my own limo programs.
