@@ -550,6 +550,11 @@
               (progn (setcdr cursor (apply nconc (cdr lists)))
                      (car lists)))))))
 
+(defun dflatten-1 (xs)  ;; (dflatten-1 '((1 2) (3 4))) -> dynamic '(1 2 3 4)
+  (cond ((not xs) ())
+	((not (car xs)) (dflatten-1 (cdr xs)))
+	(:else (dcons (caar xs) (dflatten-1 (cons (cdar xs) (cdr xs)))))))
+
 (defmacro dlist x (if (not x) ()  `(dcons ,(car x) (dlist ,@(cdr x)))))
 
 (setq warn-once
