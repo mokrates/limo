@@ -337,7 +337,7 @@
 (freezeq all)
 
 (defun any (x)
-  (cons ((not x) ())
+  (cond ((not x) ())
 	((car x) (car x))
 	(:else (any (cdr x)))))
 (freezeq any)
