@@ -11,6 +11,8 @@
 ;; [array]	<==> (limo list)
 ;; {object}	<==> limo dictionary
 
+;; TODO: doesn't terminate on last character but reads one to many. this is a problem.
+
 (import "backslash-u.limo")
 
 (defun json-load-charlist (s)  ;;
@@ -82,7 +84,7 @@
 	     ())                 ;; do nothing
 	    (:else
 	     (throw (list 'json-error (format "broken object syntax. found '%s'" (car s)))))))
-    (setf s (cdr s)) 
+    (setf s (cdr s)) ;; skip closing bracket
     res)
   
   (defun load-keyword (kw val)
@@ -156,10 +158,13 @@
 ;; json reader macro
 (scope                    ;; don't clutter the namespace
  (defun json-reader (rs)
+   (setq last-char ())
    (defun charlist ()
-     (dcons (reader-stream-getc rs) (charlist)))
-   (list (list 'quote (json-load-charlist (charlist)))))   ;; has to be returned inside a list
- 
+     (dcons (setf last-char (reader-stream-getc rs)) (charlist)))
+
+   (let ((result (list (list 'quote (json-load-charlist (charlist))))))   ;; has to be returned inside a list
+     (reader-stream-ungetc rs last-char)
+     result))
  (dict-set *readtable* "j" json-reader))
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
