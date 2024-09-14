@@ -430,26 +430,36 @@ limo_data *limpy_add_reader(reader_stream *rs)
   int t;
   limo_data *token_ld;
   limo_data *lval;
-  limo_data *rval;
-  limo_data *addfunc;
+  limo_data *result, **cursor;
 
-  lval = limpy_mul_reader(rs);
+  result = lval = limpy_mul_reader(rs);
 
   t = limpy_gettoken(rs, &token_ld);
 
-  switch (t) {
-  case '+': addfunc=make_sym("+"); break;
-  case '-': addfunc=make_sym("-"); break;
-  default: 
+  if (t=='+' || t=='-') {
+    result = make_cons(make_sym("+"), make_cons(lval, nil));
+    cursor = &CDR(CDR(result));
+    while (t=='+' || t=='-')
+      if (t=='+') {
+	lval = limpy_mul_reader(rs);
+	(*cursor) = make_cons(lval, nil);
+	cursor = &CDR(*cursor);
+	t = limpy_gettoken(rs, &token_ld);
+      }
+      else {  // '-'
+	lval = limpy_mul_reader(rs);
+	(*cursor) = make_cons(make_list(0, make_sym("-"), lval, NULL), nil);
+	cursor = &CDR(*cursor);
+	t = limpy_gettoken(rs, &token_ld);
+      }
+
+    limpy_ungettoken(t, token_ld);    
+    return result;
+  }
+  else {
     limpy_ungettoken(t, token_ld);
     return lval;
   }
-
-  rval = limpy_add_reader(rs);
-  
-  return make_cons(addfunc,
-		   make_cons(lval, 
-			     make_cons(rval, make_nil())));
 }
 
 limo_data *limpy_cmp_reader(reader_stream *rs)
