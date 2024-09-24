@@ -310,3 +310,11 @@ interpreter will segfault.
 GENSYM and WITH-GENSYM does this automatically for generated syms.
 See examples/lcache-debug.limo.
 ")
+
+(defhelp dappend
+  "FUNCTION (dappend lists...)
+
+Lazily appends lists together, though all arguments will be evaluated
+once at call, so this might not be what you're looking
+for. Try (dflatten-1 (dlist lists...)) instead
+")
