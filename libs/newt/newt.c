@@ -1,3 +1,5 @@
+// written against libnewt-dev 0.52.24-2ubuntu2
+
 #include "limo_newt.h"
 
 limo_data *sym_newtComponent;
@@ -9,8 +11,23 @@ limo_data *sym_newtComponent;
 NEWTFUN_INT_VOID(newtInit);
 NEWTFUN_INT_VOID(newtFinished);
 NEWTFUN_VOID_VOID(newtCls);
+
+BUILTINFUN(builtin_newtResizeScreen) {
+  REQUIRE_ARGC_FUN("NEWTRESIZESCREEN", 1);
+  newtResizeScreen(!is_nil(argv[0]));
+  return nil;
+}
+
 NEWTFUN_VOID_VOID(newtWaitForKey);
 NEWTFUN_VOID_VOID(newtClearKeyBuffer);
+
+BUILTINFUN(builtin_newtDelay) {
+  REQUIRE_ARGC_FUN("NEWTDELAY", 1);
+  REQUIRE_TYPE("NEWTDELAY", argv[0], limo_TYPE_GMPQ);
+  newtDelay(GETINTFROMMPQ(argv[0]));
+  return nil;
+}
+
 NEWTFUN_VOID_VOID(newtPopWindow);
 NEWTFUN_VOID_VOID(newtPopWindowNoRefresh);
 NEWTFUN_VOID_VOID(newtRefresh);
