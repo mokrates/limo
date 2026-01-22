@@ -1,5 +1,5 @@
 LIBS=file string_builtins threading regex ncurses ncmenu mhash bitops\
-	fd rlcompleter date vector socket ssl popen speedup  # limogtk
+	fd rlcompleter date vector socket ssl popen speedup newt # limogtk
 
 .PHONY: all clean realclean $(LIBS)
 
