@@ -4,6 +4,10 @@
 
 #define LIMO_THREADING    1
 
+#ifdef LIMO_THREADING
+#define GC_THREADS 1
+#endif
+
 #define LIMO_TAILCALL_OPT 1         // 0 is bad for stack, timing gets different, 1 is 'smoother'
 #define STATIC_MACROEX    1         // 1 speeds things WAAAY up / 0 only works without static_constex
 #define STATIC_CONSTEX_HARD 0

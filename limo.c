@@ -86,7 +86,10 @@ limo_data *limo_init(int argc, char **argv)
   #endif
 
   ////// initializing GC
-  GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
+  // this is deprecated, so we comment it out.
+  // as limo moves really slowly,
+  // i'd say we remove this maybe anno 2028
+  // GC_all_interior_pointers = HAVE_DISPLACED_POINTERS; // why do I have this? document!
 
   #ifndef __MINGW32__
   sigemptyset(&sigset);
@@ -99,7 +102,7 @@ limo_data *limo_init(int argc, char **argv)
   //GC_use_entire_heap=1;
   GC_init();
   //int free_space_divisor = GC_call_with_alloc_lock(GC_get_free_space_divisor, NULL);
-  GC_call_with_alloc_lock(GC_set_free_space_divisor, 1);
+  GC_call_with_alloc_lock((GC_fn_type)GC_set_free_space_divisor, (void *)1);
 #ifdef LIMO_THREADING
   GC_allow_register_threads();
 #endif
