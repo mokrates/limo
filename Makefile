@@ -14,6 +14,7 @@ BASEOBJ=writer.o reader.o error.o makers.o vars.o eval.o flmalloc.o\
 OBJ=main.o $(BASEOBJ)
 EXEOBJ=exelimo.o $(BASEOBJ)
 HEADERS=limo.h config.h
+ETAGS=`if [ -x /usr/bin/etags.emacs]; then echo /usr/bin/etags.emacs; else echo /usr/bin/etags; fi`
 
 CFLAGS += $(OPTIMIZE) $(DEBUG) $(PROFILING) $(OPTIONS)
 
@@ -61,7 +62,7 @@ libs-cygwin-dll:
 
 
 TAGS:
-	etags.emacs --regex='{c}/BUILTIN\(FUN\)?(\([^)]+\)/\2/' *.c *.h libs/*/*.c libs/*/*.h
+	$(ETAGS) --regex='{c}/BUILTIN\(FUN\)?(\([^)]+\)/\2/' *.c *.h libs/*/*.c libs/*/*.h
 
 $(OBJ): $(HEADERS) Makefile
 

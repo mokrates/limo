@@ -8,6 +8,8 @@
 #include <alloca.h>
 #endif
 
+#include <stdint.h>
+
 BUILTIN(builtin_quote)
 {
   return CAR(CDR(arglist));
@@ -608,7 +610,7 @@ BUILTIN(builtin_freezeq)
 BUILTIN(builtin_address_of)
 {
   REQUIRE_ARGC("ADDRESS-OF", 1);
-  return make_rational_from_long_long((long long) eval(FIRST_ARG, env));
+  return make_rational_from_long_long((long long)(uintptr_t)eval(FIRST_ARG, env));
 }
 
 // Environment manipulation
@@ -679,10 +681,10 @@ BUILTIN(builtin_env_current)
   return env;
 }
 
-static void finalization_proc(limo_data *obj, limo_data *thunk)
+static void finalization_proc(void *obj, void *thunk)
 {
   // we can return to nowhere, so there is no returning a value
-  eval(make_cons(CAR(thunk), make_cons(obj, nil)), CDR(thunk));
+  eval(make_cons(CAR((limo_data *)thunk), make_cons((limo_data *)obj, nil)), CDR((limo_data *)thunk));
 }
 
 BUILTIN(builtin_set_finalizer)
@@ -691,7 +693,7 @@ BUILTIN(builtin_set_finalizer)
 
   obj = eval(FIRST_ARG, env);
   fun = eval(SECOND_ARG, env);
-  GC_register_finalizer(obj, finalization_proc, make_cons(fun, env), NULL, &ofun_cons);
+  GC_register_finalizer(obj, finalization_proc, make_cons(fun, env), NULL, (void **)&ofun_cons);
   return ofun_cons?CAR(ofun_cons):nil;
 }
 

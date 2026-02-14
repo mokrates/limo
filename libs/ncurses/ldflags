@@ -1,3 +1,9 @@
 #!/bin/bash
-echo "libs/ncurses/ncurses.a `pkg-config --libs ncurses`"
 
+if which ncursesw6-config > /dev/null; then
+    NCURSESFLAGS="$(ncursesw6-config --libs)"
+else
+    NCURSESFLAGS="$(pkg-config --libs ncurses)"
+fi
+
+echo "libs/ncurses/ncurses.a $NCURSESFLAGS"

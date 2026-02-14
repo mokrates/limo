@@ -1,4 +1,3 @@
-#define GC_THREADS
 #include <pthread.h>
 #include <limo.h>
 
