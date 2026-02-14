@@ -66,7 +66,7 @@ void load_limo_file(char *filename, limo_data *env)
 {
   FILE *f;
   reader_stream *rs;
-  if (f=fopen(filename, "r")) {
+  if ((f=fopen(filename, "r"))) {
     rs = limo_rs_from_file(f, filename, env);
     while (!limo_eof(rs)) {
       eval(reader(rs), env);
