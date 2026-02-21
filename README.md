@@ -6,7 +6,9 @@
       |_|_|_| |_| |_|\___/ |___|
 
        
-	   
+> [!IMPORTANT]  
+> Limo moved to codeberg.org/mokrates/limo
+
 written by Moritz Molle
 
 Licensed under GPL (v3) (applies to all files in this tarball)
