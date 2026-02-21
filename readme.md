@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> moved to mokrates.codeberg.page/limo
+
 # Showcase #
 
 Beispielprogramme, die Limos Fähigkeiten demonstrieren
